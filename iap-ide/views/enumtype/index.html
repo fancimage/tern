@@ -1,0 +1,50 @@
+<#assign columns=model.columnList colcount=0>
+<@tern.override name="grid-title">
+  <tr class="info">
+     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
+     <#foreach col in columns>
+     <#if !col.id>
+     <th>${col.caption}</th><#assign colcount=colcount+1>
+     </#if>
+     </#foreach>
+     <th>操作</th>
+  </tr>
+</@>
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.etype}' name="cb_record" type="checkbox"/></td>
+      <#foreach col in model.columnList>
+        <#if col.id>
+        <#elseif col.belongsTo??>
+           <td>${(item[col.belongsTo.name])!}</td>
+        <#else>
+           <td>${(item[col.name])!}</td>
+       </#if>
+      </#foreach>         	 
+      <td>
+        <a href="#modify"><i class="icon-edit"></i></a>
+	    <a href="#del"><i class="icon-remove"></i></a>
+	    <a href="#detail"><i class="icon-th-list"></i></a>	    
+     </td>
+  </tr>
+</@>
+
+<@tern.override name="list-query">
+  <@tern.query name="query" source=records class="form-inline">
+    <@tern.search name="etype"/>
+    <@tern.search name="ecaption"/></li>    
+    <button class="btn" id="btnSearch">查询</button>
+  </@>      
+</@>
+
+<#include "/layout/list.html">
+
+<script language="javascript">
+    $(function(){
+       $tern.onCommand = function(name,id){
+	       if(name == '#detail'){
+	           window.location.href = '${URL}/'+id+'/enum';
+	       }
+	   }
+    });	
+</script>

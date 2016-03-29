@@ -1,0 +1,16 @@
+<@tern.override name="list-toolbar">
+    <div class="btn-group" style="margin:4px">
+		 <button class="btn" id="btnNew">新增</button>
+         <button class="btn" id="btnDel">删除</button>
+         <button class="btn" id="btnBack">返回</button>                 
+	</div>
+</@>
+
+<#include "/model/index.html">
+<script language="javascript">
+    $(function(){
+    	$('#btnBack').click(function(){
+    		window.location.href = '${HOME}enumtype';
+    	});
+    });
+</script>

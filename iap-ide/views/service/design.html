@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${model.caption}</title>
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/base.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/ternlight.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/utils.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/connector.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/action.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/command.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/ternlight/text.js"></script>
+    <script language="javascript">
+     $(function(){
+       var diagram = new tern.Diagram('mycanvas');
+       var rectShape = new tern.RectangleShape();
+       rectShape.x = 20;
+       rectShape.y = 20;
+       rectShape.width = 100;
+       rectShape.height = 100;       
+       diagram.addChild(rectShape);
+       
+       rectShape = new tern.RectangleShape();
+       rectShape.x = 220;
+       rectShape.y = 120;
+       rectShape.width = 100;
+       rectShape.height = 100;
+       diagram.addChild(rectShape);
+       
+       var line = new tern.Connection( [new tern.Point(70,120),new tern.Point(70,170),new tern.Point(220,170)],
+                                  tern.LineType.RightAngle);
+       diagram.addChild(line);
+     });
+    </script>
+</head>
+<body>
+<@tern.form id="editFrm" class="form-inline" record=record>
+   <label class="checkbox">流程标识</label>
+   <@tern.field name="tname"/>
+   <label class="checkbox">名称</label>
+   <@tern.field name="tcaption"/>
+   <label class="checkbox">数据模型</label>
+   <@tern.field name="serTableName"/>
+</@>
+<div>
+   <canvas id="mycanvas" width="700" height="500">
+   	   使用该功能，请使用IE9以上版本，或使用google chrome、firefox等支持HTML5的浏览器！
+   </canvas>
+</div>
+</body>
+</html>

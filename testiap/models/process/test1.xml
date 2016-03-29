@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE workflow PUBLIC "-//OpenSymphony Group//DTD OSWorkflow 2.6//EN" "http://www.opensymphony.com/osworkflow/workflow_2_8.dtd"[]>
+<workflow>
+  <initial-actions>
+    <action id="0" name="Start Workflow">
+      <pre-functions>
+        <function type="beanshell">
+          <arg name="script">                 
+				 System.out.println("data="+entry.data+",wfname="+entry.name);
+             </arg>
+        </function>
+      </pre-functions>
+      <results>
+        <unconditional-result old-status="Finished" status="doing" step="2" />
+      </results>
+    </action>
+  </initial-actions>
+  <steps>
+    <step id="1" name="finished">
+      <pre-functions>
+        <function type="class">
+          <arg name="class.name">com.iap.workflow.PostFlowFunction</arg>
+        </function>
+      </pre-functions>
+    </step>
+    <step id="2" name="项目主管部门意见">
+      <pre-functions>        
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.iap.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">项目主管</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="1" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.iap.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <result old-status="doing" status="doing" step="3">
+              <conditions type="AND">
+                <condition type="beanshell">
+                  <arg name="script">
+					  entry.data.get("sname").equals("露珠公主")    
+				  </arg>
+                </condition>
+              </conditions>
+            </result>
+            <unconditional-result old-status="doing" status="doing" step="4" owner="${caller}" />
+          </results>
+        </action>
+        <action id="2" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="3" name="项目总工意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.iap.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">项目总工</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="3" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.iap.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="4" owner="${caller}" />
+          </results>
+        </action>
+        <action id="4" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.iap.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="4" name="项目主管经理意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.iap.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">项目主管经理</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="5" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.iap.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="1" owner="${caller}" />
+          </results>
+        </action>
+        <action id="6" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="5" name="核算员意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.ytong.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">核算员</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="7" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="6" owner="${caller}" />
+          </results>
+        </action>
+        <action id="8" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="6" name="项目经理意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.ytong.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">项目经理</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="9" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="7" owner="${caller}" />
+          </results>
+        </action>
+        <action id="10" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="7" name="合约部意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.ytong.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">合约部负责人</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="11" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="8" owner="${caller}" />
+          </results>
+        </action>
+        <action id="12" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="8" name="总工意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.ytong.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">总工</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="13" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="9" owner="${caller}" />
+          </results>
+        </action>
+        <action id="14" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+    <step id="9" name="经理意见">
+      <pre-functions>
+        <function name="函数(class)" type="class">
+          <arg name="class.name">com.ytong.workflow.InitStepFunction</arg>
+          <arg name="op.type">role</arg>
+          <arg name="op.name">经理</arg>
+        </function>
+      </pre-functions>
+      <actions>
+        <action id="15" name="同意">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">agree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="doing" step="1" owner="${caller}" />
+          </results>
+        </action>
+        <action id="16" name="退回">
+          <pre-functions>
+            <function type="class">
+              <arg name="class.name">com.ytong.workflow.PostStepFunction</arg>
+              <arg name="result">disagree</arg>
+            </function>
+          </pre-functions>
+          <results>
+            <unconditional-result old-status="doing" status="Finished" step="1" />
+          </results>
+        </action>
+      </actions>      
+    </step>
+  </steps>
+</workflow>
