@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${service.caption}</title>
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/datepicker/datepicker.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/timepicker/css/bootstrap-timepicker.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="${HOME}static/datepicker/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" src="${HOME}static/timepicker/js/bootstrap-timepicker.js"></script>
+    <script type="text/javascript" src="${HOME}static/timepicker/js/bootstrap-collapse.js"></script>
+    <script language="javascript">
+        $(function(){
+        	$('#btnSave').click(function(){
+        		var data = $('#editFrm').serialize();
+        		var d2= $('#processFrm').serialize();
+        		if(data!=null && data.length>0) data +='&'+d2;
+        		else data = d2;
+        		$.post('update',data,function(result){
+    		      if(0 == result.code){
+    		      	 window.location.href = '${HOME}service/${service.id}/process';
+    		      } else if(result.message){
+    			     alert(result.message);
+        	      } else {
+        		     alert('操作失败，errcode='+result.code);
+        	      }
+    	        },'json').error(function(){
+    		         alert('操作失败！');
+    	        });
+        	});
+        });
+    </script>
+</head>
+<body>	
+   <ul class="breadcrumb">
+     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider">/</span></li>
+     <li class="active">流程处理</li>
+   </ul>
+   
+   <div class="accordion" id="accordion">
+   	<#if step??>
+   	  <div class="accordion-group">
+        <div class="accordion-heading alert-info">
+           <a class="accordion-toggle" href="#formProcess">
+           	<b>${step.name}</b>        	
+           </a>
+        </div>
+        <div id="formProcess" class="accordion-body collapse in">
+          <div class="accordion-inner">
+          	<form id="processFrm" method="post" class="form-horizontal">
+          	  <fieldset>
+          	  	  <div class="control-group">
+                     <label class="control-label">处理结果</label>
+                     <div class="controls">
+                     	<select id="actionID" name="actionID">
+                     	   <#foreach act in actions>
+                     		 <option value="${act.id}">${act.name}</option>
+                     	   </#foreach>
+                     	   <#foreach act in sysactions>
+                     		 <option value="${act.value}">${act.name}</option>
+                     	   </#foreach>
+                     	</select>
+                     </div>
+                  </div>
+                  <div class="control-group">
+                     <label class="control-label">处理意见</label>
+                     <div class="controls">
+                     	<textarea name="actionSuggest">同意！</textarea>
+                     </div>
+                  </div>
+          	  </fieldset>
+          	  <button id="btnSave" type="button" class="btn btn-primary">提交</button>
+          	</form>
+          </div>
+        </div>
+     </div>
+   </#if>
+   	  <div class="accordion-group">
+        <div class="accordion-heading alert-info">
+           <a class="accordion-toggle" data-toggle="collapse" href="#formData">
+           	<b>表单</b>
+           </a>
+        </div>
+        <div id="formData" class="accordion-body collapse in">
+          <div class="accordion-inner">
+          	 <@tern.form id="editFrm" record=record readonly=true></@>
+          </div>
+        </div>
+     </div>
+     <div class="accordion-group">
+        <div class="accordion-heading alert-info">
+           <a class="accordion-toggle" data-toggle="collapse" href="#wfHistory">
+           	<b>历史</b>
+           </a>
+        </div>
+        <div id="wfHistory" class="accordion-body collapse">
+          <div class="accordion-inner">
+          	<table class="table table-bordered table-hover">
+              <tr>
+              	<th>序号</th>
+              	<th>步骤</th>
+              	<th>处理人</th>
+              	<th>流入时间</th>
+              	<th>处理完成时间</th>
+              	<th>状态</th>
+              	<th>处理意见</th>
+              </tr>
+          	 <#foreach stepInfo in history>
+                <tr>
+                	<td>${(stepInfo.stepID)!}</td>
+                	<td>${(stepInfo.stepName)!}</td>
+                	<td>${(stepInfo.ownername)!}</td>
+                	<td>${stepInfo.sDate?string("yyyy-MM-dd HH:mm:ss")}</td>
+                	<td>${(stepInfo.hDate?string("yyyy-MM-dd HH:mm:ss"))!}</td>
+                	<td>
+                		<#if stepInfo.sstate==1>完成
+                		<#else>处理中
+                		</#if> 
+                    </td>
+                    <td>${(stepInfo.hDescription)!}</td>
+                </tr>
+             </#foreach>
+           </table>
+          </div>
+        </div>
+     </div>
+   </div>
+     
+</body>
+</html>

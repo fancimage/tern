@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新建：${service.caption}</title>
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/datetime/css/bootstrap-datetimepicker.min.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="${HOME}static/datetime/js/bootstrap-datetimepicker.min.js"></script>
+    <script language="javascript">
+        $(function(){
+        	$('#btnSave').click(function(){
+        		var $frm = $('#editFrm');
+        		$.post('create',$frm.serialize(),function(result){
+    		      if(0 == result.code){
+    		      	 window.location.href = '${HOME}service/${service.id}/process';
+    		      } else if(result.message){
+    			     alert(result.message);
+        	      } else {
+        		     alert('操作失败，errcode='+result.code);
+        	      }
+    	        },'json').error(function(){
+    		         alert('操作失败！');
+    	        });
+        	});
+        });
+    </script>
+</head>
+<body>
+	<ul class="breadcrumb">
+     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider">/</span></li>
+     <li class="active">新建</li>
+   </ul>
+
+    <@tern.form id="editFrm" record=record>
+    </@>
+    <button id="btnSave" type="button" class="btn btn-primary">提交</button>
+</body>
+</html>

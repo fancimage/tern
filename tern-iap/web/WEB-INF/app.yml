@@ -1,0 +1,42 @@
+#Configuration for pytern server
+
+debug : true
+encoding : utf-8
+lang: zh-CN
+application:
+  src : [com.tern.iap]
+
+log:
+  force: true
+  level: info
+  #maxFileCount: 20
+  
+ui:
+  pagesize: 18  
+  
+server:
+  maxUploadSize: 3072
+
+database: #the first is default db-connection
+    #pool: dbcp
+    
+    all:
+      - dbn : sqlite
+        #db  : testdb
+        encoding: utf8
+        user: root
+        pw  : manager
+      
+      #- dbn : oracle
+      #  ip  : 10.116.40.67
+      #  db  : zxin
+      #  encoding: utf8
+      #  user: estate360
+      #  pw  : es123
+      
+apps:
+  - name : app1
+    path : E:\mywork\java\tern\testiap
+    
+  - name : ide
+    path : E:\mywork\java\tern\iap-ide

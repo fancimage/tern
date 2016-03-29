@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${model.caption}</title>
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/datepicker/datepicker.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/timepicker/css/bootstrap-timepicker.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="${HOME}static/datepicker/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" src="${HOME}static/timepicker/js/bootstrap-timepicker.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/tern-list.js"></script>
+    <script language="javascript">
+        var this_url = '${URL}';
+        var $tern = null;
+        $(function(){
+        	$tern = tern_list();
+        	$tern.caption = '${model.caption}';
+        });
+    </script>
+</head>
+<body>
+	<@tern.block name="list-toolbar">
+	 <div class="btn-group" style="margin:4px">
+		 <button class="btn" id="btnNew">新增</button>
+         <button class="btn" id="btnDel">删除</button>                 
+	 </div>
+	</@>		
+	<@tern.block name="list-query">
+       <@tern.query name="query" source=records pagesize=20/>
+	</@>
+	
+	<@tern.block name="grid-start">
+	 <#assign colcount=model.columnList?size>
+	 <table id="enTable" class="table table-bordered table-hover" style="margin-bottom:0">
+	</@>           
+	<@tern.block name="grid-title">
+	   <p>列表的样式。</p>
+    </@>
+    <#foreach item in records>
+     <@tern.block name="grid-detail">
+	   <p>列表的各行数据。</p>
+     </@>
+    </#foreach>    
+    <@tern.block name="grid-footer">
+      <#if (query?? && query.pagecount>1) >
+	   <tr class="info">   
+        <td colspan="${colcount+2}" class="pagination" page-current="${query.current}" page-count="${query.pagecount}">         	
+        </td>
+      </tr>
+      </#if>
+     </table>
+    </@>
+         
+    <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-header">
+           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+           <h3></h3>
+        </div>
+        <div class="modal-body">        	          
+        </div>
+        <div class="modal-footer">
+           <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
+           <button class="btn btn-primary" id="btnSave">保存</button>
+        </div>
+   </div>     
+</body>
+</html>

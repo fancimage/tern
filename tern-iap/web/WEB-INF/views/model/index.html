@@ -1,0 +1,31 @@
+<#assign columns=model.columnList colcount=0>
+<@tern.override name="grid-title">
+  <tr class="info">
+     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
+     <#foreach col in columns>
+     <#if !col.id>
+     <th>${col.caption}</th><#assign colcount=colcount+1>
+     </#if>
+     </#foreach>
+     <th>操作</th>
+  </tr>
+</@>
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+      <#foreach col in model.columnList>
+        <#if col.id>
+        <#elseif col.belongsTo??>
+           <td>${(item[col.belongsTo.name])!}</td>
+        <#else>
+           <td>${(item[col.name])!}</td>
+       </#if>
+      </#foreach>         	 
+      <td>
+        <a href="#modify"><i class="icon-edit"></i></a>
+	    <a href="#del"><i class="icon-remove"></i></a>
+     </td>
+  </tr>
+</@>
+
+<#include "/layout/list.html">

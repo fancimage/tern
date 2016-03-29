@@ -1,0 +1,77 @@
+<#assign columns=model.columnList colcount=0>
+<@tern.override name="grid-title">
+  <tr class="info">
+     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
+     <#foreach col in columns>
+     <#if !col.id>
+     <th>${col.caption}</th><#assign colcount=colcount+1>
+     </#if>
+     </#foreach>
+     <th>提交人</th>
+     <th>提交时间</th>
+     <th>状态</th><#assign colcount=colcount+3>
+     <th>操作</th>
+  </tr>
+</@>
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+      <#foreach col in model.columnList>
+        <#if col.id>
+        <#elseif col.belongsTo??>
+           <td>${(item[col.belongsTo.name])!}</td>
+        <#else>
+           <td>${(item[col.name])!}</td>
+       </#if>
+      </#foreach>
+      <td>${item.process.creator}</td>
+      <td>${item.process.createtime}</td>
+      <#switch item.process.status>
+      	<#case 0>
+      	   <td>创建</td>
+      	   <td>&nbsp;</td>
+      	 <#break>
+      	<#case 1>
+      	   <td>处理中</td>
+      	   <td><a href="#modify"><i class="icon-edit"></i></a></td>
+      	  <#break>
+      	<#case 2>
+      	   <td>挂起</td>
+      	   <td><a href="#detail"><i class="icon-th-list"></i></a></td>
+      	  <#break>
+      	<#case 3>
+      	   <td>废弃</td>
+      	   <td><a href="#detail"><i class="icon-th-list"></i></a></td>
+      	  <#break>
+      	<#case 4>
+      	   <td>完成</td>
+      	   <td><a href="#detail"><i class="icon-th-list"></i></a></td>
+      	  <#break>
+        <#default>
+           <td>未知</td>
+      	   <td>&nbsp;</td>
+      </#switch>      
+  </tr>
+</@>
+
+<#include "/layout/list.html">
+<script>
+    $(function(){
+        $tern.string_update = '流程处理';
+        $tern.string_new = '新建流程';
+        
+        $tern.onModify = function(id){
+        	window.location.href = this_url+id+'/edit';
+        }
+        
+        $tern.onNew = function(){
+        	window.location.href = this_url+'new';
+        }
+        
+        $tern.onCommand = function(name,id){
+	       if(name == '#detail'){
+	           window.location.href = this_url+id+'/detail';
+	       }
+	   }
+    });
+</script>
