@@ -21,7 +21,6 @@ import com.tern.dao.Record;
 import com.tern.dao.RecordSet;
 import com.tern.iap.workflow.Service;
 import com.tern.util.TernContext;
-import com.tern.web.Controller;
 
 import freemarker.cache.TemplateLoader;
 

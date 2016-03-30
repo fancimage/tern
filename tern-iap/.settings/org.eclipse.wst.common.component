@@ -8,6 +8,21 @@
         <dependent-module archiveName="tern.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/tern/tern">
             <dependency-type>uses</dependency-type>
         </dependent-module>
+        <dependent-module archiveName="commons-fileupload-1.0.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/tern/lib/commons-fileupload-1.0.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="snakeyaml-1.10.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/tern/lib/snakeyaml-1.10.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="freemarker.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/tern/lib/freemarker.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="log4j-1.2.8.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/tern/lib/log4j-1.2.8.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="sqlitejdbc-v056-pure.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/tern/lib/db/sqlitejdbc-v056-pure.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path"/>
         <property name="context-root" value="iap"/>
     </wb-module>
