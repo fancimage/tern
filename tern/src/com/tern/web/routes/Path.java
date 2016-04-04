@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.tern.util.ThreadSafeMap;
-import com.tern.util.Trace;
 import com.tern.web.Controller;
 
 abstract class Path implements Comparable<Path> 
