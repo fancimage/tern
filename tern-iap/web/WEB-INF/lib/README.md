@@ -5,3 +5,4 @@
 * oscore-2.2.5.jar
 * osworkflow-2.8.0.jar
 * propertyset-1.4.jar
+* commons-logging.jar

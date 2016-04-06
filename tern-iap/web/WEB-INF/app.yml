@@ -36,7 +36,7 @@ database: #the first is default db-connection
       
 apps:
   - name : app1
-    path : E:\mywork\java\tern\testiap
+    path : E:\mywork\java\git\tern\testiap
     
   - name : ide
-    path : E:\mywork\java\tern\iap-ide
+    path : E:\mywork\java\git\tern\iap-ide

@@ -1,8 +1,9 @@
 <p>
   hi!
-  <div>${val}</div>
-  <div>${session.val}</div>
-  <div>${HOME}</div>
-  <div>${URL}</div>
-  <div>${(params.var)!}</div>
+  <div>request.getAttribute("val") = ${val}</div>
+  <div>request.getParameter("var") = ${(params.var)!}</div>
+  <div>session.getAttribute("val") = ${session.val}</div>
+  <div>application.getAttribute("val") = ${(app.val)!}</div>
+  <div>root path of the current webapp: ${HOME}</div>
+  <div>path of the current request: ${URL}</div>
 </p>
