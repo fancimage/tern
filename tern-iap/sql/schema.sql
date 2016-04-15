@@ -35,7 +35,7 @@ CREATE TABLE wf_stepinfo(
 	stepName varchar(64) NULL,
 	actionType int NULL,	
 	owner int NULL,	
-	ownertype int NULL,	
+	--ownertype int NULL,	
 	hDate datetime NULL,
 	sDate datetime NULL,
 	due_date datetime,	

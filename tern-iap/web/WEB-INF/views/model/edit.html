@@ -1,2 +1,25 @@
-<@tern.form id="editFrm" record=record>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${model.caption}</title>
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/datetime/css/bootstrap-datetimepicker.min.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/modal/css/bootstrap-modal.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="${HOME}static/modal/js/bootstrap-modalmanager.js"></script>
+    <script type="text/javascript" src="${HOME}static/modal/js/bootstrap-modal.js"></script>
+    <script type="text/javascript" src="${HOME}static/datetime/js/bootstrap-datetimepicker.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/modal.js"></script>
+    </head>
+<body>
+<@tern.form id="editFrm" record=record auto=true>
+   
 </@>
+<button class="btn">关闭</button>
+<button class="btn btn-primary" id="btnSave">保存</button>
+</body>
+</html>

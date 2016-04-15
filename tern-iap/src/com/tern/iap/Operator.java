@@ -9,6 +9,10 @@
 
 package com.tern.iap;
 
+import java.sql.SQLException;
+
+import com.tern.db.db;
+
 public class Operator 
 {
 	protected int operatorID;
@@ -22,8 +26,25 @@ public class Operator
 		this.name = name;
 	}
 	
-    public int getId() {return operatorID;}	
+    public int getId() {return operatorID;}
 	public String getName() {return name;}
 	public String getLoginName(){return loginName;}
+	
+	public int getIDByName(String name,String type)
+	{
+		if(name.indexOf("'")>=0 || name.indexOf(" ")>=0)
+		{
+			return 0;
+		}
+		
+		try
+		{
+			return db.sql("select roleID from t_role where roleName=?",name).queryInt();
+		}
+		catch(SQLException e)
+		{
+			return 0;
+		}
+	}
 	
 }

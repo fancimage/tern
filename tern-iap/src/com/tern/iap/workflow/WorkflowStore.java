@@ -14,6 +14,7 @@ import com.opensymphony.module.propertyset.InvalidPropertyTypeException;
 import com.opensymphony.module.propertyset.PropertyException;
 import com.opensymphony.module.propertyset.PropertySet;
 import com.opensymphony.util.Data;
+import com.opensymphony.workflow.loader.StepDescriptor;
 import com.opensymphony.workflow.spi.jdbc.JDBCWorkflowStore;
 import com.opensymphony.workflow.spi.WorkflowEntry;
 import com.opensymphony.workflow.StoreException;
@@ -33,10 +34,12 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 
 import com.tern.dao.Model;
 import com.tern.dao.Record;
 import com.tern.db.InsertCommand;
+import com.tern.db.SQL;
 import com.tern.db.UpdateCommand;
 import com.tern.db.db;
 import com.tern.util.Convert;
@@ -84,47 +87,7 @@ public class WorkflowStore extends JDBCWorkflowStore
 	public PropertySet getPropertySet(long entryId) 
 	{
 		return new IAPPropertySet("osff_" + entryId);
-    }
-
-	
-	@Override
-	protected long createCurrentStep(Connection conn, long entryId, int wfStepId, String owner,
-			Date startDate, Date dueDate, String status) throws SQLException 
-	{
-        String sql = "INSERT INTO " + currentTable + " (" + stepId + ',' + stepEntryId + ", " 
-			+ stepStepId + ", " + stepActionId + ", " + stepOwner + ", " + stepStartDate + ", " 
-        		+ stepDueDate + ", " + stepFinishDate + ", " + stepStatus //+ ", " + stepCaller 
-        		+ ",sstate ) VALUES (?, ?, ?, null, ?, ?, ?, null, ?,0)";
-
-        Trace.write(Trace.Information, "create step:%s", sql);
-
-        PreparedStatement stmt = conn.prepareStatement(sql);
-
-        long id = getNextStepSequence(conn,entryId);
-        stmt.setLong(1, id);
-        stmt.setLong(2, entryId);
-        stmt.setInt(3, wfStepId);
-        stmt.setInt(4, 0);//stmt.setString(4, owner);
-        stmt.setTimestamp(5, new Timestamp(startDate.getTime()));
-
-        if (dueDate != null)
-        {
-            stmt.setTimestamp(6, new Timestamp(dueDate.getTime()));
-        } 
-        else
-        {
-            stmt.setNull(6, Types.TIMESTAMP);
-        }
-
-        stmt.setString(7, status);  //status
-        stmt.executeUpdate();
-        
-        //得到对本步骤有权限的所有人?
-        
-        cleanup(null, stmt, null);
-
-        return id;
-    }
+    }	
 	
 	protected long getNextEntrySequence(Connection c) throws SQLException
 	{
@@ -274,7 +237,7 @@ public class WorkflowStore extends JDBCWorkflowStore
     
     public void moveToHistory(Step step) throws StoreException
     {
-        Connection conn = null;
+        /*Connection conn = null;
         PreparedStatement stmt = null;
 
         try
@@ -282,8 +245,7 @@ public class WorkflowStore extends JDBCWorkflowStore
             conn = getConnection();
 
             String sql = "UPDATE " + historyTable + " SET sstate = 1 WHERE "
-                   + stepEntryId + "=? AND " + stepId + "=?";
-            //String sql = "INSERT INTO " + historyTable + " (" + stepId + ',' + stepEntryId + ", " + stepStepId + ", " + stepActionId + ", " + stepOwner + ", " + stepStartDate + ", " + stepFinishDate + ", " + stepStatus + ", " + stepCaller + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                   + stepEntryId + "=? AND " + stepId + "=?";            
             Trace.write(Trace.Information, "moveToHistory: %s", sql);
 
             stmt = conn.prepareStatement(sql);
@@ -298,34 +260,67 @@ public class WorkflowStore extends JDBCWorkflowStore
         finally 
         {
             cleanup(conn, stmt, null);
-        }        
+        }*/        
     }
     
-    public Step createCurrentStep(long entryId, int wfStepId, String owner, Date startDate, Date dueDate, 
+    /*@Override
+	protected long createCurrentStep(Connection conn, long entryId, int wfStepId, String owner,
+			Date startDate, Date dueDate, String status) throws SQLException 
+	{        
+    }*/
+    
+    public Step createCurrentStep(StepDescriptor step,long entryId, String owner, Date startDate, Date dueDate, 
     		String status, long[] previousIds) throws StoreException 
     {
-        Connection conn = null;
-
         try
         {
-            conn = getConnection();
-
-            long id = createCurrentStep(conn, entryId, wfStepId, owner, startDate, dueDate, status);
-            addPreviousSteps(conn, entryId, id, previousIds);
-
-            return new SimpleStep(id, entryId, wfStepId, 0, owner, startDate, dueDate, null, status, previousIds, null);
+        	long id = db.sql("select max(stepID) from wf_stepinfo where wfID=?",entryId).queryLong(); 
+        	id+=1;
+        	InsertCommand cmd = db.insert(currentTable)
+      	      .set(stepEntryId, entryId)
+      	      .set(stepId, id)
+      	      .set(stepStepId, step.getId())
+      	      .set(stepActionId, 0)
+      	      .set(stepStartDate, startDate)
+      	      .set(stepDueDate, dueDate)
+      	      .set(stepStatus, status)
+      	      .set("sstate", 0)
+      	      .set("stepName", step.getName());
+        	
+        	if(null == previousIds || previousIds.length <= 1)
+        	{
+        		cmd.set(stepPreviousId, previousIds.length==1?previousIds[0]:0);
+        		cmd.exec();
+        	}
+        	else
+        	{
+        		cmd.exec();
+        		
+        		String sql = "INSERT INTO " + currentPrevTable + " (" + stepEntryId + "," + stepId + ", " + stepPreviousId + ") VALUES (?, ?, ?)";
+        		SQL cmd2 = db.sql(sql);
+        		
+        		cmd2.param(0, entryId);
+        		cmd2.param(1, id);
+    			
+    			for (int i = 0; i < previousIds.length; i++)
+                {
+    				cmd2.param(2, previousIds[i]);
+                    cmd2.exec();
+                }
+        	}
+            
+            //addPreviousSteps(conn, entryId, id, previousIds);
+        	
+            return new SimpleStep(id, entryId, step.getId(), 0, owner, startDate, dueDate, 
+            		null, status, previousIds, null);
         }
         catch (SQLException e) 
         {
             throw new StoreException("Unable to create current step for workflow instance #" + entryId, e);
-        } 
-        finally
-        {
-            cleanup(conn, null, null);
-        }
+        }       
     }
     
-    protected void addPreviousSteps(Connection conn, long entryId, long id, long[] previousIds) throws SQLException
+    /*protected void addPreviousSteps(Connection conn, long entryId, long id, long[] previousIds) throws SQLException
     {
     	if(null == previousIds || previousIds.length <= 1)
     	{    		    	
@@ -382,14 +377,30 @@ public class WorkflowStore extends JDBCWorkflowStore
     		    cleanup(null, stmt, null);
     		}            
     	}    	        
-    }
+    }*/
     
-    public Step markFinished(Step step, int actionId, Date finishDate, String status, String caller) throws StoreException {
-        Connection conn = null;
-        PreparedStatement stmt = null;
+    public Step markFinished(Step step, int actionId, Date finishDate, String status, String caller,Map inputs) throws StoreException {
+        //Connection conn = null;
+        //PreparedStatement stmt = null;
 
-        try {
-            conn = getConnection();
+        try 
+        {
+        	UpdateCommand cmd = db.update(currentTable)
+        	  .set("sstate", 1)
+        	  .set(stepStatus, status)
+        	  .set(stepActionId, actionId)
+        	  .set(stepFinishDate, finishDate)
+        	  .set(stepCaller, caller)        	  
+        	  .where(stepEntryId+"=? AND "+stepId+"=?" , step.getEntryId(),step.getId());
+        	
+        	if(inputs!=null)
+        	{
+        	    cmd.set("hDescription", inputs.get("suggest"));
+        	}
+        	
+        	cmd.exec();
+        	
+            /*conn = getConnection();
 
             String sql = "UPDATE " + currentTable + " SET sstate=1," + stepStatus + " = ?, " + stepActionId + " = ?, " 
             + stepFinishDate + " = ?, " + stepCaller + " = ? WHERE " + stepEntryId + " = ? AND " + stepId + " = ?";
@@ -401,10 +412,11 @@ public class WorkflowStore extends JDBCWorkflowStore
             stmt.setInt(2, actionId);
             stmt.setTimestamp(3, new Timestamp(finishDate.getTime()));
             stmt.setString(4, caller);
+            
             stmt.setLong(5, step.getEntryId());
             stmt.setLong(6, step.getId());
             
-            stmt.executeUpdate();
+            stmt.executeUpdate();*/
 
             SimpleStep theStep = (SimpleStep) step;
             theStep.setActionId(actionId);
@@ -418,69 +430,70 @@ public class WorkflowStore extends JDBCWorkflowStore
         {
             throw new StoreException("Unable to mark step finished for #" + step.getEntryId(), e);
         }
-        finally 
+        /*finally 
         {
             cleanup(conn, stmt, null);
-        }
+        }*/
     }
     
     public void setEntryState(long id, int state) throws StoreException
     {
-        Connection conn = null;
-        PreparedStatement ps = null;
+        //Connection conn = null;
+        //PreparedStatement ps = null;
 
         try
         {
+        	UpdateCommand cmd = db.update(entryTable)
+              	                  .set(entryState, state);
+        	
             if(WorkflowEntry.COMPLETED == state || WorkflowEntry.KILLED == state)
-            {
-            	/*sql = "UPDATE " + entryTable + " SET " + entryState + " = ?,finishtime=? WHERE " + entryId + " = ?";
-            	Trace.write(Trace.Information, "setEntryState(Completed): %s,state=%d", sql,state);
-            	
-            	ps = conn.prepareStatement(sql);
-                ps.setInt(1, state);
-                ps.setTimestamp(2, new Timestamp((new Date()).getTime()));
-                ps.setLong(3, id);*/
-            	
+            {            	
+            	cmd.set("finishtime", new Date());            	
             	Trace.write(Trace.Information, "setEntryState: %s", (WorkflowEntry.KILLED == state)?"Killed":"Completed" );
             }
             else
-            {
-            	conn = getConnection();
-            	String sql = "UPDATE " + entryTable + " SET " + entryState + " = ? WHERE " + entryId + " = ?";            	
-            	Trace.write(Trace.Information, "setEntryState: %s,state=%d", sql,state);
-                
-                ps = conn.prepareStatement(sql);
-                ps.setInt(1, state);
-                ps.setLong(2, id);
-                ps.executeUpdate();
-            }            
-                        
+            {            	        
+            	Trace.write(Trace.Information, "setEntryState: %d", state);                               
+            }
+               
+            cmd.where(entryId+"=?",id)
+               .exec();
         }
         catch (SQLException e)
         {
             throw new StoreException("Unable to update state for workflow instance #" + id + " to " + state, e);
         }
-        finally
+        /*finally
         {
             cleanup(conn, ps, null);
-        }
+        }*/
     }
     
-    public WorkflowEntry createEntry(String workflowName) throws StoreException 
+    public WorkflowEntry createEntry(String workflowName) throws StoreException
+    {
+    	return createEntry(workflowName,null);
+    }
+    
+    public WorkflowEntry createEntry(String workflowName,Map inputs) throws StoreException 
     {
     	//Connection conn = null;    	
     	Model model = Model.from("process");
     	Record process = model.create(); 
     	process.set("status", WorkflowEntry.CREATED);
     	//process.save();
-    	return new IAPWorkflowEntry(process,workflowName);
+    	return new IAPWorkflowEntry(process,workflowName,inputs);
     }
     
     public WorkflowEntry findEntry(long theEntryId) throws StoreException
     {
+    	return findEntry(theEntryId,null);
+    }
+    
+    public WorkflowEntry findEntry(long theEntryId,Map inputs) throws StoreException
+    {
     	Model model = Model.from("process");
     	Record process = model.find(theEntryId);
-    	return new IAPWorkflowEntry(process);
+    	return new IAPWorkflowEntry(process,inputs);
     }
 }
 

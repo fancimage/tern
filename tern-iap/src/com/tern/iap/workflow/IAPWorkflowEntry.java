@@ -19,6 +19,7 @@ import com.tern.dao.Record;
 import com.tern.dao.RecordState;
 import com.tern.db.db;
 import com.tern.db.Database;
+import com.tern.iap.AppContext;
 import com.tern.iap.Operator;
 
 @SuppressWarnings("serial")
@@ -30,15 +31,18 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 	private Service service;
 	private Record  process;
 	
-	IAPWorkflowEntry(Record process)
+	IAPWorkflowEntry(Record process,Map inputs)
 	{
 		super(process.getId(),null,process.getInt("status"));
 		this.process = process;
+		if(inputs!=null) assign(inputs);
 	}
 	
-	IAPWorkflowEntry(Record process,String name)  //new
+	IAPWorkflowEntry(Record process,String name,Map inputs)  //new
 	{
 		super(0,name,process.getInt("status"));
+		this.process = process;
+		if(inputs!=null) assign(inputs);
 	}
 	
 	/*IAPWorkflowEntry(WorkflowEntry entry,Map<String,Object> vars) 
@@ -46,15 +50,15 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 		super(entry.getId(), entry.getWorkflowName(), entry.getState());			
 	}*/
 	
-	void assign(Map<String,Object> vars)
+	void assign(Map vars)
 	{
 		record = (Record)vars.get("data");
 		user = (Operator)vars.get("user");
 		service = (Service)vars.get("service");
 		
-		vars.remove("data");
-		vars.remove("user");
-		vars.remove("service");
+		//vars.remove("data");
+		//vars.remove("user");
+		//vars.remove("service");
 		
 		if(process.getState() == RecordState.New)
 		{
@@ -78,7 +82,23 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 		this.user = u;
 	}*/
 	
-	public Operator getUser(){return user;}
+	public String getWorkflowName()
+	{
+		if(null == this.workflowName)
+		{
+			this.workflowName = this.getService().getName();
+		}
+		return this.workflowName;
+	}
+	
+	public Operator getUser()
+	{
+		if(user == null)
+		{
+			user = AppContext.getCurrentOperator();
+		}
+		return user;
+	}
 	
 	public Record getData()
 	{
@@ -100,7 +120,15 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 		return process.getString("taskName");
 	}
 	
-	public Service getService(){return service;}	
+	public Service getService()
+	{
+		if(null == service)
+		{
+			int sid = process.getInt("tid");
+			service = Service.getService(sid);
+		}
+		return service;
+	}	
 	
 	public static void execsql(String sql)
     {    	

@@ -9,6 +9,8 @@ columns:
     - {name : price,type : numeric,caption : 价格 , scale : 2}
     - {name : clsID,type : numeric,caption : 种类}
     - {name : birthday,type : datetime,caption : 出生日期,format: "yyyy-MM-dd"}
+    - {name : isHealth,type : bool,caption : 是否健康}
+    - {name : sex,type : enum,caption : 性别, ref : gender}
     
 relations:
     - name: petclass

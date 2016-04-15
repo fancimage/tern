@@ -1,4 +1,6 @@
 (function(){
+//$('body').modalmanager('loading');
+	
 var tern_list = function(){
 	var $tern = new Tern();
 	
@@ -177,31 +179,15 @@ var Tern = function(){
 Tern.prototype.onModify = function(id){
 	if(id) var url=id+"/edit";
     else url="new";
-    	
-    $('#myModal .modal-header h3').html((id?this.string_update:this.string_new)+' <small>'+this.caption+'</small>');
-    	
-    $('#myModal .modal-body').html('<p>正在加载...</p>');
-	$('#myModal').modal('show');
-    $.get(this_url+url,function(data){            		
-    	$('#myModal .modal-body').html(data);
-    	//$('#myModal').modal('show');
-    		
-    	var $form = $('#myModal form');
-    	var act = $form.attr('action');
-    	if(act) act=this_url+act;
-    	else {
-    		if(id){            		            		
-    		    act=this_url+id+'/update';            		
-    	    } else {
-    		    act=this_url+'/create';
-    	    }
-    	}
-    	
-    	$form.attr('action',act);
-    },'html').error(function(){
-    	$('#myModal .modal-body').html('<p>请求页面失败!</p>');
-    	//$('#myModal').modal('show');
-    });
+	
+	/*有缓存?*/
+	var ran = (new Date()).getTime();
+	url += '?ran='+ran;
+	
+	var options = {};
+	options.title = (id?this.string_update:this.string_new)+' <small>'+this.caption+'</small>';
+	
+	modal.openURL(this_url+url,options);
 };
 
 Tern.prototype.onNew = Tern.prototype.onModify;

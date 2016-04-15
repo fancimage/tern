@@ -1,5 +1,9 @@
-.date input,.time input,.datetime input{
+.input-append input{
 	width:180px;
+}
+
+.enumbtn{
+	cursor:pointer;
 }
 
 .table A{

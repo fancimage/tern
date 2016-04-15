@@ -12,7 +12,7 @@
 </@>
 <@tern.override name="grid-detail">
   <tr>
-      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+      <td><input value='${item.id!!}' name="cb_record" type="checkbox"/></td>
       <#foreach col in model.columnList>
         <#if col.id>
         <#elseif col.belongsTo??>
@@ -28,6 +28,10 @@
 	    <a href="#del"><i class="icon-remove"></i></a>
      </td>
   </tr>
+</@>
+
+<@tern.override name="list-query">
+&nbsp;
 </@>
 
 <#include "/layout/list.html">

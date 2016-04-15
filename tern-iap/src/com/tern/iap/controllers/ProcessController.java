@@ -9,6 +9,8 @@
 
 package com.tern.iap.controllers;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +19,14 @@ import java.util.Map;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import com.opensymphony.workflow.loader.StepDescriptor;
 import com.opensymphony.workflow.loader.WorkflowDescriptor;
+import com.opensymphony.workflow.spi.Step;
 import com.tern.dao.Model;
+import com.tern.dao.NamedValue;
 import com.tern.dao.Record;
 import com.tern.dao.RecordSet;
 import com.tern.dao.RecordState;
+import com.tern.db.DataTable;
+import com.tern.db.RowMapper;
 import com.tern.db.db;
 import com.tern.iap.workflow.Service;
 import com.tern.iap.workflow.Workflow;
@@ -38,8 +44,17 @@ public class ProcessController extends Controller
 {	
 	private int sid;
 	
+	/*
+	 * Get all process(task) for service $sid
+	 * */
 	public String index()
 	{
+		if(config.isDebug())
+		{
+			com.tern.iap.Operator op = new com.tern.iap.Operator(1,"乔旭峰","qiao");
+			request.getSession().setAttribute("tern.operator", op);
+		}
+		
 		Service service = Service.getService(sid);
 		if(null == service)
 		{
@@ -75,14 +90,43 @@ public class ProcessController extends Controller
 		return String.format("service/%s/new", service.getName() );
 	}
 	
-	public String edit(long pid)
+	private static List<Map<String,Object>> getHistorySteps(long pid)
 	{
-		if(config.isDebug())
+		try 
 		{
-			com.tern.iap.Operator op = new com.tern.iap.Operator(1,"乔旭峰","qiao");
-			request.getSession().setAttribute("tern.operator", op);
+			return db.sql("select stepID,wfstep,actionid,stepName,owner,ownername,sDate,hDate,sstate,hDescription from wf_stepinfo where wfID=?"
+				,pid).query(new RowMapper<Map<String,Object>>(){
+
+					@Override
+					public Map<String, Object> map(ResultSet rs, int rowNum)
+							throws SQLException 
+					{
+						Map<String,Object> row = new HashMap<String,Object>();
+						row.put("stepID", rs.getInt("stepID"));
+						row.put("stepName", rs.getString("stepName"));
+						row.put("ownername", rs.getString("ownername"));
+						row.put("sstate", rs.getInt("sstate"));
+						
+						row.put("sDate", rs.getDate("sDate"));
+						row.put("hDate", rs.getDate("hDate"));
+						
+						row.put("actionid", rs.getInt("actionid"));
+						row.put("hDescription", rs.getString("hDescription"));
+						
+						return row;
+					}
+					
+				});
+		} 
+		catch (SQLException e)
+		{
+			Trace.write(Trace.Error, e, "query process history-steps.");
+			throw new ActionException( String.format("query process history-steps failed."));
 		}
-		
+	}
+	
+	public String edit(long pid)
+	{			
 		Service service = Service.getService(sid);
 		if(null == service)
 		{
@@ -95,7 +139,12 @@ public class ProcessController extends Controller
 		List tmp = Workflow.getInstance().getCurrentSteps(pid);
 		if(tmp != null && tmp.size() > 0 )
 		{
-			step = wd.getStep(Convert.parseInt(tmp.get(0)));
+			step = wd.getStep(Convert.parseInt( ((Step)tmp.get(0)).getStepId() ));
+		}
+		
+		if(null == step)
+		{
+			throw new ActionException( String.format("Process(%d,service=%s) has been completed!", pid ,service.getName() ));
 		}
 		
 		Model model = Model.from(service.getDataTableName());
@@ -118,23 +167,59 @@ public class ProcessController extends Controller
 			}
 		}
 		
+		//get system actions
+		List<NamedValue> sysActions = new ArrayList<NamedValue>();
+		NamedValue a = new NamedValue();
+		a.name = "退回";
+		a.value="back";
+		sysActions.add(a);
+		a = new NamedValue();
+		a.name = "撤回";
+		a.value="restart";
+		sysActions.add(a);
+		a = new NamedValue();
+		a.name = "否决";
+		a.value="reject";
+		sysActions.add(a);
+		
+		//history steps
+		//DataTable history = null;
+		List<Map<String,Object>> history = getHistorySteps(pid);
+		
 		request.setAttribute("model",  model);
 		request.setAttribute("record", record);
 		request.setAttribute("service",service);
 		request.setAttribute("step",step);
 		request.setAttribute("actions",actions);
+		request.setAttribute("sysactions",sysActions);
+		request.setAttribute("history",history);
+		
+		return String.format("service/%s/edit", service.getName() );
+	}
+	
+	@Route("%1/detail")
+	public String detail(long pid)
+	{
+		Service service = Service.getService(sid);
+		if(null == service)
+		{
+			throw new ActionException( String.format("Service(%d) does not exists.", sid));
+		}
+		
+		Model model = Model.from(service.getDataTableName());
+		Record record = model.find(pid);
+		List<Map<String,Object>> history = getHistorySteps(pid);
+		
+		request.setAttribute("model",  model);
+		request.setAttribute("record", record);
+		request.setAttribute("service",service);
+		request.setAttribute("history",history);
 		
 		return String.format("service/%s/edit", service.getName() );
 	}
 	
 	public void create()
-	{
-		if(config.isDebug())
-		{
-			com.tern.iap.Operator op = new com.tern.iap.Operator(1,"乔旭峰","qiao");
-			request.getSession().setAttribute("tern.operator", op);
-		}
-		
+	{			
 		//create new process
 		//1. get service info
 		Service service = Service.getService(sid);
@@ -164,11 +249,14 @@ public class ProcessController extends Controller
 		    if(pid <= 0)
 		    {
 		        db.rollback();
+		        writeResult(103,"内部错误：建立流程失败.");
 		    }
-		    		    
-		    record.save();
-		    
-		    db.commit();
+		    else
+		    {
+		    	record.save();
+		    	db.commit();
+		    	writeResult(0,null);
+		    }		    
 		}
 		catch(com.tern.dao.ValueException e)
 		{
@@ -229,13 +317,18 @@ public class ProcessController extends Controller
 			db.transaction();
 		    record.save();
 		    
+		    record = model.find(pid);
+		    
 		    Map<String,Object> inputs = new HashMap<String,Object>();
 		    inputs.put("wfName", service.getName());
 	    	inputs.put("data", record);
 	    	inputs.put("service", service);
+	    	inputs.put("suggest", request.getParameter("actionSuggest"));
 		    
 		    //fetch process	    	
 		    Workflow.getInstance().doAction(pid, actionID ,inputs);
+		    
+		    //actionSuggest
 		    db.commit();
 		    
 		    writeResult(0,null);
