@@ -14,6 +14,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.tern.util.Trace;
+import com.tern.util.config;
 import com.tern.web.Controller;
 import com.tern.web.Route;
 
@@ -208,9 +210,16 @@ public class ControllerWrapper
         		_path.extraStatic = extra_path;
         		
         	    actionPaths.addPath(_path);
+        	    
+        	    /*if(config.isDebug())
+           	    {
+           	    	Trace.write(Trace.Information, "method[%s]:%s", method.toString(), _path);
+           	    }*/
         	}
         	catch(IOException e)
 			{
+        		Trace.write(Trace.Error, e, "controller[%s] method[%s] parsed failed:%s",
+        				this.target.toString(),method.toString(),path);
 			}
         }
     }

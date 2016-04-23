@@ -31,33 +31,36 @@ insert into tn_enums values(12,'nation','008','彝族');
 create table iap_entities
 (
     eid int primary key,
-    ename varchar2(32) not null,
-    ecaption varchar2(64) not null,
-    repr  varchar2(16),
+    ename varchar(32) not null,
+    tablename varchar(32) not null,
+    ecaption varchar(64) not null,
+    repr  varchar(16),
     creator number(26),
     createtime date,
     inherit int,
     estatus int default 0  --状态:0-设计中  1-使用中   (2--已经存在数据,暂时不用)
 );
 
+create unique index iap_entities_name on iap_entities(ename);
+
 create table iap_columns
 (
     cid int primary key,
     eid int not null,
-    cname  varchar2(32) not null,
-    ccaption varchar2(32) not null,
-    ctype  varchar2(12) not null,
+    cname  varchar(32) not null,
+    ccaption varchar(32) not null,
+    ctype  varchar(12) not null,
     nullable number(1) default 1,
     auto     number(1) default 0,
     iskey    number(1) default 0,
     readonly number(1) default 0,
     cmax     int default 0,
     cmin     int default 0,
-    format   varchar2(32),
+    format   varchar(32),
     clength  int default 0,
     scale    int default 0,
-    cref     varchar2(32),
-    cdefault varchar2(64),
+    cref     varchar(32),
+    cdefault varchar(64),
     csort    int default 0,   --显示顺序
     cstatus  int default 0,   --状态:0-设计中  1-使用中  2--已经存在数据
     foreign KEY(eid) REFERENCES iap_entities(eid)
@@ -69,9 +72,9 @@ create table iap_relations
 (
     rid   int primary key,
     eid   int not null,
-    rcaption varchar2(32),
+    rcaption varchar(32),
     rref  int not null,
-    rmode varchar2(8) default 'have',
+    rmode varchar(8) default 'have',
     foreign KEY(eid) REFERENCES iap_entities(eid),
     foreign KEY(rref) REFERENCES iap_entities(eid)
 );

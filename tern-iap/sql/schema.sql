@@ -48,14 +48,14 @@ CREATE TABLE wf_stepinfo(
 );
 
 ALTER TABLE wf_stepinfo ADD  CONSTRAINT FK_WF_STEPI_REFERENCE_WF_TASK FOREIGN KEY(wfID)
-REFERENCES wf_task (wfID);	
+REFERENCES wf_process (wfID);	
 
-create table wf_prestep(
-    wfID int NOT NULL,
-	stepID int NOT NULL,
-	preStep int not NULL,
-	primary key(wfID,stepID,preStep)
-);
+--create table wf_prestep(
+--    wfID int NOT NULL,
+--	stepID int NOT NULL,
+--	preStep int not NULL,
+--	primary key(wfID,stepID,preStep)
+--);
 
 CREATE TABLE OS_PROPERTYENTRY
 (

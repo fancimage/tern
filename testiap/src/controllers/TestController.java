@@ -12,6 +12,7 @@ package controllers;
 import com.tern.util.Trace;
 import com.tern.web.Controller;
 import com.tern.web.HttpStream;
+import com.tern.web.Route;
 
 public class TestController extends Controller
 {
@@ -32,5 +33,17 @@ public class TestController extends Controller
     	
     	session.setAttribute("val", "很高兴！");
     	request.setAttribute("val", "greate!");
+    }
+    
+    @Route("/op1/$1?")
+    public void optional1(String s)
+    {
+    	getStream().append("params:" + s);
+    }
+    
+    @Route("/op2/$1?")
+    public void optional2(boolean s)
+    {
+    	getStream().append("params:" + s);
     }
 }

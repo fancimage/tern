@@ -1,0 +1,40 @@
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+      <#foreach col in model.columnList>
+        <#if col.id>
+        <#elseif col.belongsTo??>
+           <td>${(item[col.belongsTo.name])!}</td>
+        <#elseif col.type=='Bool'>
+           <td>${(item[col.name]?string('是','否'))!}</td>
+        <#else>
+           <td>${(item[col.name])!}</td>
+       </#if>
+      </#foreach>           	 
+      <td>
+        <a href="#modify"><i class="icon-edit"></i></a>
+	    <a href="#del"><i class="icon-remove"></i></a>
+	    <a href="#detail"><i class="icon-th-list"></i></a>	    
+     </td>
+  </tr>
+</@>
+
+<@tern.override name="list-query">
+  <@tern.query name="query" source=records class="form-inline">
+    <@tern.search name="ename"/>
+    <@tern.search name="ecaption"/></li>    
+    <button class="btn" id="btnSearch">查询</button>
+  </@>      
+</@>
+
+<#include "/model/index.html">
+
+<script language="javascript">
+    $(function(){
+       $tern.onCommand = function(name,id){
+	       if(name == '#detail'){
+	           window.location.href = '${HOME}columns/${appName}/'+id;
+	       }
+	   }
+    });	
+</script>

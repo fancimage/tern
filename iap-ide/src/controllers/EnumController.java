@@ -9,25 +9,26 @@
 
 package controllers;
 
-import com.tern.dao.Model;
 import com.tern.dao.Record;
 import com.tern.dao.RecordSet;
-import com.tern.util.Convert;
 import com.tern.util.Trace;
-import com.tern.util.config;
 import com.tern.util.html;
-import com.tern.web.Controller;
-import com.tern.web.HttpStream;
 import com.tern.web.Route;
 
-@Route("/enumtype/$etype/enum/*")
-public class EnumController extends Controller
+@Route("/enum/$appName/$etype/*")
+public class EnumController extends DataResourceController
 {
 	private String etype;
-	protected Model model = Model.from("enum");
 	
+	public EnumController()
+	{
+		this.modelName = "enum";
+	}
+	
+	@Override
 	public String index()
 	{
+		model = this.getModel();
 		RecordSet records = model.query("A.etype=?" , etype).joinAll();
 		
 		request.setAttribute("model", model);
@@ -36,28 +37,10 @@ public class EnumController extends Controller
 		return "enum/index";
 	}
 	
-	public void delete()
-	{
-		String ids = request.getParameter("items");
-		if(ids==null || ids.length()<=0)
-		{
-			writeResult(1,null);
-			return;
-		}
-		
-		String[] arr = ids.split(",");
-	    if(arr.length<=0)
-	    {
-	    	writeResult(1,null);
-	    	return;
-	    }
-	    
-	    model.delete(arr);	    
-	    writeResult(0,null);
-	}
-	
 	public void create()
 	{
+		model = this.getModel();
+		
 		try
 		{
 		    Record record = html.new_record(model, request);
@@ -79,6 +62,8 @@ public class EnumController extends Controller
 	
 	public void update(int id)
 	{
+		model = this.getModel();
+		
 		try
 		{
 		    Record record = html.update_record(model, request);
@@ -99,6 +84,8 @@ public class EnumController extends Controller
 	
 	public String _new()
 	{		
+		model = this.getModel();
+		
 		Record record = model.create(); //new	
 		record.set("etype", etype);
 		
@@ -107,33 +94,4 @@ public class EnumController extends Controller
 		
 		return "enum/edit";
 	}
-	
-	public String edit(int id)
-	{		
-		Record record = model.find(id); //retrive
-		request.setAttribute("model", model);
-		request.setAttribute("record", record);
-		
-		return "enum/edit";
-	}
-	
-	protected void writeResult(int result,String err)
-    {
-        this.setContentType("text/javascript");
-        this.response.setCharacterEncoding(config.getEncoding());
-        
-        HttpStream out = this.getStream();
-        out.append("{\"code\":").append(String.valueOf(result));
-        
-        if(0 != result && err != null)
-        {
-        	if(err.indexOf('\n') >= 0)
-        	{
-        		err = Convert.replaceAll(err, "\n", "\\n");
-        	}
-            out.append(",\"message\":\"").append(err).append("\"");
-        }
-        
-        out.append("}");
-    }
 }

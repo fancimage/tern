@@ -10,7 +10,8 @@ var tern_list = function(){
 	
 	$('#enTable A').click(function(){
 		var name = $(this).attr('href');
-		var $cb = $(this).parent().parent().find('input[name=cb_record]');
+		//$(this).parent().parent().find('input[name=cb_record]');
+		var $cb = $tern.getId($(this).parent().parent());
         if(name == '#del'){
         	if(confirm('您确实要删除选这条记录吗?')){
         		$tern.onDelete( $cb );                		
@@ -18,7 +19,7 @@ var tern_list = function(){
         } else if(name == '#modify'){
         	$tern.onModify($cb.val());
         } else {
-        	$tern.onCommand(name,$cb.val());
+        	$tern.onCommand(name,$cb.val(),$cb);
         }
 	});
 	
@@ -36,22 +37,6 @@ var tern_list = function(){
             alert('请先选择要操作的数据。');
         }
 	});        	        	
-	
-    $('#btnSave').click(function(){
-    	var $frm = $('#editFrm');
-    	if($frm.length<=0) $frm = $('#datafrm');
-    	$.post($frm.attr('action'),$frm.serialize(),function(result){
-    		if(0 == result.code){
-    			window.location.reload();
-    		} else if(result.message){
-    			frm_alert($frm.parent(),result.message);
-        	} else {
-        		frm_alert($frm.parent(),'操作失败，errcode='+result.code);
-        	}
-    	},'json').error(function(){
-    		alert('操作失败！');
-    	});            	
-    });
     
     $('#btnNew').click(function(){
     	$tern.onNew();
@@ -184,11 +169,31 @@ Tern.prototype.onModify = function(id){
 	var ran = (new Date()).getTime();
 	url += '?ran='+ran;
 	
-	var options = {};
+	var options = {minWidth:768,minHeight:100};
 	options.title = (id?this.string_update:this.string_new)+' <small>'+this.caption+'</small>';
 	
 	modal.openURL(this_url+url,options);
 };
+
+Tern.prototype.getId = function($row,pos){
+	if(!$row || $row.length<=0){
+		$row = $('#enTable').find('tr:first');
+		pos = null;
+	}
+	
+	if(pos == 'prev'){
+		$row = $row.prev();
+	} else if(pos == 'next'){
+		$row = $row.next();
+	}
+	
+	var $id = $row.find('input[name=cb_record]');
+	if($id.length <= 0){
+		$id = $row.find('input[data-id=true]');
+	}
+	
+	return $id;
+}
 
 Tern.prototype.onNew = Tern.prototype.onModify;
 Tern.prototype.onCommand = function(){}

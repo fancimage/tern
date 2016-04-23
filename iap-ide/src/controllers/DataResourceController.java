@@ -9,10 +9,27 @@
 
 package controllers;
 
+import com.tern.dao.Model;
+import com.tern.iap.AppContext;
 import com.tern.iap.util.DataController;
+import com.tern.web.ControllerException;
 import com.tern.web.Route;
 
-@Route("/data/$modelName/*")
+@Route("/data/$appName/$modelName/*")
 public class DataResourceController extends DataController
 {	
+	private String appName;
+	
+	@Override
+	protected Model getModel()
+	{
+		AppContext ctx = AppContext.getAppContext(appName);
+		if(ctx == null || ctx.getMetaDB() == null)
+		{
+			throw new ControllerException(this,"app:"+appName+"不存在或未配置元数据库。");
+		}
+		
+		this.request.setAttribute("appName", appName);
+		return Model.from(modelName , ctx.getMetaDB());		
+	}
 }

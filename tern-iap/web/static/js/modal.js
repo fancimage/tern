@@ -11,14 +11,14 @@ Modal.prototype.popContent = function(content,options){
     options = $.extend({title:'提示'},options);
     var tmpl = [
         // tabindex is required for focus
-        '<div class="modal hide fade" tabindex="-1">',
+        '<div class="modal fade" tabindex="-1"><div class="modal-dialog"><div class="modal-content">',
            '<div class="modal-header">',
             '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>',
             '<h3>'+options.title+'</h3>', 
            '</div>',
            '<div class="modal-body">',             
            '</div>',           
-        '</div>'
+        '</div></div></div>'
     ].join('');
 	
     var jq = this.top.$;
@@ -40,10 +40,25 @@ Modal.prototype.popContent = function(content,options){
 		element.append(footer);
 	}
     
+    var eleContent = element.find('.modal-content');
+    if(options.minWidth && eleContent.width() < options.minWidth+30)
+    {
+    	//eleContent.width(options.minWidth+30);
+    	eleContent.css('min-width',(options.minWidth+30)+'px');
+    }
+    
+    var extraHeight = 140;
+    if(options.minHeight && eleContent.height() < options.minHeight+extraHeight)
+    {
+    	//eleContent.height(options.minHeight);
+    	eleContent.css('min-height',(options.minHeight+extraHeight)+'px');
+    }
+    
     var stack = this.stack;
 	stack.push(element);
 	element.on('hidden.bs.modal',function(){
 	    stack.pop();
+	    element.remove();
 	});
 	
 	if(options.onshown){
@@ -61,12 +76,10 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 	options = $.extend({autoSize:true},options);
 	
 	var jq = this.top.$;
-	var iframe = jq('<iframe></iframe>').prop('frameborder','0');
+	var iframe = jq('<iframe></iframe>').prop('frameborder','0').prop('src',url);
 	if(options.width || options.height){
 	    if(options.width) iframe.css('width',width+'px');
-	    if(options.height) iframe.css('height',height+'px');
-	    
-	    iframe.prop('src',url);
+	    if(options.height) iframe.css('height',height+'px');	    
 	} else if(options.autoSize) {
 	    /*自适应*/
 		iframe.bind('load',function(){
@@ -79,12 +92,18 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 			if(h < iframe.height()) h = iframe.height();
 			if(w > win.screen.width-100) w = win.screen.width-100;
 			if(h > win.screen.height-50) h = win.screen.height-50;
+			
+			if(options.minWidth && w<options.minWidth) w = options.minWidth;
+			//if(options.minHeight && h<options.minHeight) h = options.minHeight;
 			iframe.width(w).height(h);
 		});
 		
 		var bak = options.onshown;
-		options.onshown = function(){	
-			iframe.prop('src',url);
+		options.onshown = function(){
+			if(options.minWidth && iframe.width()<options.minWidth)
+			{
+				iframe.width(options.minWidth);
+			}
 			
 			if(iframe.width() < iframe.parent().width()-10){
 				iframe.width(iframe.parent().width()-10);

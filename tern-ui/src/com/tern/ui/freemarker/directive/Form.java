@@ -122,7 +122,8 @@ public class Form implements TemplateDirectiveModel
 				if(fields.size() <=5 && (css==null || !css.equals("form-horizontal")) )
 				{
 					frender = new VLayoutRender(env,record);
-					out.append(">\n<fieldset>\n");					
+					//out.append(">\n<fieldset>\n");
+					out.append(">\n");
 				}
 				else
 				{
@@ -130,7 +131,8 @@ public class Form implements TemplateDirectiveModel
 					{
 						out.append(" class=\"form-horizontal\"");
 					}
-					out.append(">\n<fieldset>\n");
+					//out.append(">\n<fieldset>\n");
+					out.append(">\n");
 					frender = new HLayoutRender(env,record);
 				}
 				
@@ -171,7 +173,8 @@ public class Form implements TemplateDirectiveModel
 				Column[] cols = model.getColumnList();
 				if(cols.length <=5 && (css==null || !css.equals("form-horizontal")) )
 				{			
-					out.append(">\n<fieldset>\n");
+					//out.append(">\n<fieldset>\n");
+					out.append(">\n");
 					frender = new VLayoutRender(env,record);
 				}
 				else
@@ -180,7 +183,8 @@ public class Form implements TemplateDirectiveModel
 					{
 						out.append(" class=\"form-horizontal\"");
 					}
-					out.append(">\n<fieldset>\n");					
+					//out.append(">\n<fieldset>\n");
+					out.append(">\n");
 					frender = new HLayoutRender(env,record);
 				}
 				
@@ -194,7 +198,7 @@ public class Form implements TemplateDirectiveModel
 				}
 			}
 			
-			out.append("</fieldset>\n");
+			//out.append("</fieldset>\n");
 		}
 		else
 		{
@@ -235,17 +239,17 @@ public class Form implements TemplateDirectiveModel
 			out.append("<script language=\"javascript\">\n");
 			if((frender.style & FieldRender.STYLE_DATE)!=0 )
 			{
-				out.append("$('.date').datetimepicker({pickTime:false});\n");
+				out.append("$('.date').datetimepicker({locale:'zh_cn'});\n"); //,pickTime:false
 			}
 			
 			if((frender.style & FieldRender.STYLE_TIME)!=0)
 			{
 				//out.append("$('.bootstrap-timepicker input').timepicker({template: false,showSeconds: true,showInputs: false,minuteStep: 1});\n");
-				out.append("$('.time').datetimepicker({pickDate:false});\n");
+				out.append("$('.time').datetimepicker({locale:'zh_cn'});\n");//,pickDate:false
 				
 				if((frender.style & FieldRender.STYLE_DATE)!=0 )
 				{
-					out.append("$('.datetime').datetimepicker();\n");
+					out.append("$('.datetime').datetimepicker({locale:'zh_cn'});\n");
 				}
 			}
 			

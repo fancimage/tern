@@ -16,11 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.tern.db.Database;
 import com.tern.db.DeleteCommand;
 import com.tern.db.InsertCommand;
 import com.tern.db.UpdateCommand;
 import com.tern.db.db;
 import com.tern.util.Convert;
+import com.tern.util.TernContext;
 import com.tern.util.Trace;
 
 //表示一行数据
@@ -121,7 +123,17 @@ public class Record implements Map<String,Object>,IRow
 		Object obj = get(key);
 		if(null == obj) return def;
 		else if(obj instanceof Integer) return (Integer)obj;
-		else return Integer.parseInt(obj.toString());
+		else 
+		{
+		    try
+		    {
+		    	return Integer.parseInt(obj.toString());
+		    }
+		    catch(Throwable t)
+		    {
+		    	return def;
+		    }
+		}
 	}
 	
 	public String getString(String key)
@@ -265,7 +277,8 @@ public class Record implements Map<String,Object>,IRow
 		{
 			if(this.state == RecordState.New)
 			{
-				return null;
+				if(col.type == DataType.Bool) return false;
+				else return null;
 			}
 			else
 			{
@@ -440,7 +453,18 @@ public class Record implements Map<String,Object>,IRow
 		{
 			if(col.nullable)
 			{
-				return val;
+				if(DataType.Numeric == col.type)
+				{
+					return null;
+				}
+				else if(DataType.Bool == col.type)
+				{
+					return false;
+				}
+				else
+				{
+				    return val;
+				}
 			}
 		}
 		
@@ -1038,12 +1062,13 @@ public class Record implements Map<String,Object>,IRow
 	}
 
 	private static String enumSql = "select ecaption from tn_enums where eid=?";
-	private static java.util.HashMap<Integer, String> enumMap=new java.util.HashMap<Integer, String>();
+	//private static java.util.HashMap<Integer, String> enumMap=new java.util.HashMap<Integer, String>();
 	public static NamedValue getEnumValue(Model m,Object v)
 	{
 		int enumID = Convert.parseInt(v);
 		
 		//枚举值缓存中是否有此值
+		java.util.HashMap<Integer, String> enumMap = TernContext.current().getEnumCache();
 		String ret = enumMap.get(enumID);
 		if(ret != null)
 		{
@@ -1053,9 +1078,15 @@ public class Record implements Map<String,Object>,IRow
 			return nv;
 		}
 		
+		Database metadb = TernContext.current().getMetaDB();
+		if(null == metadb)
+		{
+			metadb = m.db;
+		}
+		
 		try
 		{
-		    ret = m.db.sql(enumSql,enumID).queryString();
+		    ret = metadb.sql(enumSql,enumID).queryString();
 		}
 		catch(Exception e)
 		{

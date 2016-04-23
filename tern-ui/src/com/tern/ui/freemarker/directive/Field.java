@@ -187,11 +187,11 @@ class FieldRender
 		{
 			/*判断枚举值的个数，如果小于4则直接按单选框展示?*/
 			NamedValue v = (NamedValue)r.get(col.getName());
-			out.append("<div class=\"input-append\"><input type=\"text\" value=\"")
-			   .append(v==null?"":v.getName()).append("\"><input type=\"hidden\" value=\"")
+			out.append("<div class=\"input-group\"><input type=\"text\" value=\"")
+			   .append(v==null?"":v.getName()).append("\" class=\"form-control\"><input type=\"hidden\" value=\"")
 			   .append(v==null?"":v.getValue()).append("\" name=\"").append(col.getName())
 			   .append("\" data-type=\"").append(col.getEnum())
-			   .append("\"><span class=\"add-on enumbtn\"><i class=\"icon-folder-open\"></i></span></div>");
+			   .append("\"><div class=\"input-group-addon enumbtn\"><i class=\"icon-folder-open\"></i></div></div>");
 			
 			style |= STYLE_ENUM;
 		}
@@ -199,15 +199,15 @@ class FieldRender
 		{
 			boolean v = r.getBoolean(col.getName());
 			
-			out.append("<div class=\"boolean\"><span><input type=\"radio\" name=\"").append(col.getName());
+			out.append("<div class=\"radio\"><label><input type=\"radio\" name=\"").append(col.getName());
 			out.append("\" value=\"true\"");
 			if(v) out.append("checked");
-			out.append(">是</span>");
+			out.append(">是</label>");
 			
-			out.append("<span><input type=\"radio\" name=\"").append(col.getName());
+			out.append("<label><input type=\"radio\" name=\"").append(col.getName());
 			out.append("\" value=\"false\"");
 			if(!v) out.append("checked");
-			out.append(">否</span></div>");
+			out.append(">否</label></div>");
 		}
 		else if(type == DataType.Datetime)
 		{
@@ -248,7 +248,7 @@ class FieldRender
 			out.append("\"");
 			
 			if(attrs != null) out.append(' ').append(attrs);
-			out.append(">");
+			out.append(" class=\"form-control\">");
 		}
 	}
 	
@@ -266,9 +266,14 @@ class FieldRender
 			   .append(val).append("\" readonly>\n<span class=\"add-on\"><i class=\"icon-calendar\"></i></span>\n")
 			   .append("</div>\n");*/
 			
-			out.append("<div class=\"input-append date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			/*out.append("<div class=\"input-append date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
 			   .append("\" type=\"text\" value=\"")
 			   .append(val).append("\">\n<span class=\"add-on\"><i data-time-icon=\"icon-time\" data-date-icon=\"icon-calendar\"></i></span>\n")
+			   .append("</div>\n");*/
+			
+			out.append("<div class=\"input-group date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			   .append("\" type=\"text\" class=\"form-control\" value=\"")
+			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-calendar\"></i></div>\n")
 			   .append("</div>\n");
 			
 			style |= STYLE_DATE;
@@ -280,9 +285,9 @@ class FieldRender
 			   .append(col.getName()).append("\" type=\"text\" class=\"input-small\">\n")
 			   .append("<i class=\"icon-time\"></i>\n</div>");*/
 			
-			out.append("<div class=\"input-append time\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
-			   .append("\" type=\"text\" value=\"")
-			   .append(val).append("\">\n<span class=\"add-on\"><i data-time-icon=\"icon-time\" data-date-icon=\"icon-calendar\"></i></span>\n")
+			out.append("<div class=\"input-group time\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			   .append("\" type=\"text\" class=\"form-control\" value=\"")
+			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-time\"></i></div>\n")
 			   .append("</div>\n");
 			
 			style |= STYLE_TIME;
@@ -302,9 +307,9 @@ class FieldRender
 			out.append("<div class=\"bootstrap-timepicker\">\n<input name=\"")
 			   .append(col.getName()).append("\" type=\"text\" class=\"input-small\">\n")
 			   .append("<i class=\"icon-time\"></i>\n</div>");*/
-			out.append("<div class=\"input-append datetime\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
-			   .append("\" type=\"text\" value=\"")
-			   .append(val).append("\">\n<span class=\"add-on\"><i data-time-icon=\"icon-time\" data-date-icon=\"icon-calendar\"></i></span>\n")
+			out.append("<div class=\"input-group datetime\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			   .append("\" type=\"text\" class=\"form-control\" value=\"")
+			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-calendar\"></i></div>\n")
 			   .append("</div>\n");
 		}
 	}
@@ -317,7 +322,7 @@ class FieldRender
 		
 		out.append("<select name=\"").append(col.getName()).append("\"");
 		if(attrs != null) out.append(' ').append(attrs);
-		out.append(">\n");
+		out.append(" class=\"form-control\">\n");
 		
 		//options
 		String key = relation.maped(col.getName());
@@ -376,10 +381,10 @@ class HLayoutRender extends FieldRender
 	
 	public void render(Column col,boolean readonly,String attrs) throws IOException,TemplateException
 	{
-		out.append("<div class=\"control-group\">\n");
-		out.append("<label class=\"control-label\">").append(col.getCaption()).append("</label>\n");
+		out.append("<div class=\"form-group\">\n");
+		out.append("<label class=\"control-label col-sm-2\">").append(col.getCaption()).append("</label>\n");
 		
-		out.append("<div class=\"controls\">\n");
+		out.append("<div class=\"col-sm-4\">\n");
 		
 		super.render(col, readonly,attrs);
 		

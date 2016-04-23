@@ -12,6 +12,7 @@ package com.tern.iap;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
+import com.tern.db.Database;
 import com.tern.util.TernContext;
 import com.tern.web.Template;
 import com.tern.web.routes.RouteSet;
@@ -23,6 +24,7 @@ public class AppContext extends TernContext
 	String appName;
 	RouteSet router;
 	Template template;
+	Database metadb;
 	
 	public AppContext(String name,String path)
 	{
@@ -49,6 +51,9 @@ public class AppContext extends TernContext
 		return router;
 	}
 	
+	@Override
+	public Database getMetaDB(){return metadb;}
+	
 	public String getApplicationName()
 	{
 		return appName;
@@ -63,6 +68,11 @@ public class AppContext extends TernContext
     {
     	return contextPath;
     }
+	
+	public static AppContext getAppContext(String name)
+	{
+		return (AppContext)Application.appContexts.get(name);
+	}
 	
 	public static String getCurrentAppName()
 	{
@@ -149,4 +159,7 @@ class ProxyContext extends TernContext
     {
 		return proxy().getContextPath();
     }
+	
+	@Override
+	public Database getMetaDB(){return proxy().metadb;}
 }

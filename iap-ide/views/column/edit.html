@@ -1,0 +1,167 @@
+<@tern.override name="editfrm">
+  <@tern.form record=record auto=false class="form-horizontal" role="form">
+   <div class="form-group">
+          <label class="control-label col-sm-2" for="cname">字段名</label>
+          <div class="col-sm-4">          	
+              <@tern.field name="cname" class="form-control"/>
+          </div>
+   </div>
+   <div class="form-group">
+          <label class="control-label col-sm-2">标题</label>
+          <div class="col-sm-4">          	
+              <@tern.field name="ccaption" class="form-control"/>
+          </div>
+   </div>
+   <div class="form-group">
+          <label class="control-label col-sm-2">数据类型</label>
+          <div class="col-sm-4">          	
+              <select id="datatype" name="datatype" class="form-control">
+                  <option value="string">字符串</option>
+                  <option value="integer">整数</option>
+                  <option value="numeric">小数</option>
+                  <option value="id">ID</option>
+                  <option value="bool">布尔值</option>
+                  <option value="datetime">日期时间</option>
+                  <option value="enum">枚举值</option>
+                  <option value="text">文本</option>
+                  <option value="binary">二进制(文件)</option>
+                  <option value="image">图片</option>
+              </select>
+              <input type="hidden" name="ctype" id="ctype" value="${record.ctype!'string'}">
+          </div>
+   </div>
+   <div class="form-group" id="cbs">
+          <label class="control-label col-sm-2">属性</label>        
+          <div class="checkbox col-sm-4">  
+                <label id="cb_nullable"><input type="checkbox" value="">可空?<input type="hidden" name="nullable" value="${record.nullable?string('true','false')}"></label>
+                <label id="cb_readonly"><input type="checkbox" value="">只读?<input type="hidden" name="readonly" value="${record.readonly?string('true','false')}"></label>
+                <label id="cb_auto"><input type="checkbox" value="">自增?<input type="hidden" name="auto" value="${record.auto?string('true','false')}"></label>
+                <label id="cb_iskey"><input type="checkbox" value="">主键?<input type="hidden" name="iskey" value="${record.iskey?string('true','false')}"></label>
+          </div>     
+   </div>
+   
+   <div class="form-group" id="strLen" style="display:none">
+          <label class="control-label col-sm-2">长度</label>
+          <div class="input-group col-sm-4" style="padding-left:15px;padding-right:15px">
+              <input id="strLenMin" type="text" placeholder="0" value="${(record.cmin)!}" class="form-control">               
+              <div class="input-group-addon">到</div>
+              <input id="strLenMax" type="text" value="${(record.cmax)!}" class="form-control">   
+          </div>
+   </div>
+   
+   <div class="form-group" id="numberVal" style="display:none">
+          <label class="control-label col-sm-2">取值范围</label>
+          <div class="col-sm-4 input-group" style="padding-left:15px;padding-right:15px">
+              <input id="minVal" type="text" value="${(record.cmin)!}" class="form-control"> 
+              <div class="input-group-addon">到</div>
+              <input id="maxVal" type="text" value="${(record.cmax)!}" class="form-control">   
+          </div>
+          
+          
+          <input type="hidden" id="cmin" name="cmin" value="${(record.cmin)!}">
+          <input type="hidden" id="cmax" name="cmax" value="${(record.cmax)!}">
+   </div>
+   
+   <div class="form-group" id="numScale" style="display:none">
+          <label class="control-label col-sm-2">小数位数</label>
+          <div class="col-sm-4">
+              <@tern.field name="scale" class="form-control"/>
+          </div>
+   </div>
+   
+   <div class="form-group" id="dateFormate" style="display:none">
+          <label class="control-label col-sm-2">格式</label>
+          <div class="col-sm-4">
+              <@tern.field name="format" class="form-control"/>
+          </div>
+   </div>
+   
+   <div class="form-group" id="enumRef" style="display:none">
+          <label class="control-label col-sm-2">格式</label>
+          <div class="col-sm-4">
+              <@tern.field name="cref" class="form-control"/>
+          </div>
+   </div>
+       
+  </@>
+</@>
+<#include "/model/edit.html">
+<script>
+    $(function(){
+        var ctype = '${record.ctype!""}';
+        var scale = ${record.scale!0};
+        if('' == ctype) ctype='string';
+        else if('numeric' == ctype && scale==0) ctype="integer";
+                        
+        $('#datatype').on('change',function(){         
+            typeChange($(this).val());            
+        }).val(ctype);
+        
+        typeChange(ctype);
+        
+        initcb($('#cb_nullable'));
+        initcb($('#cb_readonly'));
+        initcb($('#cb_auto'));
+        initcb($('#cb_iskey'));
+        
+        $('#strLenMin').change(function(){
+             $('#cmin').val($(this).val());
+        });
+        $('#strLenMax').change(function(){
+             $('#cmax').val($(this).val());
+        });
+        $('#minVal').change(function(){
+             $('#cmin').val($(this).val());
+        });
+        $('#maxVal').change(function(){
+             $('#cmax').val($(this).val());
+        });
+    });
+    
+    function typeChange(type){
+        $('#strLen').hide();
+        $('#numberVal').hide();
+        $('#numScale').hide();
+        $('#dateFormate').hide();
+        $('#enumRef').hide();
+        
+        $('#cb_auto').hide();
+        $('#cb_iskey').show();
+        
+        $('#ctype').val(type=='integer'?'numeric':type);
+        
+        if('integer' == type){
+            $('#numberVal').show();
+             $('#cmin').val($('#minVal').val());
+             $('#cmax').val($('#maxVal').val());
+        } else if('numeric' == type){
+            $('#numberVal').show();
+            $('#numScale').show();
+            $('#cmin').val($('#minVal').val());
+            $('#cmax').val($('#maxVal').val());
+        } else if('datetime' == type){
+            $('#dateFormate').show();
+        } else if('enum' == type){
+            $('#enumRef').show();
+        }else if('string' == type){
+            $('#strLen').show();
+            $('#cmin').val($('#strLenMin').val());
+            $('#cmax').val($('#strLenMax').val());
+        }else if('id' == type){
+            $('#cb_auto').show();
+            $('#cb_iskey').hide();
+        }
+    }
+    
+    function initcb($cb){
+        var cb = $cb.find('input[type=checkbox]');
+        if($cb.find('input[type=hidden]').val() == 'true'){
+            cb.prop("checked","checked")
+        }
+        
+        cb.on('click',function(){
+            if(cb.is(':checked')) $cb.find('input[type=hidden]').val('true');
+            else $cb.find('input[type=hidden]').val('false');
+        });
+    }
+</script>    

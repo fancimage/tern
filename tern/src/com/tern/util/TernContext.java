@@ -9,8 +9,11 @@
 
 package com.tern.util;
 
+import java.util.HashMap;
+
 import javax.servlet.ServletContext;
 
+import com.tern.db.Database;
 import com.tern.web.Template;
 import com.tern.web.routes.RouteSet;
 
@@ -18,6 +21,8 @@ abstract public class TernContext
 {
 	protected static TernContext current;// = new TernContext();
 	protected static ServletContext context;
+	
+	protected HashMap<Integer, String> enumCache = new HashMap<Integer, String>();
 	
     public static TernContext current()
     {
@@ -40,5 +45,12 @@ abstract public class TernContext
     public static ServletContext getServletContext()
     {
     	return context;
+    }
+    
+    public Database getMetaDB(){return null;}
+    
+    public HashMap<Integer, String> getEnumCache()
+    {
+    	return enumCache;
     }
 }

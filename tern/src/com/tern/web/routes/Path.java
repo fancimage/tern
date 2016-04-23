@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.tern.util.ThreadSafeMap;
+import com.tern.util.Trace;
+import com.tern.util.config;
 import com.tern.web.Controller;
 
 abstract class Path implements Comparable<Path> 
@@ -244,6 +246,11 @@ class ControllerPath extends Path
 	ControllerPath(Class<Controller> target,String url)  throws IOException
 	{	
 		this.named = true;
+		
+		/*if(config.isDebug())
+   	    {
+   	    	Trace.write(Trace.Information, "controller[%s]:%s", target.toString(),url);
+   	    }*/
 		
 		//parse controller
    	    wrapper = controllers.get(target);

@@ -15,6 +15,7 @@ import java.util.Map;
 import com.tern.ui.freemarker.Directives;
 
 import freemarker.core.Environment;
+import freemarker.core.Environment.Namespace;
 import freemarker.template.TemplateDirectiveBody;
 import freemarker.template.TemplateDirectiveModel;
 import freemarker.template.TemplateException;
@@ -30,12 +31,15 @@ public class Overrides implements TemplateDirectiveModel
 		String name = Directives.getStringParam(env, params, "name");
 		
 		name = BLOCK_NAME_PRE+name;
-		
-		//java.io.Writer out = new java.io.StringWriter();
-		//body.render(out);
-		
-		env.getCurrentNamespace().put(name, body);
-		//env.getCurrentNamespace().put(name, out.toString());
-		//env.setLocalVariable(name, out.toString());		
+		Namespace ns = env.getCurrentNamespace();
+		if(ns.get(name) == null)  /*block可能多次被重写，此判断以子模板中的重载为优先*/
+		{
+			//java.io.Writer out = new java.io.StringWriter();
+			//body.render(out);
+			
+			env.getCurrentNamespace().put(name, body);
+			//env.getCurrentNamespace().put(name, out.toString());
+			//env.setLocalVariable(name, out.toString());			
+		}			
 	}
 }

@@ -19,8 +19,15 @@ import java.io.IOException;
 
 import javax.servlet.ServletContext;
 
+import com.tern.dao.DBModelReader;
+import com.tern.dao.Model;
+import com.tern.dao.ModelException;
+import com.tern.dao.ModelReader;
+import com.tern.dao.ModelReaderFactory;
+import com.tern.dao.YamlModelReader;
+import com.tern.db.Database;
+import com.tern.db.db;
 import com.tern.util.Convert;
-import com.tern.util.TernContext;
 import com.tern.util.Trace;
 import com.tern.util.config;
 import com.tern.web.Controller;
@@ -91,6 +98,24 @@ public class Application extends TernWebApplication
 		
 		//load user application from WEB-INF/apps/
 		
+		Model.setModelReaderFactory(new ModelReaderFactory(){
+
+			@Override
+			public ModelReader createReader() 
+			{
+				Database metadb = AppContext.current().metadb;
+				if(metadb == null)
+				{
+					return new YamlModelReader();
+				}
+				else
+				{
+				    return new IapModelReader( metadb );
+				}
+			}
+			
+		});
+		
 		return true;
 	}
 	
@@ -98,7 +123,33 @@ public class Application extends TernWebApplication
 	{
 		ClassLoader pLoader = getClass().getClassLoader();
 		IapClassLoader appLoader = new IapClassLoader(path,pLoader);
-		//1. load configuration		
+		//1. load configuration	
+		
+		//meta.db
+		Database metadb = null;
+		if(!name.equals("ide"))
+		{
+		    final File f = new File(path+"/models/meta.db");
+		    if(f.exists() && f.isFile())
+		    {
+		    	try
+		    	{
+		    		metadb = db.establish(new java.util.HashMap<String, Object>(){{
+			    	    this.put("dbn", "sqlite");
+			    	    this.put("db", f.getAbsolutePath());
+			    	    this.put("encoding", "utf-8");
+			    	    this.put("user", "root");
+		    		}});
+		    		
+		    		Trace.write(Trace.Running, "load meta db for app[%s] succ!" , name);
+		    	}
+		    	catch(java.sql.SQLException e)
+		    	{
+		    		Trace.write(Trace.Error, e, "load meta db for app[%s] failed!" , name);
+		    	}
+		    	
+		    }
+		}
 		
 		//2. to replace Trace , Config??
 		
@@ -113,6 +164,7 @@ public class Application extends TernWebApplication
 		//app context
 		AppContext ctx = new AppContext(name,path);
 		ctx.router = loader.router;
+		ctx.metadb = metadb;
 		if(0 == index) 
 		{
 			ProxyContext.defContext = ctx;
@@ -179,6 +231,25 @@ public class Application extends TernWebApplication
 			}
 		}
 		
+	}
+}
+
+class IapModelReader extends DBModelReader
+{
+	public IapModelReader(Database db)
+	{
+		super(db);
+	}
+	
+	@Override
+	public boolean read(Model m) throws ModelException
+	{
+		if(!super.read(m))
+		{
+			return new YamlModelReader().read(m);
+		}
+		
+		return true;
 	}
 }
 

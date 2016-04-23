@@ -5,12 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${model.caption}</title>
     <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
-    <link rel="stylesheet" href="${HOME}static/modal/css/bootstrap-modal.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/font-awesome.min.css" media="screen">
     <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
-    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.10.1.min.js"></script>
     <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
-    <script type="text/javascript" src="${HOME}static/modal/js/bootstrap-modalmanager.js"></script>
-    <script type="text/javascript" src="${HOME}static/modal/js/bootstrap-modal.js"></script>
+
     <script type="text/javascript" src="${HOME}static/js/modal.js"></script>
     <script type="text/javascript" src="${HOME}static/js/tern-list.js"></script>
     <script language="javascript">
@@ -25,8 +24,8 @@
 <body>
 	<@tern.block name="list-toolbar">
 	 <div class="btn-group" style="margin:4px">
-		 <button class="btn" id="btnNew">新增</button>
-         <button class="btn" id="btnDel">删除</button>                 
+		 <button type="button" class="btn btn-default" id="btnNew">新增</button>
+         <button type="button" class="btn btn-default" id="btnDel">删除</button>                 
 	 </div>
 	</@>		
 	<@tern.block name="list-query">
@@ -40,11 +39,15 @@
 	<@tern.block name="grid-title">
 	   <p>列表的样式。</p>
     </@>
+    
+    <#assign rowindex = 0>
     <#foreach item in records>
      <@tern.block name="grid-detail">
 	   <p>列表的各行数据。</p>
      </@>
-    </#foreach>    
+     <#assign rowindex=rowindex+1>
+    </#foreach>  
+      
     <@tern.block name="grid-footer">
       <#if (query?? && query.pagecount>1) >
 	   <tr class="info">   
@@ -54,18 +57,6 @@
       </#if>
      </table>
     </@>
-         
-    <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-header">
-           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-           <h3></h3>
-        </div>
-        <div class="modal-body">        	          
-        </div>
-        <div class="modal-footer">
-           <button class="btn" data-dismiss="modal" aria-hidden="true">关闭</button>
-           <button class="btn btn-primary" id="btnSave">保存</button>
-        </div>
-   </div>     
+
 </body>
 </html>

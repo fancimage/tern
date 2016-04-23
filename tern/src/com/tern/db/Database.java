@@ -427,16 +427,20 @@ public class Database
 			}
 			else
 			{
-				throw new SQLException("Database init failed: no name attribute.");
+				//throw new SQLException("Database init failed: no name attribute.");
+				name = null;
 			}
 		}
 		
-		if(dbs.containsKey(name))
+		if(name!=null)
 		{
-			throw new SQLException("Has duplicate database name:"+name);
-		}
-		
-		props.remove("name");
+			if(dbs.containsKey(name))
+			{
+			    throw new SQLException("Has duplicate database name:"+name);
+			}
+			
+			props.remove("name");
+		}				
 				
 		switch(type)
 		{
@@ -463,7 +467,10 @@ public class Database
 			db = database;
 		}
 		
-		dbs.put(name, database);
+		if(name!=null)
+		{
+		    dbs.put(name, database);
+		}
 		//Trace.write(Trace.Running, "database added,name = %s" , name );
 		return database;
 	}

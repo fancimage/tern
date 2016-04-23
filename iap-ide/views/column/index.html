@@ -1,0 +1,104 @@
+<@tern.override name="list-toolbar">
+	 <div class="btn-group" style="margin:4px">
+		 <button class="btn btn-default" id="btnNew">新增</button>
+     <button class="btn btn-default" id="btnBack">返回</button>
+	 </div>
+</@>
+  
+<@tern.override name="grid-title">
+ <tr class="info"><td colspan="2"><h4>${model.caption}: <small>字段定义</small> </h4></td></tr>
+</@>
+
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.id}' type="hidden" data-id="true"/>
+        <h5><b>${item.ccaption}</b>&nbsp;<small>${item.cname}
+        <span>
+           <#if item.ctype=='string'>字符串
+           <#elseif item.ctype=='numeric'><#if item.scale?? && item.scale gt 0>数字(#.${item.scale})<#else>整数</#if>
+           <#elseif item.ctype=='bool'>布尔值
+           <#elseif item.ctype=='datetime'>日期时间(${item.format!})
+           <#elseif item.ctype=='enum'>枚举值：${item.cref!}
+           <#elseif item.ctype=='text'>文本
+           <#elseif item.ctype=='binary'>二进制
+           <#elseif item.ctype=='image'>图片
+           <#else>${item.ctype!}
+           </#if>
+        </span></small>
+        </h5>
+        <div>
+             <#if item.nullable><span>可空</span><#else><span class="emphsis">不可为空</span></#if>
+             <#if item.ctype=='id' || item.iskey>
+                <span class="emphsis">主键</span>
+                <#if item.auto><span>自增长字段</span></#if>
+             </#if>
+             <#if item.readonly><span class="emphsis">只读</span></#if>
+             <#if item.cdefault?? && item.cdefault?length gt 0><span>默认值:${item.cdefault}</span></#if>
+             
+             <#if item.ctype=='string'>
+                 <span>长度：${item.cmin!'0'}&nbsp;->&nbsp;${item.cmax!'Nav'}</span>
+             <#elseif item.ctype=='numeric'>
+                 <span>取值范围：${item.cmin!'Nav'}&nbsp;->&nbsp;${item.cmax!'Nav'}</span>             
+             </#if>
+        </div>
+      </td>    
+      <td>     
+             <a href="#modify"><i class="icon-edit"></i></a>
+	           <a href="#del"><i class="icon-remove"></i></a>
+               <#if rowindex gt 0>
+                 <a href="#up"><i class="icon-arrow-up"></i></a>
+               </#if>
+               <#if rowindex lt records?size-1>
+                 <a href="#down"><i class="icon-arrow-down"></i></a>
+               </#if>
+      </td>
+  </tr>
+</@>
+
+<#include "/model/index.html">
+
+<script language="javascript">
+    $(function(){
+       $('#btnBack').click(function(){
+    		   window.location.href = '${HOME}data/${appName}/entity';
+    	 });       
+      
+       $tern.onCommand = function(name,id,$this){
+	       if(name == '#detail'){
+	           window.location.href = '${HOME}columns/${appName}/'+id;
+	       } else if(name == '#up'){
+               var first = $tern.getId($this.parent().parent(),'prev').val();
+               if(first==null || first==''){
+                   alert('无法调整顺序！');
+                   return;
+               }
+               
+               changeSort(first,id);
+           } else if(name == '#down'){
+                var second = $tern.getId($this.parent().parent(),'next').val();
+                if(second==null || second==''){
+                   alert('无法调整顺序！');
+                   return;
+                }
+                
+                changeSort(id,second);
+           }
+	     }
+    });	
+    
+    function changeSort(first,sencond){
+        var url = this_url+'/resort/'+first+'/'+sencond;
+        $.post(url,{},function(result){
+            if(0 == result.code){
+                window.location.reload();
+            }else if(result.message){
+        	    alert(result.message);
+            } else {
+        	    alert('操作失败，errcode='+result.code);
+            }
+        },'json').error(function(){
+           alert('操作失败！');
+        });
+    }
+    
+</script>

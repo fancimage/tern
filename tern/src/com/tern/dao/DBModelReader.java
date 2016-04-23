@@ -53,15 +53,15 @@ public class DBModelReader extends ModelReader
 		parse_auto(col,rs.getObject("auto"));		
 		col.default_val = rs.getString("cdefault");
 		
-		/*关联显示条件*/
-		long cid = rs.getLong("rcid");
+		/*关联显示条件*/  //---在adtech的自定义表单系统中使用,暂时去掉
+		/*long cid = rs.getLong("rcid");
 		if(cid > 0)
 		{
 			String rcval = rs.getString("rcvalue");
 			if(rcval == null) rcval = "";
 			
 			col.showCondtion = "C"+cid+"="+rcval;
-		}
+		}*/
 		
 		switch(col.type)
     	{
@@ -172,10 +172,10 @@ public class DBModelReader extends ModelReader
 					
 		try 
 		{
-			long eid = Convert.parseLong(m.getName());
+			//long eid = Convert.parseLong(m.getName());
 			/*model table: iap_entities*/
 			DataRow row = schemaDB.table("iap_entities")
-			        .where("eid=?" , eid )
+			        .where("ename=?" , m.getName() )
 			        .queryOne(true);
 			if(row == null)
 			{
@@ -185,7 +185,11 @@ public class DBModelReader extends ModelReader
 			
 			this.setCaption(row.getString("ecaption"));
 			this.setRepresentation(row.getString("repr"));
-			this.setName(row.getString("ename"));
+			//this.setName(row.getString("ename"));
+			
+			String tname = row.getString("tablename");
+			if(tname==null || tname.length()<=0) tname = m.getName();
+			this.setName(tname);
 			
 			int etype = row.getInt("etype");
 			if(etype == 1) m.style = Model.MODEL_CHILD;
@@ -194,7 +198,7 @@ public class DBModelReader extends ModelReader
 			
 			//columns
 			List<Column> columns = schemaDB.table("iap_columns")
-					.where("eid=?" , eid)
+					.where("eid=?" , row.getLong("eid"))
 					.order("csort")
 					.query(new RowMapper<Column>(){
 

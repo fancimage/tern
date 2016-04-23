@@ -24,16 +24,21 @@ public class DataController extends Controller
 	protected String modelName;
     protected Model model;
     
+    protected Model getModel()
+    {
+    	return Model.from(modelName);
+    }
+    
     public String index()
 	{
-    	model = Model.from(modelName);    	    
+    	model = getModel();
     	
 		RecordSet records = model.query();
 		
 		request.setAttribute("model", model);
 		request.setAttribute("records", records);
 		
-		return "model/index";
+		return modelName+"/index";
 	}
 	
 	public void delete()
@@ -52,14 +57,14 @@ public class DataController extends Controller
 	    	return;
 	    }
 	    
-	    model = Model.from(modelName);
+	    model = getModel();
 	    model.delete(arr);	    
 	    writeResult(0,null);
 	}
 	
 	public void create()
 	{
-		model = Model.from(modelName);
+		model = getModel();
 		try
 		{
 		    Record record = html.new_record(model, request);
@@ -80,7 +85,7 @@ public class DataController extends Controller
 	
 	public void update(int id)
 	{
-		model = Model.from(modelName);
+		model = getModel();
 		try
 		{
 		    Record record = html.update_record(model, request);
@@ -100,24 +105,24 @@ public class DataController extends Controller
 	
 	public String _new()
 	{
-		model = Model.from(modelName);
+		model = getModel();
 		
 		Record record = model.create(); //new		
 		request.setAttribute("model", model);
 		request.setAttribute("record", record);
 		
-		return "model/edit";
+		return modelName+"/edit";
 	}
 	
 	public String edit(int id)
 	{
-		model = Model.from(modelName);
+		model = getModel();
 		
 		Record record = model.find(id); //retrive		
 		request.setAttribute("model", model);
 		request.setAttribute("record", record);
 		
-		return "model/edit";
+		return modelName+"/edit";
 	}
 	
 	protected void writeResult(int result,String err)
