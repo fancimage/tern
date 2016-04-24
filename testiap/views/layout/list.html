@@ -25,6 +25,10 @@
 			
 			$tern = tern_list();
         	$tern.caption = '${model.caption}';
+        	
+        	var name = '${model.name}';
+        	$('.page-sidebar-menu li').removeClass('active');
+        	$('#menu_'+name).addClass('active');
 		});
 	</script>
 </head>
@@ -72,7 +76,7 @@
 				    </form>
 				</li>
 
-				<li class="start active ">
+				<li class="start active">
 					<a href="${HOME}test">
 					    <i class="icon-home"></i> 
 					    <span class="title">Hello World</span>
@@ -88,7 +92,7 @@
 					</a>
 				</li>
 				
-				<li>
+				<li id="menu_t_petclass">
 					<a href="${HOME}data/petclass">
 					  <i class="icon-bookmark-empty"></i> 
 					  <span class="title">宠物类型</span>
@@ -96,7 +100,7 @@
 					</a>
 				</li>
 				
-				<li>
+				<li id="menu_t_pet">
 					<a href="${HOME}data/pet">
 					  <i class="icon-table"></i> 
 					  <span class="title">宠物</span>
@@ -104,7 +108,7 @@
 					</a>
 				</li>
 				
-				<li>
+				<li id="menu_t_operator">
 					<a href="${HOME}data/t_operator">
 					  <i class="icon-briefcase"></i> 
 					  <span class="title">操作员</span>
@@ -112,7 +116,7 @@
 					</a>
 				</li>
 				
-				<li>
+				<li id="menu_leaveApply">
 					<a href="${HOME}service/1/process">
 					  <i class="icon-gift"></i> 
 					  <span class="title">请假单</span>

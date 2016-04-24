@@ -1,33 +1,58 @@
-<#assign columns=model.columnList colcount=0>
 <@tern.override name="grid-title">
   <tr class="info">
-     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
-     <#foreach col in columns>
-     <#if !col.id>
-     <th>${col.caption}</th><#assign colcount=colcount+1>
-     </#if>
-     </#foreach>
-     <th>操作</th>
+     <th>选择</th>
+     <th>编码</th>
+     <th>枚举值</th>
   </tr>
 </@>
 <@tern.override name="grid-detail">
   <tr>
-      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
-      <#foreach col in model.columnList>
-        <#if col.id>
-        <#elseif col.belongsTo??>
-           <td>${(item[col.belongsTo.name])!}</td>
-        <#elseif col.type=='Bool'>
-           <td>${(item[col.name]?string('是','否'))!}</td>
-        <#else>
-           <td>${(item[col.name])!}</td>
-       </#if>
-      </#foreach>         	 
-      <td>
-        <a href="#modify"><i class="icon-edit"></i></a>
-	    <a href="#del"><i class="icon-remove"></i></a>
-     </td>
+      <td><input value='${item.id}' name="cb_record" type="radio"/></td>
+      <td>${item.ecode!}</td> 
+      <td>${item.ecaption!}</td>
   </tr>
 </@>
 
-<#include "/layout/list.html">
+<@tern.override name="list-toolbar">
+<div class="btn-group" style="margin:4px">
+   <button type="button" class="btn btn-default" id="btnOK">确定</button>
+   <button type="button" class="btn btn-default" id="btnCancel">取消</button>
+</div>
+</@>
+
+<#include "/layout/simplelist.html">
+<script>
+    $(function(){
+    	var v = '${params.value!}';
+    	if(v!=null && v!=''){
+    		$('input[type=radio][value="'+v+'"]').prop("checked","checked");
+    	}
+    	
+    	$('#btnOK').click(function(){
+    		var sel = $('input:radio:checked');
+    		if(v==sel.val()){
+    			closethis();
+    			return;
+    		}
+    		
+    		if(window.callback){
+    			callback(sel.val(),sel.parent().next().next().text());
+    			closethis();
+    		}    		
+        });
+    	
+        $('#btnCancel').click(closethis);
+    });
+    
+    function closethis(){
+    	if(window.parent){
+    		if(window.parent.modal){
+    			window.parent.modal.close();
+    			return;
+    		}
+    	}
+    	
+    	window.close();
+    }
+    
+</script>

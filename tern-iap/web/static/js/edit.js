@@ -63,8 +63,11 @@ function initDate(){
 
 function chooseEnum(src){
 	var val_input = $(src).prev();
-	var type = val_input.prop('name');
+	var type = val_input.data('type');
 	if(type==null || type == '') modal.popContent('无法选择枚举值!');
 	
-	modal.openURL('/iap/enum/'+type);
+	modal.openURL('/iap/enum/'+type+'?value='+val_input.val(),{title:'枚举值选择',callback:function(eid,ename){
+		val_input.val(eid);
+		val_input.prev().val(ename);
+	}});
 };

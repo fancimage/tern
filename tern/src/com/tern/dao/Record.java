@@ -267,7 +267,7 @@ public class Record implements Map<String,Object>,IRow
 			
 			if(col.type == DataType.Enum && v != null && !(v instanceof NamedValue) )
 			{
-				v = getEnumValue(this.model,v);
+				v = getEnumValue(this.model,v);				
 				row.put(col.name, v);
 			}
 			
@@ -1093,6 +1093,8 @@ public class Record implements Map<String,Object>,IRow
 			Trace.write(Trace.Error,e, "getEnumValue:");
 			return null;
 		}
+		
+		if(ret == null) return null;
 		
 		synchronized(enumMap)
 		{

@@ -96,6 +96,8 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 			if(options.minWidth && w<options.minWidth) w = options.minWidth;
 			//if(options.minHeight && h<options.minHeight) h = options.minHeight;
 			iframe.width(w).height(h);
+			
+			iframe[0].contentWindow.callback=options.callback;
 		});
 		
 		var bak = options.onshown;
