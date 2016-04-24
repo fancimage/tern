@@ -239,19 +239,20 @@ public class Form implements TemplateDirectiveModel
 			out.append("<script language=\"javascript\">\n");
 			if((frender.style & FieldRender.STYLE_DATE)!=0 )
 			{
-				out.append("$('.date').datetimepicker({locale:'zh_cn'});\n"); //,pickTime:false
+				//out.append("$('.date').datetimepicker({locale:'zh_cn'});\n"); //,pickTime:false
+				out.append("initDate();\n");
 			}
 			
-			if((frender.style & FieldRender.STYLE_TIME)!=0)
-			{
+			//if((frender.style & FieldRender.STYLE_TIME)!=0)
+			//{
 				//out.append("$('.bootstrap-timepicker input').timepicker({template: false,showSeconds: true,showInputs: false,minuteStep: 1});\n");
-				out.append("$('.time').datetimepicker({locale:'zh_cn'});\n");//,pickDate:false
+			//	out.append("$('.time').datetimepicker({locale:'zh_cn'});\n");//,pickDate:false
 				
-				if((frender.style & FieldRender.STYLE_DATE)!=0 )
-				{
-					out.append("$('.datetime').datetimepicker({locale:'zh_cn'});\n");
-				}
-			}
+			//	if((frender.style & FieldRender.STYLE_DATE)!=0 )
+			//	{
+			//		out.append("$('.datetime').datetimepicker({locale:'zh_cn'});\n");
+			//	}
+			//}
 			
 			if((frender.style & FieldRender.STYLE_ENUM)!=0)
 			{

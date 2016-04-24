@@ -45,4 +45,26 @@ $(function(){
 		    window.close();	
 		}		
 	});
+		
 });
+
+function initDate(){
+	$('.date').each(function(){
+		var formatStr = $(this).find('input[type=text]').data('format');
+		if(formatStr==null || formatStr=='') formatStr='YYYY-MM-DD HH:mm:ss';
+		
+		formatStr=formatStr.replace(new RegExp("y","g"), "Y");
+		formatStr=formatStr.replace(new RegExp("d","g"), "D");
+
+		var options = {locale:'zh_cn',format:formatStr};
+		$(this).datetimepicker(options);
+	});
+}
+
+function chooseEnum(src){
+	var val_input = $(src).prev();
+	var type = val_input.prop('name');
+	if(type==null || type == '') modal.popContent('无法选择枚举值!');
+	
+	modal.openURL('/iap/enum/'+type);
+};

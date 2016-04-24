@@ -258,7 +258,7 @@ class FieldRender
 		String val = r.getString(col.getName());
 		if(val == null) val="";
 		String formater = col.getFormat().toPattern();
-		if(1==m)  //date
+		//if(1==m)  //date
 		{
 			/*out.append("<div class=\"input-append date\" data-date=\"").append(val).append("\"")
 			   .append(" data-date-format=\"").append(Convert.replaceAll(formater, "MM", "mm"))
@@ -278,25 +278,25 @@ class FieldRender
 			
 			style |= STYLE_DATE;
 		}
-		else if(2 == m)  //time
-		{
-			formater = Convert.replaceAll(formater, "HH", "hh");
+		//else if(2 == m)  //time
+		//{
+			//formater = Convert.replaceAll(formater, "HH", "hh");
 			/*out.append("<div class=\"bootstrap-timepicker\">\n<input name=\"")
 			   .append(col.getName()).append("\" type=\"text\" class=\"input-small\">\n")
 			   .append("<i class=\"icon-time\"></i>\n</div>");*/
 			
-			out.append("<div class=\"input-group time\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
-			   .append("\" type=\"text\" class=\"form-control\" value=\"")
-			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-time\"></i></div>\n")
-			   .append("</div>\n");
+			//out.append("<div class=\"input-group date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			//   .append("\" type=\"text\" class=\"form-control\" value=\"")
+			//   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-time\"></i></div>\n")
+			//   .append("</div>\n");
 			
-			style |= STYLE_TIME;
-		}
-		else   //date & time
-		{
-			style |= STYLE_DATE;
-			style |= STYLE_TIME;
-			formater = Convert.replaceAll(formater, "HH", "hh");
+			//style |= STYLE_TIME;
+		//}
+		//else   //date & time
+		//{
+			//style |= STYLE_DATE;
+			//style |= STYLE_TIME;
+			//formater = Convert.replaceAll(formater, "HH", "hh");
 			
 			/*out.append("<div class=\"input-append date\" data-date=\"").append(val).append("\"")
 			   .append(" data-date-format=\"").append(Convert.replaceAll(formater, "MM", "mm"))
@@ -307,11 +307,11 @@ class FieldRender
 			out.append("<div class=\"bootstrap-timepicker\">\n<input name=\"")
 			   .append(col.getName()).append("\" type=\"text\" class=\"input-small\">\n")
 			   .append("<i class=\"icon-time\"></i>\n</div>");*/
-			out.append("<div class=\"input-group datetime\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
-			   .append("\" type=\"text\" class=\"form-control\" value=\"")
-			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-calendar\"></i></div>\n")
-			   .append("</div>\n");
-		}
+			//out.append("<div class=\"input-group date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
+			//   .append("\" type=\"text\" class=\"form-control\" value=\"")
+			//   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-calendar\"></i></div>\n")
+			//   .append("</div>\n");
+		//}
 	}
 	
 	static final String defaultNullName="请选择...";

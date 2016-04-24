@@ -26,6 +26,8 @@
                   <option value="text">文本</option>
                   <option value="binary">二进制(文件)</option>
                   <option value="image">图片</option>
+                  <option value="belongs">关系(子表)</option>
+                  <!-- <option value="Having">关系(父表)</option> -->
               </select>
               <input type="hidden" name="ctype" id="ctype" value="${record.ctype!'string'}">
           </div>
@@ -77,9 +79,19 @@
    </div>
    
    <div class="form-group" id="enumRef" style="display:none">
-          <label class="control-label col-sm-2">格式</label>
+          <label class="control-label col-sm-2">枚举类型</label>
           <div class="col-sm-4">
               <@tern.field name="cref" class="form-control"/>
+          </div>
+   </div>
+   
+   <div class="form-group" id="childmode">
+          <label class="control-label col-sm-2">子表模式</label>
+          <div class="col-sm-4">          	
+              <select id="cmode" name="cmode" class="form-control">
+                  <option value="1">一对多</option>
+                  <option value="2">一对一</option>
+              </select>
           </div>
    </div>
        
@@ -87,6 +99,7 @@
 </@>
 <#include "/model/edit.html">
 <script>
+    var isinit = true;
     $(function(){
         var ctype = '${record.ctype!""}';
         var scale = ${record.scale!0};
@@ -98,6 +111,12 @@
         }).val(ctype);
         
         typeChange(ctype);
+        
+        var scale = $('#scale').val();
+        if(scale!='1') scale='2';
+        $('#cmode').val(scale).change(function(){
+        	$('#scale').val($(this).val());
+        });
         
         initcb($('#cb_nullable'));
         initcb($('#cb_readonly'));
@@ -116,6 +135,8 @@
         $('#maxVal').change(function(){
              $('#cmax').val($(this).val());
         });
+        
+        isinit = false;
     });
     
     function typeChange(type){
@@ -124,6 +145,7 @@
         $('#numScale').hide();
         $('#dateFormate').hide();
         $('#enumRef').hide();
+        $('#childmode').hide();
         
         $('#cb_auto').hide();
         $('#cb_iskey').show();
@@ -132,17 +154,22 @@
         
         if('integer' == type){
             $('#numberVal').show();
-             $('#cmin').val($('#minVal').val());
-             $('#cmax').val($('#maxVal').val());
+            $('#cmin').val($('#minVal').val());
+            $('#cmax').val($('#maxVal').val());
+            if(!isinit) $('#scale').val('');
         } else if('numeric' == type){
             $('#numberVal').show();
             $('#numScale').show();
             $('#cmin').val($('#minVal').val());
             $('#cmax').val($('#maxVal').val());
+            if(!isinit) $('#scale').val('');
         } else if('datetime' == type){
             $('#dateFormate').show();
         } else if('enum' == type){
-            $('#enumRef').show();
+        	var $ele = $('#enumRef');
+        	$ele.find('label').text('枚举类型');
+        	if(!isinit) $ele.find('input').text('');
+        	$ele.show();
         }else if('string' == type){
             $('#strLen').show();
             $('#cmin').val($('#strLenMin').val());
@@ -150,6 +177,18 @@
         }else if('id' == type){
             $('#cb_auto').show();
             $('#cb_iskey').hide();
+        }  else if('belongs' == type || 'having' == type){
+        	var $ele = $('#enumRef');
+        	$ele.find('label').text('引用表');
+        	if(!isinit) $ele.find('input').text('');
+        	$ele.show();
+        	
+        	if('having' == type){
+        		$('#numScale').show();
+        		if(!isinit) $('#scale').val('');
+        		
+        		$('#childmode').show();
+        	}
         }
     }
     

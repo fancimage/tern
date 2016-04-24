@@ -101,12 +101,12 @@ public class DBModelReader extends ModelReader
     	    break;
     	case Belongs:
     	    {
-    	    	col.extra1 = rs.getString("rref");
+    	    	col.extra1 = rs.getString("cref");
     	    }
     	    break;
     	case Having:
     	    {
-    	    	col.extra1 = rs.getString("rref");
+    	    	col.extra1 = rs.getString("cref");
     	    	col.minLen = rs.getInt("scale"); /*子表的类型:0[一对多 1[一对一]]*/
     	    }
     	   break;

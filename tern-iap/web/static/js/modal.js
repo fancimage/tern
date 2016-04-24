@@ -172,12 +172,4 @@ if(window.top != window){
     window.modal = new Modal();
 }
 
-window.chooseEnum = function(src){
-	var val_input = $(src).prev();
-	var type = val_input.prop('name');
-	if(type==null || type == '') modal.popContent('无法选择枚举值!');
-	
-	modal.openURL('/iap/enum/'+type);
-};
-
 })();

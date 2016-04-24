@@ -22,6 +22,8 @@
            <#elseif item.ctype=='text'>文本
            <#elseif item.ctype=='binary'>二进制
            <#elseif item.ctype=='image'>图片
+           <#elseif item.ctype=='belongs'>关系(子表)
+           <#elseif item.ctype=='having'>关系(父表)
            <#else>${item.ctype!}
            </#if>
         </span></small>
