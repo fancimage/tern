@@ -133,9 +133,10 @@ public class ProcessController extends Controller
 			throw new ActionException( String.format("Service(%d) does not exists.", sid));
 		}
 		
-		//get current step
-		StepDescriptor step = null;
 		WorkflowDescriptor wd = Workflow.getInstance().getWorkflowDescriptor(service.getName());
+		
+		//get current step
+		/*StepDescriptor step = null;		
 		List tmp = Workflow.getInstance().getCurrentSteps(pid);
 		if(tmp != null && tmp.size() > 0 )
 		{
@@ -145,7 +146,7 @@ public class ProcessController extends Controller
 		if(null == step)
 		{
 			throw new ActionException( String.format("Process(%d,service=%s) has been completed!", pid ,service.getName() ));
-		}
+		}*/
 		
 		Model model = Model.from(service.getDataTableName());
 		Record record = model.find(pid);	
@@ -156,19 +157,32 @@ public class ProcessController extends Controller
     	inputs.put("service", service);
 				
 		//get available actions
-    	List<ActionDescriptor> actions = new ArrayList<ActionDescriptor>();
+    	Map<Integer,StepInfo> steps = new HashMap<Integer,StepInfo>();
+    	//List<ActionDescriptor> actions = new ArrayList<ActionDescriptor>();
 		int[] arr = Workflow.getInstance().getAvailableActions(pid,inputs);
 		for(int a : arr)
 		{
-			ActionDescriptor ad = step.getAction(a);
+			ActionDescriptor ad = wd.getAction(a);
 			if(ad != null)
 			{
-				actions.add(ad);
+				StepDescriptor s = (StepDescriptor)ad.getParent();
+				StepInfo info = null;
+				if(steps.containsKey(s.getId()))
+				{
+					info = steps.get(s.getId());
+				}
+				else
+				{
+					info = new StepInfo();
+					info._step = s;
+					steps.put(s.getId(), info);
+				}
+				info._actions.add(ad);
 			}
 		}
 		
 		//get system actions
-		List<NamedValue> sysActions = new ArrayList<NamedValue>();
+		/*List<NamedValue> sysActions = new ArrayList<NamedValue>();
 		NamedValue a = new NamedValue();
 		a.name = "退回";
 		a.value="back";
@@ -180,7 +194,7 @@ public class ProcessController extends Controller
 		a = new NamedValue();
 		a.name = "否决";
 		a.value="reject";
-		sysActions.add(a);
+		sysActions.add(a);*/
 		
 		//history steps
 		//DataTable history = null;
@@ -189,9 +203,9 @@ public class ProcessController extends Controller
 		request.setAttribute("model",  model);
 		request.setAttribute("record", record);
 		request.setAttribute("service",service);
-		request.setAttribute("step",step);
-		request.setAttribute("actions",actions);
-		request.setAttribute("sysactions",sysActions);
+		request.setAttribute("steps",steps.values());
+		//request.setAttribute("actions",actions);
+		//request.setAttribute("sysactions",sysActions);
 		request.setAttribute("history",history);
 		
 		return String.format("service/%s/edit", service.getName() );
@@ -365,4 +379,17 @@ public class ProcessController extends Controller
         
         out.append("}");
     }
+	
+	public static class StepInfo
+	{
+		StepDescriptor _step;
+		List<ActionDescriptor> _actions=new ArrayList<ActionDescriptor>();
+		List<NamedValue> _sysActions=new ArrayList<NamedValue>();;
+		
+		public StepDescriptor getStep(){return _step;}
+		public List<ActionDescriptor> getActions(){return _actions;}
+		public List<NamedValue> getSysActions(){return _sysActions;}
+	}
 }
+
+

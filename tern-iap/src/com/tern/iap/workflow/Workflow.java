@@ -145,7 +145,10 @@ public class Workflow implements com.opensymphony.workflow.Workflow
                     iterator.hasNext();) 
             {
                 Step step = (Step) iterator.next();
-                l.addAll(getAvailableActionsForStep(wf, step, transientVars, ps));
+                if(hasStepPermission(wf.getStep(step.getStepId())))
+                {
+                    l.addAll(getAvailableActionsForStep(wf, step, transientVars, ps));
+                }
             }
 
             int[] actions = new int[l.size()];
@@ -179,7 +182,6 @@ public class Workflow implements com.opensymphony.workflow.Workflow
         try 
         {
             WorkflowStore store = getPersistence();
-
             return store.findCurrentSteps(id);
         } 
         catch (StoreException e)
@@ -187,6 +189,46 @@ public class Workflow implements com.opensymphony.workflow.Workflow
         	Trace.write(Trace.Error, e,"Error checking current steps for instance #" + id);
             return Collections.EMPTY_LIST;
         }
+    }
+    
+    public boolean hasStepPermission(StepDescriptor step)
+    {
+    	Map map = step.getMetaAttributes();
+    	Object roleCode = map.get("op.code");
+    	if(null == roleCode)
+    	{
+    		return true; /*没有进行权限限定,则认为有权限？*/
+    	}
+    	
+    	String type = Convert.toStringIgnoreEmpty(map.get("op.type"), "role");
+    	String opName = Convert.toStringIgnoreEmpty(map.get("op.name"), "");
+    	
+    	long id = Convert.parseLong(roleCode, 0);
+    	if(id <= 0)
+    	{
+    		Trace.write(Trace.Error, "workflow step[%d] has no authority define:op.type=%s,op.name=%s", 
+    				step.getId(),type,opName);
+    		return false;
+    	}
+    	
+    	Operator op = AppContext.getCurrentOperator();
+    	if(type.equals("role"))
+    	{
+    		long[] ids = op.getRoles();
+    		if(ids != null)
+    		{
+    			for(long v:ids)
+    			{
+    				if(v == id) return true;
+    			}
+    		}
+    	}
+    	else if(type.equals("user"))
+    	{
+    		if(id == op.getId()) return true;
+    	}
+    	
+    	return false;
     }
 
     /**

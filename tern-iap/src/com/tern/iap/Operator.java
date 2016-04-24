@@ -15,9 +15,11 @@ import com.tern.db.db;
 
 public class Operator 
 {
-	protected int operatorID;
+	protected long operatorID;
 	protected String loginName;
 	protected String name;
+	
+	protected long[] roleIds;
 	
 	public Operator(int id,String lname,String name)
 	{
@@ -26,9 +28,11 @@ public class Operator
 		this.name = name;
 	}
 	
-    public int getId() {return operatorID;}
+    public long getId() {return operatorID;}
 	public String getName() {return name;}
 	public String getLoginName(){return loginName;}
+	
+	public long[] getRoles(){return roleIds;}
 	
 	public int getIDByName(String name,String type)
 	{

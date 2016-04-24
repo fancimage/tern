@@ -171,7 +171,7 @@ class FieldRender
 				v = r.getString(col.getName());
 			}
 			
-			out.append("<span class=\"help-inline\">").append(v==null?"":v).append("</span>");
+			out.append("<p class=\"form-control-static\">").append(v==null?"":v).append("</p>");
 		    return;
 		}
 		

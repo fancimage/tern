@@ -4,15 +4,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${service.caption}</title>
-    <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
-    <link rel="stylesheet" href="${HOME}static/datepicker/datepicker.css" media="screen">
-    <link rel="stylesheet" href="${HOME}static/timepicker/css/bootstrap-timepicker.css" media="screen">
+     <link rel="stylesheet" href="${HOME}static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/bootstrap/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="${HOME}static/datetime/css/bootstrap-datetimepicker.min.css" media="screen">
     <link rel="stylesheet" href="${HOME}static/tern.css" media="screen">
-    <script type="text/javascript" src="${HOME}static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="${HOME}static/js/moment.min.js"></script>
     <script type="text/javascript" src="${HOME}static/bootstrap/js/bootstrap.js"></script>
-    <script type="text/javascript" src="${HOME}static/datepicker/bootstrap-datepicker.js"></script>
-    <script type="text/javascript" src="${HOME}static/timepicker/js/bootstrap-timepicker.js"></script>
-    <script type="text/javascript" src="${HOME}static/timepicker/js/bootstrap-collapse.js"></script>
+    <script type="text/javascript" src="${HOME}static/datetime/js/bootstrap-datetimepicker.min.js"></script>
     <script language="javascript">
         $(function(){
         	$('#btnSave').click(function(){
@@ -37,68 +36,67 @@
 </head>
 <body>	
    <ul class="breadcrumb">
-     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider">/</span></li>
+     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider"></span></li>
      <li class="active">流程处理</li>
    </ul>
    
-   <div class="accordion" id="accordion">
-   	<#if step??>
-   	  <div class="accordion-group">
-        <div class="accordion-heading alert-info">
-           <a class="accordion-toggle" href="#formProcess">
-           	<b>${step.name}</b>        	
-           </a>
-        </div>
-        <div id="formProcess" class="accordion-body collapse in">
-          <div class="accordion-inner">
-          	<form id="processFrm" method="post" class="form-horizontal">
-          	  <fieldset>
-          	  	  <div class="control-group">
-                     <label class="control-label">处理结果</label>
-                     <div class="controls">
-                     	<select id="actionID" name="actionID">
-                     	   <#foreach act in actions>
+   	<#foreach s in steps>
+   	  <div class="panel panel-default">
+   	      <div class="panel-heading" data-toggle="collapse"
+               data-parent="#accordion2" href="#formProcess">
+               <a class="accordion-toggle">${s.step.name}</a>
+          </div>         
+          <div id="formProcess" class="panel-collapse in">
+              <div class="panel-body">
+          	     <form id="processFrm" method="post" class="form-horizontal">
+          	  	  <div class="form-group">
+                     <label class="col-sm-2">处理结果</label>
+                     <div class="col-sm-4">
+                     	<select id="actionID" name="actionID" class="form-control">
+                     	   <#foreach act in s.actions>
                      		 <option value="${act.id}">${act.name}</option>
                      	   </#foreach>
-                     	   <#foreach act in sysactions>
+                     	   <#foreach act in s.sysActions>
                      		 <option value="${act.value}">${act.name}</option>
                      	   </#foreach>
                      	</select>
                      </div>
                   </div>
-                  <div class="control-group">
-                     <label class="control-label">处理意见</label>
-                     <div class="controls">
-                     	<textarea name="actionSuggest">同意！</textarea>
+                  <div class="form-group">
+                     <label class="col-sm-2">处理意见</label>
+                     <div class="col-sm-4">
+                     	<textarea name="actionSuggest" class="form-control">同意！</textarea>
                      </div>
                   </div>
-          	  </fieldset>
-          	  <button id="btnSave" type="button" class="btn btn-primary">提交</button>
-          	</form>
+                  
+                  <div class="form-group">
+          	         <button id="btnSave" type="button" class="btn btn-primary">提交</button>
+          	      </div>
+          	   </form>
+            </div>
           </div>
-        </div>
      </div>
-   </#if>
-   	  <div class="accordion-group">
-        <div class="accordion-heading alert-info">
-           <a class="accordion-toggle" data-toggle="collapse" href="#formData">
-           	<b>表单</b>
-           </a>
+   </#foreach>
+   
+   	<div class="panel panel-default">
+   	    <div class="panel-heading" data-toggle="collapse"
+               data-parent="#accordion2" href="#formData">
+           <a class="accordion-toggle">表单:${model.caption}</a>
         </div>
-        <div id="formData" class="accordion-body collapse in">
-          <div class="accordion-inner">
+        <div id="formData" class="panel-collapse in">
+          <div class="panel-body">
           	 <@tern.form id="editFrm" record=record readonly=true></@>
           </div>
         </div>
      </div>
-     <div class="accordion-group">
-        <div class="accordion-heading alert-info">
-           <a class="accordion-toggle" data-toggle="collapse" href="#wfHistory">
-           	<b>历史</b>
-           </a>
+     
+     <div class="panel panel-default">
+        <div class="panel-heading" data-toggle="collapse"
+               data-parent="#accordion2" href="#wfHistory">
+           <a class="accordion-toggle">历史步骤</a>
         </div>
-        <div id="wfHistory" class="accordion-body collapse">
-          <div class="accordion-inner">
+        <div id="wfHistory" class="panel-collapse collapse">
+          <div class="panel-body">
           	<table class="table table-bordered table-hover">
               <tr>
               	<th>序号</th>
@@ -128,7 +126,7 @@
           </div>
         </div>
      </div>
-   </div>
+
      
 </body>
 </html>
