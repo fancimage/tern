@@ -9,12 +9,14 @@
 
 package com.tern.iap.controllers;
 
+import com.tern.iap.AppContext;
 import com.tern.web.Controller;
 
 public class HomeController extends Controller
 {
 	public void index()
 	{
-		request.setAttribute("message", "Welcome to iAP!");
+		String name = AppContext.current().getApplicationName();
+		request.setAttribute("message", "Welcome to "+name+"!");
 	}
 }

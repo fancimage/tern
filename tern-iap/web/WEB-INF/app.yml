@@ -21,11 +21,18 @@ database: #the first is default db-connection
     #pool: dbcp
     
     all:
-      - dbn : sqlite
-        #db  : testdb
+      - dbn : mysql
+        ip  : localhost
+        db  : cpms
         encoding: utf8
-        user: root
+        user: cpms
         pw  : manager
+        
+      #- dbn : sqlite
+      #  #db  : testdb
+      #  encoding: utf8
+      #  user: root
+      #  pw  : manager
       
       #- dbn : oracle
       #  ip  : 10.116.40.67
@@ -35,8 +42,11 @@ database: #the first is default db-connection
       #  pw  : es123
       
 apps:
-  - name : app1
-    path : E:\mywork\java\git\tern\testiap
+  - name : cpms
+    path : E:\mywork\java\git\cpms-for-owner-side\source
     
   - name : ide
     path : E:\mywork\java\git\tern\iap-ide
+    
+  - name : app1
+    path : E:\mywork\java\git\tern\testiap

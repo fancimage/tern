@@ -21,6 +21,8 @@ var tern_list = function(){
         } else {
         	$tern.onCommand(name,$cb.val(),$cb);
         }
+        
+        return false;
 	});
 	
 	$('#cb_all').click(function(){

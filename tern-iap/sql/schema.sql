@@ -1,8 +1,9 @@
 CREATE TABLE wf_service(
 	tid int NOT NULL,
-	--appname  varchar(32) NOT NULL,
+	pid int NOT NULL,
 	tname varchar(16) NULL,
 	serTableName varchar(32) NULL,
+	stepTable    varchar(32) NULL,
 	tcaption varchar(64) NULL,
 	primary key(tid)
  );
@@ -10,13 +11,14 @@ CREATE TABLE wf_service(
  CREATE TABLE wf_process(
 	wfID int NOT NULL primary key,
 	tid int NULL,
+	pid int NOT NULL,
 	creator int NULL,
 	createtime datetime NULL,
 	finishtime datetime NULL,
-	--serid int NULL,
-	status int NULL,
-	taskName varchar(256) NULL
-	--tname   varchar(16)
+	serid int NOT NULL,
+	status int NULL
+	#taskName varchar(256) NULL
+	#tname   varchar(16)
 );
 
 ---正在流转的流程，当前需要什么人来处理(待办?)
