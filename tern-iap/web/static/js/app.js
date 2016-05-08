@@ -267,7 +267,30 @@ var App = function () {
             handleFixedSidebar();
             handleFixedSidebarHoverable();
             handleSidebarMenu();
-            handleSidebarToggler();            
+            handleSidebarToggler();
+            
+            $('.ibox-tools .collapse-link').click(function(){
+            	var $i = $(this).find('i');
+            	var flag = true;
+                if($i.hasClass('fa-chevron-down')){
+                	flag = false;
+                }
+                
+                var $content = $(this).parent().parent().parent().find('.ibox-content');
+                if(flag){
+                	$content.css('display','none');
+                	$i.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+                } else {
+                	$content.css('display','block');
+                	$i.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                }
+                
+            });
+        },
+        
+        activeMenu: function(mid){
+        	$('.page-sidebar-menu li').removeClass('active');
+        	$('#'+mid).addClass('active');
         },
     };
     

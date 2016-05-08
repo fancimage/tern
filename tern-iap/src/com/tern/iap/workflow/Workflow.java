@@ -2094,9 +2094,8 @@ public class Workflow implements com.opensymphony.workflow.Workflow
             else
             {
             	StepDescriptor ret = wf.getStep( theResults[0].getStep() );
-            	if(inputs != null && ret != null)
+            	/*if(inputs != null && ret != null)
             	{
-            		//only one function to decide the operator who have the privilege to process the new step
             		List preFunctions = ret.getPreFunctions();
                     for (Iterator iterator = preFunctions.iterator();
                             iterator.hasNext();) 
@@ -2111,7 +2110,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
                         	break;
                         }
                     }
-            	}
+            	}*/
             	return ret;
             }
     	}

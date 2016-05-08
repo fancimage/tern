@@ -12,7 +12,9 @@ package com.tern.iap.controllers;
 import com.tern.dao.Model;
 import com.tern.dao.Record;
 import com.tern.dao.RecordSet;
+import com.tern.iap.util.ActionResult;
 import com.tern.util.Convert;
+import com.tern.util.Trace;
 import com.tern.util.config;
 import com.tern.web.HttpStream;
 import com.tern.web.Route;
@@ -39,64 +41,69 @@ public class DataResourceController extends Controller
 	
 	public void delete()
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		String ids = request.getParameter("items");
 		if(ids==null || ids.length()<=0)
 		{
-			writeResult(1,null);  //参数错误(非法的请求)
+			r.setResult(1);  //参数错误(非法的请求)
 			return;
 		}
 		
 		String[] arr = ids.split(",");
 	    if(arr.length<=0)
 	    {
-	    	writeResult(1,null);  //参数错误(非法的请求)
+	    	r.setResult(1);  //参数错误(非法的请求)
 	    	return;
 	    }
 	    
 	    model = Model.from(modelName);
-	    model.delete(arr);	    
-	    writeResult(0,null);
+	    model.delete(arr);
 	}
 	
 	//新建
 	public void create()
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = Model.from(modelName);
 		try
 		{
 		    Record record = html.new_record(model, request);
 		    record.save();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
 		{
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
+			Trace.write(Trace.Error, t, "create record(%s) failed.",modelName);
 		}
 	}
 	
 	//更新
 	public void update(int id)
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = Model.from(modelName);
 		try
 		{
 		    Record record = html.update_record(model, request);
 		    record.save();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
 		{
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
 		}
 		
 		//redirect(String.format("%spet", config.getRoot()));  //to index page
@@ -124,7 +131,7 @@ public class DataResourceController extends Controller
 		return "model/edit";
 	}
 	
-	protected void writeResult(int result,String err)
+	/*protected void writeResult(int result,String err)
     {
         this.setContentType("text/javascript");
         this.response.setCharacterEncoding(config.getEncoding());
@@ -142,5 +149,5 @@ public class DataResourceController extends Controller
         }
         
         out.append("}");
-    }
+    }*/
 }

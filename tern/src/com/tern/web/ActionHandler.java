@@ -14,17 +14,30 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.tern.util.TernContext;
 import com.tern.util.Trace;
+import com.tern.util.config;
 import com.tern.web.routes.ActionWrapper;
 import com.tern.web.routes.RouteSet;
 
+import java.beans.XMLEncoder;
+import java.io.IOException;
+
+import com.alibaba.fastjson.JSON;
+
 public class ActionHandler implements IHandler
 {	
-	protected boolean doAction(ActionWrapper action,HttpServletRequest request,HttpServletResponse response)
+	protected boolean doAction(ActionWrapper action,HttpServletRequest request,HttpServletResponse response,PathInfo pi)
 	{
 		Controller ctrl = action.getController();
 		ctrl.init(request, response);
+		ctrl.page = pi.page;
+		ctrl.pageSize = pi.pageSize;
 		
 		Object ret = null;
+		boolean logflag = Trace.needTrace(Trace.Information);
+		if(logflag)
+		{
+			Trace.write(Trace.Information, "start action:%s,path=%s",action.toString(), request.getServletPath());
+		}
 		
 		try
 		{
@@ -32,6 +45,11 @@ public class ActionHandler implements IHandler
 		}
 		catch(Exception e)
 		{
+			if(logflag)
+			{
+				Trace.write(Trace.Information, "end action:%s,and redirect." , ctrl.toString());
+			}
+			
 			Throwable t = e.getCause();
 			if(t instanceof RedirectRequest)
 			{
@@ -79,13 +97,54 @@ public class ActionHandler implements IHandler
 			}
 			
 			return false;
-		}			
+		}	
+		
+		if(logflag)
+		{
+			Trace.write(Trace.Information, "end action:%s." , ctrl.toString());
+		}
 		
 		String view_path = null;
+		Object vo = ctrl.getViewObject();
+		if(pi.disposition != null && vo != null)
+		{
+			if ("json".equals(pi.disposition))
+			{
+				response.setContentType("text/javascript");
+				response.setCharacterEncoding(config.getEncoding());
+				
+				ctrl.getStream()
+				    .append(JSON.toJSONString(vo))
+				    .flush();
+				return true;
+			}
+			else if ("xml".equals(pi.disposition))
+			{
+				response.setContentType("text/xml");
+				response.setCharacterEncoding(config.getEncoding());
+				
+				
+				XMLEncoder out;
+				try 
+				{
+					out = new XMLEncoder(response.getOutputStream());
+					out.writeObject(vo);
+		            out.flush();
+		            out.close();
+				} 
+				catch (IOException e) 
+				{
+					Trace.write(Trace.Error, e,"serialize xml failed");
+				}
+				
+				return true;
+			}
+		}
+		
 		if(ret instanceof String)
 		{
 			//2. string     --> specified view
-			view_path = (String)ret;
+			view_path = (String)ret;			
 		}				
 		else if(ctrl.stream != null && ctrl.stream.hasContent )
 		{
@@ -100,6 +159,7 @@ public class ActionHandler implements IHandler
 		
 		if(view_path != null)
 		{				
+			request.setAttribute("page", vo);
 			if(!TernContext.current().getTemplate().render(ctrl,view_path,request, response))
 			{
 				try
@@ -111,6 +171,11 @@ public class ActionHandler implements IHandler
 				}
 				
 				return false;
+			}
+			
+			if(logflag)
+			{
+				Trace.write(Trace.Information, "end render:%s." , ctrl.toString());
 			}
 		}
 		
@@ -126,14 +191,55 @@ public class ActionHandler implements IHandler
 		return true;
 	}
 	
+	protected PathInfo parseUrl(String path)
+	{
+		PathInfo pi = new PathInfo();
+		int index = path.lastIndexOf("/page/");
+		if(index >= 0)
+		{
+            String[] elements = path.substring(index + 6).split("/");
+            if (elements.length >=1 || elements.length<=2)
+            {
+            	try 
+            	{
+                    pi.page = Integer.parseInt(elements[0]);
+                    if (elements.length > 1) 
+                    {
+                        pi.pageSize = Integer.parseInt(elements[1]);
+                    }
+                    
+                    path = path.substring(0, index);
+                } 
+            	catch (NumberFormatException ex) 
+            	{
+                }            	
+            }
+		}
+		
+		index = path.lastIndexOf('.');
+		if(index >= 0)
+		{
+			String disposition = path.substring(index + 1);
+			if (disposition.indexOf('/') < 0)
+			{
+				path = path.substring(0, index);
+				pi.disposition = disposition;
+			}
+		}
+		
+		pi.path = path;
+		return pi;
+	}
+	
 	@Override
 	public boolean execute(String path, HttpServletRequest request,
 			HttpServletResponse response) 
 	{
-		Object target = TernContext.current().getRouter().resolve(path, request.getMethod());
+		PathInfo pi = parseUrl(path);
+		Object target = TernContext.current().getRouter().resolve(pi.path, request.getMethod());
 		if(target instanceof ActionWrapper)
 		{
-			doAction((ActionWrapper)target,request,response);
+			doAction((ActionWrapper)target,request,response,pi);
 			return true;
 		}
 		else
@@ -142,4 +248,11 @@ public class ActionHandler implements IHandler
 		}		
 	}
     
+	public static class PathInfo
+	{
+		public String path;
+		String disposition;
+		int page = -1;
+		int pageSize = -1;
+	}
 }

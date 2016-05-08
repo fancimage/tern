@@ -117,21 +117,6 @@ var tern_list = function(){
 
 window.tern_list = tern_list;
 
-var _reg =new RegExp('\n','g');
-var frm_alert = function($frm,msg){
-	var $alert = $frm.find('.alert');
-	if(0 == $alert.length){
-		$alert = $('<div></div>').addClass('alert alert-block alert-error fade in');
-		$alert.append($('<button></button>').addClass('close')
-		     .attr('type','button').attr('data-dismiss','alert').html('&times;'));
-		$alert.append('<p></p>');
-		
-		$alert.appendTo($frm);
-	}
-	$alert.find('p').html(msg.replace(_reg,"<br>"));
-	$alert.alert();
-};
-
 var deleteItems = function(items){
 	var sels = '';
 	items.each(function(){
@@ -139,8 +124,8 @@ var deleteItems = function(items){
     	sels += $(this).val();
     });
         		            
-    $.post(this_url+'delete',{"items":sels},function(result){
-        if(0 == result.code){
+    $.post(this_url+'delete.json',{"items":sels},function(result){
+        if(0 == result.result){
         	items.each(function(){
         		$(this).parent().parent().remove();
         		$('input[name=query_page_total]').val('-1');
@@ -148,7 +133,7 @@ var deleteItems = function(items){
         } else if(result.message){
         	alert(result.message);
         } else {
-        	alert('操作失败，errcode='+result.code);
+        	alert('操作失败，errcode='+result.result);
         }
     },'json').error(function(){
         alert('操作失败！');

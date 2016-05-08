@@ -10,6 +10,10 @@
 package com.tern.db;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import com.tern.util.Convert;
 
@@ -21,7 +25,7 @@ import com.tern.util.Convert;
  * @author Fancimage
  * @version 1.0
  */
-public class DataRow implements Serializable,com.tern.dao.IRow
+public class DataRow implements Serializable,com.tern.dao.IRow,Map<String, Object>
 {
     protected DataTable dt;
     //protected Map<> _columns;
@@ -244,4 +248,107 @@ public class DataRow implements Serializable,com.tern.dao.IRow
         // _data.set(index, o);
     }
 
+	@Override
+	public void clear() 
+	{
+	}
+
+	@Override
+	public boolean containsKey(Object key) 
+	{
+		return dt._columns.containsKey(key);
+	}
+
+	@Override
+	public boolean containsValue(Object value) 
+	{		
+		return false;
+	}
+
+	@Override
+	public Set<Map.Entry<String, Object>> entrySet() 
+	{		
+		Set<Map.Entry<String, Object>> ret = new HashSet<Map.Entry<String, Object>>();
+		for(String k:dt._columns.keySet())
+		{
+			Map.Entry<String, Object> e = new MyEntry(k,this.get(k));
+			ret.add(e);
+		}
+		return ret;
+	}
+
+	@Override
+	public Object get(Object key) 
+	{
+		if(key == null) return null;
+		return this.get(key.toString());
+	}
+
+	@Override
+	public boolean isEmpty() 
+	{		
+		return false;
+	}
+
+	@Override
+	public Set<String> keySet() {
+		return dt._columns.keySet();
+	}
+
+	@Override
+	public Object put(String key, Object value) 
+	{
+		return null;
+	}
+
+	@Override
+	public void putAll(Map<? extends String, ? extends Object> m) 
+	{
+	}
+
+	@Override
+	public Object remove(Object key) 
+	{		
+		return null;
+	}
+
+	@Override
+	public int size() 
+	{
+		return _data.length;
+	}
+
+	@Override
+	public Collection<Object> values()
+	{
+		return null;
+	}
+
+}
+
+final class MyEntry implements Map.Entry<String, Object> {
+    private final String key;
+    private Object value;
+
+    public MyEntry(String key, Object value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    @Override
+    public String getKey() {
+        return key;
+    }
+
+    @Override
+    public Object getValue() {
+        return value;
+    }
+
+    @Override
+    public Object setValue(Object value) {
+    	Object old = this.value;
+        this.value = value;
+        return old;
+    }
 }

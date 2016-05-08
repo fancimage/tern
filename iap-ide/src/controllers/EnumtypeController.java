@@ -10,6 +10,7 @@
 package controllers;
 
 import com.tern.dao.Record;
+import com.tern.iap.util.ActionResult;
 import com.tern.web.Route;
 
 @Route("/enumtype/$appName/*")
@@ -22,17 +23,20 @@ public class EnumtypeController extends DataResourceController
 	
 	public void delete()
 	{
+		ActionResult ar = new ActionResult();
+		this.setViewObject(ar);
+		
 		String ids = request.getParameter("items");
 		if(ids==null || ids.length()<=0)
 		{
-			writeResult(1,null);
+			ar.setResult(1,null);
 			return;
 		}
 		
 		String[] arr = ids.split(",");
 	    if(arr.length<=0)
 	    {
-	    	writeResult(1,null);
+	    	ar.setResult(1,null);
 	    	return;
 	    }
 	    
@@ -46,7 +50,6 @@ public class EnumtypeController extends DataResourceController
 	    
 	    model = this.getModel();
 	    model.delete( buf.toString() );
-	    writeResult(0,null);
 	}
 	
 	public void update(String id)

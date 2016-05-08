@@ -19,19 +19,19 @@ $(function(){
     		}
     	}
     	
-    	$.post(url,$frm.serialize(),function(result){
+    	$.post(url+".json",$frm.serialize(),function(result){
     		var win = window;
     		if(modal.current()){
     			win = window.top;
     		}
     		
-    		if(0 == result.code){
+    		if(0 == result.result){
     			if(win != window) modal.close();
     			win.location.reload();
     		} else if(result.message){
     			frm_alert($frm.parent(),result.message);
         	} else {
-        		frm_alert($frm.parent(),'操作失败，errcode='+result.code);
+        		frm_alert($frm.parent(),'操作失败，errcode='+result.result);
         	}
     	},'json').error(function(){
     		alert('操作失败！');
@@ -70,4 +70,19 @@ function chooseEnum(src){
 		val_input.val(eid);
 		val_input.prev().val(ename);
 	}});
+};
+
+var _reg =new RegExp('\n','g');
+var frm_alert = function($frm,msg){
+	var $alert = $frm.find('.alert');
+	if(0 == $alert.length){
+		$alert = $('<div></div>').addClass('alert alert-danger fade in');
+		$alert.append($('<button></button>').addClass('close')
+		     .attr('type','button').attr('data-dismiss','alert').html('&times;'));
+		$alert.append('<p></p>');
+		
+		$alert.appendTo($frm);
+	}
+	$alert.find('p').html(msg.replace(_reg,"<br>"));
+	$alert.alert();
 };

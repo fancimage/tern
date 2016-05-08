@@ -810,6 +810,7 @@ public class Record implements Map<String,Object>,IRow
 			catch (SQLException e) 
 			{
 				if(trans != null) trans.rollback();
+				Trace.write(Trace.Error, e, "save model failed");
 				throw new ModelException(this.model,e.getMessage());
 			}
 			this._keys = null;
@@ -922,6 +923,7 @@ public class Record implements Map<String,Object>,IRow
 			catch(Exception e)
 			{
 				if(trans!=null) trans.rollback();
+				Trace.write(Trace.Error, e, "save model failed");
 				throw new ModelException(model,e.getMessage()); 
 			}			
 			

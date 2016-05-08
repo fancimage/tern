@@ -1,3 +1,36 @@
+create table t_menu
+(
+   mid                  int not null,
+   mcode                varchar(16),
+   mcaption             varchar(32),
+   murl                 varchar(64),
+   mtarget              varchar(16),
+   primary key (mid)
+);
+
+create table t_permgroup
+(
+   pgid                 int not null,
+   pgcaption            varchar(16),
+   memo                 varchar(128),
+   primary key (pgid)
+);
+
+create table t_permission
+(
+   pgid                 int not null,
+   mid                  int not null,
+   primary key (pgid, mid)
+);
+
+create table t_role
+(
+   rid                  int not null,
+   rname                varchar(16),
+   memo                 varchar(128),
+   primary key (rid)
+);
+
 CREATE TABLE wf_service(
 	tid int NOT NULL,
 	pid int NOT NULL,

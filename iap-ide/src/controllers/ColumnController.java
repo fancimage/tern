@@ -2,6 +2,7 @@ package controllers;
 
 import com.tern.dao.Record;
 import com.tern.dao.RecordSet;
+import com.tern.iap.util.ActionResult;
 import com.tern.util.Trace;
 import com.tern.util.html;
 import com.tern.web.Route;
@@ -31,6 +32,9 @@ public class ColumnController extends DataResourceController
     
     public void create()
 	{
+    	ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = this.getModel();
 		
 		try
@@ -46,22 +50,23 @@ public class ColumnController extends DataResourceController
 		    record.set("eid", eid);
 		    record.set("csort", max);
 		    record.save();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
 		{
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
 			Trace.write(Trace.Error, t, "create record(enum) failed.");
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
 		}
 	}
 	
 	public void update(int id)
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = this.getModel();
 		
 		try
@@ -69,16 +74,14 @@ public class ColumnController extends DataResourceController
 		    Record record = html.update_record(model, request);
 		    record.set("eid", eid);		    
 		    record.save();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
 		{
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
 		}
 	}
 	
@@ -98,11 +101,14 @@ public class ColumnController extends DataResourceController
 	@Route("/resort/%1/%2")
 	public void resort(long first,long second) //,HttpMethod.POST
 	{
+		ActionResult ar = new ActionResult();
+		this.setViewObject(ar);
+		
 		model = this.getModel();
 		RecordSet rs = model.find(new long[]{first,second});
 		if(rs.size() != 2)
 		{
-			writeResult(1,"请求修改顺序的记录不存在!");
+			ar.setResult(1,"请求修改顺序的记录不存在!");
 			return;
 		}
 		
@@ -135,14 +141,14 @@ public class ColumnController extends DataResourceController
 	    	
 	    	model.getDb().commit();
 	    	
-	    	writeResult(0,null);
+	    	ar.setResult(0,null);
 	    }
 	    catch(Exception e)
 	    {
 	    	model.getDb().rollback();
 	    	
 	    	Trace.write(Trace.Error, e, "entity change sort");
-	    	writeResult(2,"系统错误!");
+	    	ar.setResult(2,"系统错误!");
 	    }
 	}
 }

@@ -1,1 +1,5 @@
-<@tern.form id="editFrm" record=record fields=["tname","serTableName","tcaption",["appname",true] ] />
+<@tern.override name="editfrm">	
+    <@tern.form id="editFrm" record=record fields=["tname","tcaption","serTableName","stepTable" ] />
+</@>
+
+<#include "/model/edit.html">

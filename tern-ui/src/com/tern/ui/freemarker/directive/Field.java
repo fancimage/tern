@@ -367,8 +367,10 @@ class VLayoutRender extends FieldRender
 	
 	public void render(Column col,boolean readonly,String attrs) throws IOException,TemplateException
 	{
+		out.append("<div class=\"form-group\">\n");
 		out.append("<label>").append(col.getCaption()).append("</label>\n");
 		super.render(col, readonly,attrs);
+		out.append("</div>\n");
 	}
 }
 

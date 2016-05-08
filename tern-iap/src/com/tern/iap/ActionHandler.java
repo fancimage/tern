@@ -55,28 +55,28 @@ public class ActionHandler extends com.tern.web.ActionHandler
 					path = "";
 				}
 			}
+			else if(appName.equals("static"))
+			{
+				String tpath = path.substring(i+1);
+				int j = tpath.indexOf('/');
+				if( j > 1 )
+				{
+					appName = tpath.substring(0,j);
+					ctx = Application.appContexts.get(appName);
+					if(ctx != null)
+					{
+						path = tpath.substring(j+1);
+					}										
+				}
+				
+				return doStaticReq(ctx,path,request,response,false);
+			}
 		}			
 		
 		if(null == ctx)
 		{
 			ctx = ProxyContext.defContext;
-		}
-		else
-		{
-			//static??
-			if(path.startsWith("static/"))
-			{
-				try 
-				{
-					doStaticReq(ctx,path,request,response);
-					return true;
-				}
-				catch (Exception e)
-				{
-					return false;
-				}
-			}
-		}
+		}		
 		
 		ProxyContext.setCurrentContext(ctx,request,appName);
 		
@@ -84,14 +84,15 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		if(rs == null) rs = ProxyContext.router;
 		
 		ActionWrapper action = null;
-		Object target = rs.resolve(path, request.getMethod());
+		PathInfo pi = parseUrl(path);
+		Object target = rs.resolve(pi.path, request.getMethod());
 		if(target instanceof ActionWrapper)
 		{
 			action = (ActionWrapper)target;
 		}
 		else if(rs != ProxyContext.router)
 		{
-			target = ProxyContext.router.resolve(path, request.getMethod());
+			target = ProxyContext.router.resolve(pi.path, request.getMethod());
 			if(target instanceof ActionWrapper)
 			{
 				action = (ActionWrapper)target;
@@ -100,8 +101,12 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		
 		if(action != null)
 		{
-			doAction(action,request,response);
+			doAction(action,request,response,pi);
 			return true;
+		}
+		else if(path.startsWith("static/"))
+		{
+			return doStaticReq(ctx,path,request,response,true);
 		}
 		else
 		{
@@ -109,15 +114,46 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		}
 	}
 	
-	private void doStaticReq(TernContext ctx,String path,HttpServletRequest request,
-			HttpServletResponse response) throws ServletException, IOException
+	private boolean doStaticReq(TernContext ctx,String path,HttpServletRequest request,
+			HttpServletResponse response,boolean mode)
 	{
-		String fullFilePath = ctx.getResourcePath() + "/" + path;
-		File file = new File(fullFilePath);
+		File file = null;
+		if(ctx != null)
+		{
+			String fullFilePath;
+			if(mode) 
+			{
+				fullFilePath = ctx.getResourcePath() + "/" + path;
+			}
+			else
+			{
+				fullFilePath = ctx.getResourcePath() + "/static/" + path;
+			}
+			
+			file = new File(fullFilePath);			
+		}
+		else
+		{
+			String fullFilePath = ProxyContext.defContext.getResourcePath() + "/" + path;
+			file = new File(fullFilePath);
+		}
+		
 		if(!file.exists())
 		{
-		    //from iap
-			request.getRequestDispatcher("/"+path).forward(request,response);
+			if(mode)
+			{
+				//from iap
+				try 
+				{
+					request.getRequestDispatcher("/"+path).forward(request,response);
+					return true;
+				} 
+				catch (Exception e) 
+				{					
+				}
+			}
+			
+			return false;
 		}
 		else		
 		{
@@ -128,20 +164,29 @@ public class ActionHandler extends com.tern.web.ActionHandler
 	        int fileLength = (int) file.length();
             response.setContentLength(fileLength);
             
-            if (fileLength != 0) 
+            try
             {
-                InputStream inStream = new FileInputStream(file);
-                byte[] buf = new byte[4096];
-                ServletOutputStream servletOS = response.getOutputStream();
-                int readLength;
-                while (((readLength = inStream.read(buf)) != -1)) 
+            	if (fileLength != 0) 
                 {
-                    servletOS.write(buf, 0, readLength);
+                    InputStream inStream = new FileInputStream(file);
+                    byte[] buf = new byte[4096];
+                    ServletOutputStream servletOS = response.getOutputStream();
+                    int readLength;
+                    while (((readLength = inStream.read(buf)) != -1)) 
+                    {
+                        servletOS.write(buf, 0, readLength);
+                    }
+                    inStream.close();
+                    servletOS.flush();
+                    servletOS.close();
                 }
-                inStream.close();
-                servletOS.flush();
-                servletOS.close();
             }
+            catch(Exception e)
+            {
+            	return false;
+            }
+                        
+            return true;
 		}
 	}
 }

@@ -74,6 +74,11 @@ public class AppContext extends TernContext
 		return (AppContext)Application.appContexts.get(name);
 	}
 	
+	public static AppContext getDefault()
+	{
+		return ProxyContext.defContext;
+	}
+	
 	public static String getCurrentAppName()
 	{
 		ProxyContext.ContextData d = ProxyContext.localContext.get();

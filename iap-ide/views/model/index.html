@@ -1,3 +1,11 @@
+<@tern.override name="list-toolbar">
+	 <div class="btn-group" style="margin:4px">
+		 <button type="button" class="btn btn-default" id="btnNew">新增</button>
+         <button type="button" class="btn btn-default" id="btnDel">删除</button>
+         <button class="btn btn-default" id="btnBack">返回</button>
+	 </div>
+</@>
+
 <#assign columns=model.columnList colcount=0>
 <@tern.override name="grid-title">
   <tr class="info">
@@ -31,3 +39,11 @@
 </@>
 
 <#include "/layout/list.html">
+
+<script>
+    $(function(){
+       $('#btnBack').click(function(){
+    		   window.location.href = '${HOME}?appname=${appName}';
+    	 }); 
+    });	         
+</script>

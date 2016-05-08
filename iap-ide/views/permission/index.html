@@ -1,0 +1,13 @@
+<@tern.override name="grid-detail">
+  <tr>
+      <td><input value='${item.mid}' name="cb_record" type="checkbox"/></td>
+      <td>${(item.permgroup)!}</td> 
+      <td>${(item.menu)!}</td>
+      <td>
+        <a href="#modify"><i class="fa fa-edit"></i></a>
+	    <a href="#del"><i class="fa fa-remove"></i></a>
+     </td>
+  </tr>
+</@>
+
+<#include "/model/index.html">

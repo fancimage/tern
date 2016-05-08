@@ -43,63 +43,68 @@ public class DataController extends Controller
 	
 	public void delete()
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		String ids = request.getParameter("items");
 		if(ids==null || ids.length()<=0)
 		{
-			writeResult(1,null);
+			r.setResult(1);
 			return;
 		}
 		
 		String[] arr = ids.split(",");
 	    if(arr.length<=0)
 	    {
-	    	writeResult(1,null);
+	    	r.setResult(1);
 	    	return;
 	    }
 	    
 	    model = getModel();
-	    model.delete(arr);	    
-	    writeResult(0,null);
+	    model.delete(arr);
 	}
 	
 	public void create()
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = getModel();
 		try
 		{
 		    Record record = html.new_record(model, request);
 		    record.save();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
-		{
-			writeResult(2,e.getMessage());
+		{			
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
 			Trace.write(Trace.Error, t, "create record(%s) failed.",modelName);
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");			
 		}
 	}
 	
 	public void update(int id)
 	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		model = getModel();
 		try
 		{
 		    Record record = html.update_record(model, request);
-		    record.save();
-		    
-		    writeResult(0,null);
+		    record.save();		    		   
 		}
 		catch(com.tern.dao.ValueException e)
 		{
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());			
 		}
 		catch(Throwable t)
 		{
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
+			Trace.write(Trace.Error, t, "update record(%s) failed.",modelName);			
 		}
 	}
 	
@@ -125,7 +130,7 @@ public class DataController extends Controller
 		return modelName+"/edit";
 	}
 	
-	protected void writeResult(int result,String err)
+	/*protected void writeResult(int result,String err)
     {
         this.setContentType("text/javascript");
         this.response.setCharacterEncoding(config.getEncoding());
@@ -143,5 +148,5 @@ public class DataController extends Controller
         }
         
         out.append("}");
-    }
+    }*/
 }

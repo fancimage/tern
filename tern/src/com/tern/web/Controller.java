@@ -19,6 +19,10 @@ public class Controller
 	protected HttpServletResponse response;
 	protected HttpSession  session;
 	
+	protected int page = -1;
+	protected int pageSize = -1;
+	protected Object viewObject;
+	
 	HttpStream  stream;
 	//Map<String,Object> vars; /*页面变量*/
 	
@@ -33,6 +37,13 @@ public class Controller
     {
     	this.response.setContentType(type);
     }
+    
+    protected void setViewObject(Object obj)
+    {
+    	viewObject = obj;
+    }
+    
+    public Object getViewObject(){return viewObject;}
     
     //final protected void setAttribute(String name,Object value)
     //{   

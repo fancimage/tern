@@ -32,7 +32,10 @@ public class Operator
 	public String getName() {return name;}
 	public String getLoginName(){return loginName;}
 	
-	public long[] getRoles(){return roleIds;}
+	public long[] getRoles()
+	{
+		return roleIds;
+	}
 	
 	public int getIDByName(String name,String type)
 	{

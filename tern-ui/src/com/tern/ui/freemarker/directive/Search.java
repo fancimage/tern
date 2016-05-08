@@ -100,8 +100,9 @@ public class Search implements TemplateDirectiveModel
 		}
 		
 		Writer writer = env.getOut();
-		writer.append("<label class=\"checkbox\" style=\"margin-right:2px\">").append(caption).append("</label>");
+		writer.append("<div class=\"form-group\"><label>").append(caption).append("</label>");
 		writer.append( ui.getUIHtml(params) );
+		writer.append("</div>");
 		
 		String condition = ui.getCondition();
 		if(condition!=null)
@@ -162,7 +163,7 @@ public class Search implements TemplateDirectiveModel
     			
     			processParams(buf,params);    			
     			
-    			buf.append(">");
+    			buf.append(" class=\"form-control\">");
 				
 				RecordSet rs = relation.queryAvailableParents(col.getName() , filter);
 				boolean isFound = false;
@@ -203,7 +204,7 @@ public class Search implements TemplateDirectiveModel
     			{
     				buf.append(" value=\"").append(value).append("\"");
     			}
-    			buf.append("/>");
+    			buf.append(" class=\"form-control\"/>");
 			}
 			
 			return buf.toString();
@@ -297,7 +298,7 @@ public class Search implements TemplateDirectiveModel
 			buf.append(pname).append("\"");
 			
 			processParams(buf,params);
-			buf.append(">");
+			buf.append(" class=\"form-control\">");
 			
 			int sel = Convert.parseInt(value,-1);
 			boolean flag = false;			

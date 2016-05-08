@@ -1,15 +1,3 @@
-<#assign columns=model.columnList colcount=0>
-<@tern.override name="grid-title">
-  <tr class="info">
-     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
-     <#foreach col in columns>
-     <#if !col.id>
-     <th>${col.caption}</th><#assign colcount=colcount+1>
-     </#if>
-     </#foreach>
-     <th>操作</th>
-  </tr>
-</@>
 <@tern.override name="grid-detail">
   <tr>
       <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
@@ -22,12 +10,23 @@
         <#else>
            <td>${(item[col.name])!}</td>
        </#if>
-      </#foreach>         	 
+      </#foreach>           	 
       <td>
         <a href="#modify"><i class="fa fa-edit"></i></a>
 	    <a href="#del"><i class="fa fa-remove"></i></a>
+	    <a href="#detail"><i class="fa fa-th-list"></i></a>	    
      </td>
   </tr>
 </@>
 
-<#include "/layout/list.html">
+<#include "/model/index.html">
+
+<script language="javascript">
+    $(function(){
+       $tern.onCommand = function(name,id){
+	       if(name == '#detail'){
+	           window.location.href = '${HOME}permission/${appName}/'+id;
+	       }
+	   }
+    });	
+</script>

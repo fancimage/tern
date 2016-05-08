@@ -67,4 +67,9 @@ public class ActionWrapper
         return parameters;
     }
     
+    @Override
+    public String toString()
+    {
+    	return self.toString()+":"+method.getName();
+    }
 }
