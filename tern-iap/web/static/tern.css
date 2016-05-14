@@ -10,6 +10,14 @@
 	color:black;
 }
 
+.pagediv .pagination{
+    margin: 0 !important;
+}
+
+.pagination A{
+    margin: 0 !important;
+}
+
 body {
 	font-family: "open sans","Helvetica Neue",Helvetica,Arial,sans-serif;
 }

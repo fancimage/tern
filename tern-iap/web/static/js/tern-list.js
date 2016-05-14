@@ -44,10 +44,11 @@ var tern_list = function(){
     	$tern.onNew();
     });
     
-    var $page=$('.pagination');
+    var $page=$('.pagediv');
     if($page.length == 1){
     	$page.css('margin','0 0').css('text-align','right').css('padding','2px').css('padding-bottom','0px');
-    	var $ul=$('<ul></ul>');
+    	var $nav = $('<nav></nav>').appendTo($page);
+    	var $ul=$('<ul></ul>').addClass('pagination');
     	
     	var current = 1*$page.attr('page-current');
     	var count = 1*$page.attr('page-count');            	
@@ -83,7 +84,7 @@ var tern_list = function(){
     	
     	addItem(count);
     	addItem(count,'&raquo;','next');
-    	$page.append($ul);
+    	$nav.append($ul);
     	
     	$page.find('A').click(function(){
     		var name = $(this).attr('href');
@@ -104,6 +105,8 @@ var tern_list = function(){
         		  $('#query').submit();
         	   }
            }
+    	   
+    	   return false;
     	});
     }
     

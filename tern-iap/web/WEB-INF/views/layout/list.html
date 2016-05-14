@@ -51,7 +51,7 @@
     <@tern.block name="grid-footer">
       <#if (query?? && query.pagecount>1) >
 	   <tr class="info">   
-        <td colspan="${colcount+2}" class="pagination" page-current="${query.current}" page-count="${query.pagecount}">         	
+        <td colspan="${colcount+2}" class="pagediv" page-current="${query.current}" page-count="${query.pagecount}">         	
         </td>
       </tr>
       </#if>
