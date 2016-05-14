@@ -11,6 +11,7 @@ package com.tern.iap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.tern.db.RowMapper;
@@ -132,41 +133,51 @@ public class Operator
 		}
 		//得到用户的权限组
 		try 
-		{
+		{			
 			List<Integer> pgs = db.sql("select distinct pgid from t_userperm where operatorID=?" , this.operatorID)
 			  .query(new RowMapper<Integer>(){
 				  @Override
 					public Integer map(ResultSet rs, int rowNum) throws SQLException {
 					  return rs.getInt("pgid");
 				  }
-			  });
+			});
 			
-			if(pgs != null && pgs.size() > 0)
+			if(pgs == null || pgs.size() <= 0)
 			{
-				StringBuffer sql = new StringBuffer();
-				for(Integer p : pgs)
+				if(this.operatorID == 1 && this.loginName.equals("admin"))
 				{
-					if(sql.length() > 0) sql.append(",");
-					sql.append(p);
+					//超级系统管理员
+					pgs = new ArrayList<Integer>(){{this.add(1);}};
 				}
-				
-				sql.append(")").insert(0, "select distinct mid from t_permission where pgid in (");
-				
-				List<Integer> ids = TernContext.current().getMetaDB().sql(sql.toString())
-						.query(new RowMapper<Integer>(){
-				             @Override
-					         public Integer map(ResultSet rs, int rowNum) throws SQLException {
-					             return rs.getInt("mid");
-				             }
-			            });
-				
-				this.myMenus = new int[ids.size()];
-				int i = 0;
-				for(int m : ids)
+				else
 				{
-					myMenus[i] = m;
-					i++;
+					return;
 				}
+			}
+			
+			StringBuffer sql = new StringBuffer();
+			for(Integer p : pgs)
+			{
+				if(sql.length() > 0) sql.append(",");
+				sql.append(p);
+			}
+			
+			sql.append(")").insert(0, "select distinct mid from t_permission where pgid in (");
+			
+			List<Integer> ids = TernContext.current().getMetaDB().sql(sql.toString())
+					.query(new RowMapper<Integer>(){
+			             @Override
+				         public Integer map(ResultSet rs, int rowNum) throws SQLException {
+				             return rs.getInt("mid");
+			             }
+		            });
+			
+			this.myMenus = new int[ids.size()];
+			int i = 0;
+			for(int m : ids)
+			{
+				myMenus[i] = m;
+				i++;
 			}
 		} 
 		catch (SQLException e) 
