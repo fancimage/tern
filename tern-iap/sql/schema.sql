@@ -5,6 +5,8 @@ create table t_menu
    mcaption             varchar(32),
    murl                 varchar(64),
    mtarget              varchar(16),
+   pmid                 int,
+   micon                varchar(16),
    primary key (mid)
 );
 
@@ -34,6 +36,7 @@ create table t_role
 CREATE TABLE wf_service(
 	tid int NOT NULL,
 	pid int NOT NULL,
+	tcode varchar(16) NOT NULL,
 	tname varchar(16) NULL,
 	serTableName varchar(32) NULL,
 	stepTable    varchar(32) NULL,
@@ -176,9 +179,9 @@ create table leaveApply
 (
     reqid       int primary key,
     opid        int not null,
+    reqtype     varchar(16),
     start_date  datetime,
     end_date    datetime,
-    reason      varchar(256),
-    reqtype     int     
+    reason      varchar(256)         
 );
 

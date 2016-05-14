@@ -11,17 +11,21 @@ package com.tern.iap.workflow;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import com.tern.dao.Model;
 import com.tern.db.*;
+import com.tern.util.TernContext;
 import com.tern.util.Trace;
 
 public class Service 
 {	
     private int id;
+    private String code;
     private String name;      
     private String caption;    
     private String serviceTable;
+    private String stepTable;
     
     /*private String workflowName;
     private String serviceIDName;
@@ -29,6 +33,7 @@ public class Service
     private String wfIDName;*/
     
     public int getId(){return id;}
+    public String getCode(){return code;}
     public String getName(){return name;}
     public String getCaption(){return caption;}
     
@@ -77,7 +82,12 @@ public class Service
 		}
 		
 		return tname;
-    }   
+    } 
+    
+    public String getStepTable()
+    {
+    	return this.stepTable;
+    }
     
     public Model getModel()
     {
@@ -90,17 +100,51 @@ public class Service
     	return model.find(serviceID);
     }
     
-    public static Service getService(int id)
+    public static Service getService(int tid)
     {
-    	if(com.tern.util.config.isDebug())
-    	{    								
-    	}
+    	try
+		{    		
+    		Database meta = TernContext.current().getMetaDB();
+    		return meta.table("wf_service").where("tid=?",tid)
+  					 .queryOne(new ServiceMapper());
+		}
+		catch(Throwable e)
+		{
+			Trace.write(Trace.Error,e, "getService");
+			return null;
+		}
+    }
+    
+    public static Service getService(int pid,String code)
+    {
+    	/*考虑从缓存中提取*/
+    	if(!com.tern.util.config.isDebug())
+    	{}
     	
     	try
 		{
-			return db.table("wf_service").where("tid=?",id)
-					 .queryOne(new ServiceMapper());
-			
+    		int tid = db.table("wf_service").select("tid").where("pid=? and tcode=?",pid,code).queryInt();
+    		
+    		Database meta = TernContext.current().getMetaDB();
+    		List<Service> list = null;
+    		if(tid <= 0 )
+    		{
+    			list = meta.table("wf_service").where("tcode=?",code)
+					 .query(new ServiceMapper());
+    		}
+    		else
+    		{
+    			list = meta.table("wf_service").where("tid=?",tid)
+   					 .query(new ServiceMapper());
+    		}
+    		
+    		if(list == null || list.size()<=0) return null;
+    		
+    		/*加入缓存*/
+    		if(!com.tern.util.config.isDebug())
+        	{}
+    		
+    		return list.get(0);
 		}
 		catch(Throwable e)
 		{
@@ -114,9 +158,15 @@ public class Service
 		@Override
 		public Service map(ResultSet rs, int rowNum) throws SQLException
 		{
+			if(rowNum >= 1)
+			{
+				throw new SQLException(String.format("duplicate service[%s] exists!", rs.getString("tcode")) );
+			}
+			
 			Service s=new Service();
 			
 			s.id = rs.getInt("tid");
+			s.code = rs.getString("tcode");
 			s.name = rs.getString("tname");						
 			
 			s.caption = rs.getString("tcaption");
@@ -126,6 +176,7 @@ public class Service
 			}
 			
 			s.serviceTable = rs.getString("serTableName");
+			s.stepTable = rs.getString("stepTable");
 			
 			/*s.workflowName=rs.getString("wfname");
 			if(s.workflowName!=null)

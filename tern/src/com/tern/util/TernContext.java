@@ -53,4 +53,6 @@ abstract public class TernContext
     {
     	return enumCache;
     }
+    
+    public Object currentOperator(){return null;}
 }

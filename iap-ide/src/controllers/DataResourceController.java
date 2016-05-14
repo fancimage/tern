@@ -26,7 +26,7 @@ public class DataResourceController extends DataController
 		AppContext ctx = AppContext.getAppContext(appName);
 		if(ctx == null || ctx.getMetaDB() == null)
 		{
-			throw new ControllerException(this,"app:"+appName+"²»´æÔÚ»òÎ´ÅäÖÃÔªÊı¾İ¿â¡£");
+			throw new ControllerException(this,"app:"+appName+"ä¸å­˜åœ¨æˆ–æœªé…ç½®å…ƒæ•°æ®åº“ã€‚");
 		}
 		
 		this.request.setAttribute("appName", appName);

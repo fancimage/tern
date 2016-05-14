@@ -43,7 +43,7 @@ public class Controller
     	viewObject = obj;
     }
     
-    public Object getViewObject(){return viewObject;}
+    Object getViewObject(){return viewObject;}
     
     //final protected void setAttribute(String name,Object value)
     //{   

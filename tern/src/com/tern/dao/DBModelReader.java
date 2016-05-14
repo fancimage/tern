@@ -84,6 +84,7 @@ public class DBModelReader extends ModelReader
     	    }
     	    break;
     	case String:
+    	case Text:
     	    {
     	    	col.maxLen = rs.getInt("cmax");
     	    	col.minLen = rs.getInt("cmin");
@@ -110,6 +111,12 @@ public class DBModelReader extends ModelReader
     	    	col.minLen = rs.getInt("scale"); /*子表的类型:0[一对多 1[一对一]]*/
     	    }
     	   break;
+    	case Binary:
+    	    {
+    	    	col.extra1 = rs.getString("cref");  /*存储content type的字段名*/
+    	    	col.extraInt = rs.getInt("scale");/*存储方式*/
+    	    }
+    	    break;
     	default:
     		break;
     	}

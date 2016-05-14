@@ -101,6 +101,19 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		
 		if(action != null)
 		{
+			/*判断是否拥有访问权限*/
+			try
+			{
+				if(!ctx.hasPermission(action))
+				{
+					return redirect(request,response,2,"static/noperm.html");
+				}
+			}
+			catch(SessionExpireException e)
+			{
+				return redirect(request,response,1,e.getUrl());
+			}			
+			
 			doAction(action,request,response,pi);
 			return true;
 		}
@@ -114,7 +127,7 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		}
 	}
 	
-	private boolean doStaticReq(TernContext ctx,String path,HttpServletRequest request,
+	protected boolean doStaticReq(TernContext ctx,String path,HttpServletRequest request,
 			HttpServletResponse response,boolean mode)
 	{
 		File file = null;
@@ -188,5 +201,25 @@ public class ActionHandler extends com.tern.web.ActionHandler
                         
             return true;
 		}
+	}
+    
+	static ActionWrapper resolvePath(String path,RouteSet rs1,RouteSet rs2)
+	{
+		ActionHandler ah = new ActionHandler();
+		
+		PathInfo pi = ah.parseUrl(path);
+		Object target = rs1.resolve(pi.path, "GET");
+		if(target instanceof ActionWrapper)
+		{
+			return (ActionWrapper)target;
+		}
+		
+		target = rs2.resolve(pi.path, "GET");
+		if(target instanceof ActionWrapper)
+		{
+			return (ActionWrapper)target;
+		}
+		
+		return null;
 	}
 }

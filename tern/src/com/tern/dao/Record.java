@@ -1111,11 +1111,16 @@ public class Record implements Map<String,Object>,IRow
 		return nv;
 	}
 	
+	public void clear(String colname)
+	{
+		row.remove(colname);
+	}
+	
 	/*to implements Map interface*/
 	@Override
 	public void clear()
 	{		
-		throw new UnsupportedOperationException();
+		this.row.clear();		
 	}
 		
 	@Override

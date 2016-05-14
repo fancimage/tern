@@ -28,6 +28,8 @@ import com.tern.dao.RecordState;
 import com.tern.db.DataTable;
 import com.tern.db.RowMapper;
 import com.tern.db.db;
+import com.tern.iap.Operator;
+import com.tern.iap.util.ActionResult;
 import com.tern.iap.workflow.Service;
 import com.tern.iap.workflow.Workflow;
 import com.tern.util.Convert;
@@ -36,34 +38,33 @@ import com.tern.util.config;
 import com.tern.util.html;
 import com.tern.web.ActionException;
 import com.tern.web.Controller;
+import com.tern.web.ControllerException;
 import com.tern.web.HttpStream;
 import com.tern.web.Route;
 
-@Route("/service/%sid/process/*")
+@Route("/task/$scode/%pid/*")
 public class ProcessController extends Controller
 {	
-	private int sid;
+	private String scode;
+	private int pid;
 	
 	/*
 	 * Get all process(task) for service $sid
 	 * */
 	public String index()
-	{
-		if(config.isDebug())
-		{
-			com.tern.iap.Operator op = new com.tern.iap.Operator(1,"乔旭峰","qiao");
-			request.getSession().setAttribute("tern.operator", op);
-		}
-		
-		Service service = Service.getService(sid);
+	{		
+		Service service = Service.getService(pid,scode);
 		if(null == service)
 		{
-			throw new ActionException( String.format("Service(%d) does not exists.", sid));
+			throw new ControllerException(this, String.format("Service(pid,%d) does not exists.", pid,scode));
 		}
+		
+		Operator op = Operator.current();
 		
 		Model model = Model.from(service.getDataTableName());
         RecordSet records = model.query()
                                  .join("process",true,new String[]{"id","id"});
+                                 //.where("B.creator=?",op.getId());
 		
 		request.setAttribute("model", model);
 		request.setAttribute("records", records);
@@ -74,10 +75,10 @@ public class ProcessController extends Controller
 	
 	public String _new()
 	{
-		Service service = Service.getService(sid);
+		Service service = Service.getService(pid,scode);
 		if(null == service)
 		{
-			throw new ActionException( String.format("Service(%d) does not exists.", sid));
+			throw new ActionException( String.format("Service(%d,%s) does not exists.", pid,scode));
 		}
 		
 		Model model = Model.from(service.getDataTableName());
@@ -125,12 +126,12 @@ public class ProcessController extends Controller
 		}
 	}
 	
-	public String edit(long pid)
+	public String edit(long eid)
 	{			
-		Service service = Service.getService(sid);
+		Service service = Service.getService(pid,scode);
 		if(null == service)
 		{
-			throw new ActionException( String.format("Service(%d) does not exists.", sid));
+			throw new ActionException( String.format("Service(%d,%s) does not exists.", pid,scode));
 		}
 		
 		WorkflowDescriptor wd = Workflow.getInstance().getWorkflowDescriptor(service.getName());
@@ -149,7 +150,7 @@ public class ProcessController extends Controller
 		}*/
 		
 		Model model = Model.from(service.getDataTableName());
-		Record record = model.find(pid);	
+		Record record = model.find(eid);
 		
 		Map<String,Object> inputs = new HashMap<String,Object>();
 	    inputs.put("wfName", service.getName());
@@ -212,16 +213,16 @@ public class ProcessController extends Controller
 	}
 	
 	@Route("%1/detail")
-	public String detail(long pid)
+	public String detail(long eid)
 	{
-		Service service = Service.getService(sid);
+		Service service = Service.getService(pid,scode);
 		if(null == service)
 		{
-			throw new ActionException( String.format("Service(%d) does not exists.", sid));
+			throw new ActionException( String.format("Service(%d,%s) does not exists.", pid,scode));
 		}
 		
 		Model model = Model.from(service.getDataTableName());
-		Record record = model.find(pid);
+		Record record = model.find(eid);
 		List<Map<String,Object>> history = getHistorySteps(pid);
 		
 		request.setAttribute("model",  model);
@@ -233,14 +234,17 @@ public class ProcessController extends Controller
 	}
 	
 	public void create()
-	{			
+	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		//create new process
 		//1. get service info
-		Service service = Service.getService(sid);
+		Service service = Service.getService(pid,scode);
 		if(null == service)
 		{
 			//throw new ActionException( String.format("Service(%d) does not exists.", sid));
-			writeResult(101,"流程不存在.");
+			r.setResult(101,"流程不存在.");
 			return;
 		}
 		
@@ -252,7 +256,7 @@ public class ProcessController extends Controller
 		    Record record = html.new_record(model, request);
 		    if(record.getState() == RecordState.Error)
 		    {
-		    	writeResult(2, record.getErrorMessage());
+		    	r.setResult(2, record.getErrorMessage());
 		    	return;
 		    }
 		    
@@ -263,36 +267,39 @@ public class ProcessController extends Controller
 		    if(pid <= 0)
 		    {
 		        db.rollback();
-		        writeResult(103,"内部错误：建立流程失败.");
+		        r.setResult(103,"内部错误：建立流程失败.");
 		    }
 		    else
 		    {
 		    	record.save();
 		    	db.commit();
-		    	writeResult(0,null);
+		    	r.setResult(0,null);
 		    }		    
 		}
 		catch(com.tern.dao.ValueException e)
 		{
 			db.rollback();
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Exception e)
 		{
 			db.rollback();
 			Trace.write(Trace.Error, e, "create process failed");
 			//throw new ActionException( String.format("Create process for Service(%d) failed.", sid) , e);
-			writeResult(102,"内部错误：建立流程失败.");
+			r.setResult(102,"内部错误：建立流程失败.");
 		}
 	}
 	
-	public void update(long pid)
-	{	
+	public void update(long eid)
+	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
 		//action id
 		String tmp = request.getParameter("actionID");
 		if(tmp == null)
 		{
-			writeResult(3,"参数错误:no action id.");
+			r.setResult(3,"参数错误:no action id.");
 			return;
 		}
 		
@@ -310,15 +317,15 @@ public class ProcessController extends Controller
 			actionID = Convert.parseInt(tmp);
 			if(actionID <=0 )
 			{
-				writeResult(3,"参数错误:wrong action id.");
+				r.setResult(3,"参数错误:wrong action id.");
 				return;
 			}
 		}
 		
-		Service service = Service.getService(sid);
+		Service service =Service.getService(pid,scode);
 		if(null == service)
 		{
-			writeResult(101,"流程不存在.");
+			r.setResult(101,"流程不存在.");
 			return;
 		}
 		
@@ -331,7 +338,7 @@ public class ProcessController extends Controller
 			db.transaction();
 		    record.save();
 		    
-		    record = model.find(pid);
+		    record = model.find(eid);
 		    
 		    Map<String,Object> inputs = new HashMap<String,Object>();
 		    inputs.put("wfName", service.getName());
@@ -340,27 +347,25 @@ public class ProcessController extends Controller
 	    	inputs.put("suggest", request.getParameter("actionSuggest"));
 		    
 		    //fetch process	    	
-		    Workflow.getInstance().doAction(pid, actionID ,inputs);
+		    Workflow.getInstance().doAction(eid, actionID ,inputs);
 		    
 		    //actionSuggest
 		    db.commit();
-		    
-		    writeResult(0,null);
 		}
 		catch(com.tern.dao.ValueException e)
 		{
 			db.rollback();
-			writeResult(2,e.getMessage());
+			r.setResult(2,e.getMessage());
 		}
 		catch(Throwable t)
 		{
 			db.rollback();
 			Trace.write(Trace.Error, t, "fetch process failed");
-			writeResult(3,"服务器异常.");
+			r.setResult(3,"服务器异常.");
 		}
 	}
 	
-	protected void writeResult(int result,String err)
+	/*protected void writeResult(int result,String err)
     {
         this.setContentType("text/javascript");
         this.response.setCharacterEncoding(config.getEncoding());
@@ -378,7 +383,7 @@ public class ProcessController extends Controller
         }
         
         out.append("}");
-    }
+    }*/
 	
 	public static class StepInfo
 	{

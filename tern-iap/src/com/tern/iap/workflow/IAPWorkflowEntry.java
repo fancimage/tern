@@ -95,7 +95,7 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 	{
 		if(user == null)
 		{
-			user = AppContext.getCurrentOperator();
+			user = Operator.current();//AppContext.getCurrentOperator();
 		}
 		return user;
 	}

@@ -55,7 +55,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
 
 	    public String getCaller() 
 	    {
-	    	Operator op = AppContext.getCurrentOperator();
+	    	Operator op = Operator.current();
 	        return op==null?null:String.valueOf(op.getId());
 	    }
 		
@@ -211,7 +211,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     		return false;
     	}
     	
-    	Operator op = AppContext.getCurrentOperator();
+    	Operator op = Operator.current();
     	if(type.equals("role"))
     	{
     		long[] ids = op.getRoles();
@@ -768,7 +768,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     		inputs = new java.util.HashMap<String,Object>();
     	}
     	 
-        Operator op = AppContext.getCurrentOperator();
+        Operator op = Operator.current();
     	inputs.put("caller", op.getId());
     	inputs.put("user", op);
     	
@@ -778,7 +778,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     public long createInstance(Service service,Record entity)
     {    	
     	int initialAction=0;
-    	Operator op = AppContext.getCurrentOperator();
+    	//Operator op = Operator.current();
     	
     	Map inputs = getInputs(null);
     	inputs.put("wfName", service.getName());

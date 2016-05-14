@@ -3,7 +3,7 @@ $(function(){
     	var $frm = $('#editFrm');
     	if($frm.length<=0) $frm = $('#datafrm');
     	
-    	var url = $frm.attr('action');
+    	var url = $frm.prop('action');
     	if(url==null || url == '')
     	{
     		var i = this_url.lastIndexOf('/');

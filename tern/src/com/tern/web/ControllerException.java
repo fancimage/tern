@@ -10,4 +10,8 @@ public class ControllerException extends RedirectRequest
 		ctrl.request.setAttribute("message", message);
 	}
 
+	protected ControllerException(int mode,String url)
+	{
+		super(mode,url);
+	}
 }

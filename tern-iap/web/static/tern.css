@@ -723,3 +723,18 @@ Page breadcrumb
     padding: 6px 6px 6px 12px;
 }
 
+.input-icon.left i {
+  color: #ccc;
+  display: block !important;
+  position: absolute !important;
+  z-index: 1;
+  margin: 9px 2px 4px 10px; 
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+  text-align: center;
+}
+
+.input-icon.left input {
+  padding-left: 33px !important;
+}

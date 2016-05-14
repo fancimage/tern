@@ -9,6 +9,7 @@
 
 package com.tern.web;
 
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import com.tern.util.TernContext;
 import com.tern.util.Trace;
 import com.tern.util.config;
 
+import freemarker.core.Environment;
 import freemarker.ext.beans.BeanModel;
 import freemarker.ext.beans.BeansWrapper;
 import freemarker.ext.util.WrapperTemplateModel;
@@ -29,6 +31,7 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.SimpleScalar;
+import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 import freemarker.template.TemplateHashModel;
 import freemarker.template.TemplateModel;
@@ -57,7 +60,7 @@ public class FreemarkerTemplate extends Template
 			//cfg.setLocale(Locale.CHINA);
 			cfg.setSetting("date_format", "yyyy-MM-dd");
 			cfg.setSetting("time_format", "HH:mm:ss");
-			cfg.setSetting("datetime_format", "yyyy-MM-dd HH:mm:ss");
+			cfg.setSetting("datetime_format", "yyyy-MM-dd HH:mm:ss");			
 		}
 		catch (Exception e) 
 		{
@@ -67,7 +70,7 @@ public class FreemarkerTemplate extends Template
 		}
 		
 		cfg.setDefaultEncoding(config.getEncoding());
-		cfg.setOutputEncoding(config.getEncoding());
+		cfg.setOutputEncoding(config.getEncoding());		
 		
 		wrapper = new ActionDataWrapper();//ObjectWrapper.BEANS_WRAPPER;//.DEFAULT_WRAPPER;
 		/*wrapper = new DefaultObjectWrapper(){
@@ -81,7 +84,27 @@ public class FreemarkerTemplate extends Template
 		cfg.setObjectWrapper(wrapper);
 		
 		
-		if(config.isDebug())
+		cfg.setTemplateExceptionHandler(new TemplateExceptionHandler(){
+
+			@Override
+			public void handleTemplateException(TemplateException te,
+					Environment env, Writer writer) throws TemplateException {
+				if(config.isDebug()) 
+				{
+					if(te.getCause() instanceof RedirectRequest)
+					{
+						throw (RedirectRequest)te.getCause();
+					}
+					
+					TemplateExceptionHandler.HTML_DEBUG_HANDLER.handleTemplateException(te, env, writer);
+				}
+				
+				throw te;
+			}
+			
+		});
+		
+		/*if(config.isDebug())
 		{
 			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 			cfg.setTemplateUpdateDelay(0);
@@ -89,6 +112,10 @@ public class FreemarkerTemplate extends Template
 		else
 		{
 			cfg.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
+			cfg.setTemplateUpdateDelay(config.getInt("template.delay", 3600));
+		}*/
+		if(!config.isDebug())
+		{
 			cfg.setTemplateUpdateDelay(config.getInt("template.delay", 3600));
 		}
 	}
@@ -134,11 +161,17 @@ public class FreemarkerTemplate extends Template
 			
 			try
 			{
+				//temp.setAutoFlush(false);				
 				temp.process( new ActionDataModel(request), response.getWriter() );
+				response.getWriter().flush();
 				return true;
-			} 
+			}
 			catch (Exception e)
 			{
+				if(e instanceof RedirectRequest)
+				{
+					throw (RedirectRequest)e;
+				}
 				Trace.write(Trace.Error, e,"parse template failed.");
 			}
 		}
@@ -427,6 +460,17 @@ class ActionDataModel implements TemplateHashModel
 			public TemplateModel get(ActionDataModel m) 
 			{
 				return new SimpleScalar( m.request.getRequestURI() );
+			}    		
+    	});
+    	
+    	this.put("USR", new ICreateModel(){
+			public TemplateModel get(ActionDataModel m) 
+			{
+				try {
+					return FreemarkerTemplate.wrapper.wrap(TernContext.current().currentOperator());
+				} catch (TemplateModelException e) {
+					return null;
+				}
 			}    		
     	});
     	

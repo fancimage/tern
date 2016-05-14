@@ -60,6 +60,11 @@ public class Application extends TernWebApplication
 		return true;
 	}
 	
+	public static RouteSet getRouter()
+	{
+		return ProxyContext.router;
+	}
+	
 	protected boolean onStarted(ServletContext context)
 	{
 		//find user applications
@@ -114,7 +119,7 @@ public class Application extends TernWebApplication
 				}
 			}
 			
-		});
+		});				
 		
 		return true;
 	}
@@ -175,6 +180,9 @@ public class Application extends TernWebApplication
 			ctx.contextPath = config.getRoot()+name+"/";
 		}
 		appContexts.put(name, ctx);
+		
+		/*标记菜单的权限*/
+		ctx.assignPermission();
 		
 		Trace.write(Trace.Running, "app[%s] load successfully!!", name);
 	}

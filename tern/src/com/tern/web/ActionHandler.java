@@ -16,7 +16,6 @@ import com.tern.util.TernContext;
 import com.tern.util.Trace;
 import com.tern.util.config;
 import com.tern.web.routes.ActionWrapper;
-import com.tern.web.routes.RouteSet;
 
 import java.beans.XMLEncoder;
 import java.io.IOException;
@@ -54,49 +53,14 @@ public class ActionHandler implements IHandler
 			if(t instanceof RedirectRequest)
 			{
 				RedirectRequest tr = (RedirectRequest)t;
-				String url = null;
-				if(tr.url!=null && tr.url.startsWith("/"))
-				{
-					url = request.getContextPath() + tr.url;
-				}
-				else
-				{
-					url = tr.url;
-				}
-
-				try
-				{
-					if(1 == tr.action)
-					{
-						response.sendRedirect(url);
-					}
-					else
-					{
-						request.getRequestDispatcher(url).forward(request,response);
-					}
-					
-					return true;
-				}
-				catch(Exception e1)
-				{
-					Trace.write(Trace.Error, e1,"%s:%s", (1==tr.action?"redirect":"forward"), url);
-					return false;
-				}								
+				return redirect(request,response,tr.action,tr.url);						
 			}
 			
 			Trace.write(Trace.Error, e, "execute controller");
 			
 			//if(e instanceof ActionException){}
 			
-			try
-			{
-			    response.sendError(501);
-			}
-			catch(Exception e1)
-			{					
-			}
-			
-			return false;
+			return redirect(request,response,2,"static/500.html");
 		}	
 		
 		if(logflag)
@@ -160,18 +124,17 @@ public class ActionHandler implements IHandler
 		if(view_path != null)
 		{				
 			request.setAttribute("page", vo);
-			if(!TernContext.current().getTemplate().render(ctrl,view_path,request, response))
+			try
 			{
-				try
+				if(!TernContext.current().getTemplate().render(ctrl,view_path,request, response))
 				{
-				    response.sendError(502); //template error
+					return redirect(request,response,2,"static/500.html");	
 				}
-				catch(Exception e1)
-				{					
-				}
-				
-				return false;
 			}
+			catch(RedirectRequest t)
+			{
+				return redirect(request,response,t.action,t.url);	
+			}			
 			
 			if(logflag)
 			{
@@ -188,6 +151,52 @@ public class ActionHandler implements IHandler
 			Trace.write(Trace.Error, e, "execute view(%s) failed." , view_path );
 		}*/
 		
+		return true;
+	}
+	
+	protected boolean redirect(HttpServletRequest request,HttpServletResponse response,int mode,String url)
+	{
+		if(url!=null && url.startsWith("/"))
+		{
+			url = request.getContextPath() + url;
+		}		
+
+		try
+		{
+			if(1 == mode)
+			{
+				response.sendRedirect(url);
+			}
+			else
+			{
+				if(url.startsWith("static/"))
+				{
+					doStaticReq(TernContext.current(),url,request,response,true);
+				}
+				else
+				{
+				    request.getRequestDispatcher(url).forward(request,response);
+				}
+			}						
+		}
+		catch(Exception e1)
+		{
+			Trace.write(Trace.Error, e1,"%s:%s", (1==mode?"redirect":"forward"), url);
+		}
+		
+		return true;
+	}
+	
+	protected boolean doStaticReq(TernContext ctx,String path,HttpServletRequest request,
+			HttpServletResponse response,boolean mode)
+	{
+		try 
+		{
+			request.getRequestDispatcher(path).forward(request,response);
+		}
+		catch (Exception e) 
+		{			
+		}
 		return true;
 	}
 	

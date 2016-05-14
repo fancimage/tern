@@ -21,15 +21,19 @@ import com.tern.util.Trace;
 import com.tern.util.config;
 import com.tern.web.Controller;
 
-abstract class Path implements Comparable<Path> 
+abstract public class Path implements Comparable<Path> 
 {
 	private static final String PATTERN = "$%[{(*";
 	private String key = "";
 	private List<Element> elements = new ArrayList<Element>();
-	protected boolean named;	
+	protected boolean named;
+	
+	protected String url;
 	
 	protected void parseAllElement(String url) throws IOException
 	{
+		this.url = url;
+		
 		String[] items = url.split("/");
 		boolean first = true;
 		
@@ -186,6 +190,7 @@ abstract class Path implements Comparable<Path>
 	public final String getKey(){return key;}
 	
 	public abstract Object getTarget();	
+	public String getUrl(){return url;}
 	
 	public boolean match(PathReader input)
 	{
@@ -263,9 +268,10 @@ class ControllerPath extends Path
    	    parseAllElement(url);
 	}		
 	
-	public Class<Controller> getTarget()
+	public Object getTarget()
 	{
-		return wrapper.target;
+		//return wrapper.target;
+		return wrapper;
 	}
 	
 	public ActionWrapper resolve(PathReader input)

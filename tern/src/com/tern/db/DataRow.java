@@ -51,6 +51,7 @@ public class DataRow implements Serializable,com.tern.dao.IRow,Map<String, Objec
     }
     
     MapDataRow mr = null;
+    @Deprecated
     final public java.util.Map<String , Object> getMap()
     {
     	if(mr==null)

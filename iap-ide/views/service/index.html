@@ -4,6 +4,7 @@
      <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
      <th>流程标识</th>
      <th>流程名称</th>
+     <th>流程模型</th>
      <th>数据模型</th>
      <th>步骤流程标识</th>
      <th>操作</th>
@@ -12,8 +13,9 @@
 <@tern.override name="grid-detail">
   <tr>
       <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
-      <td>${(item.tname)!}</td>        	
+      <td>${(item.tcode)!}</td>        	
       <td>${(item.tcaption)!}</td>
+      <td>${(item.tname)!}</td>
       <td>${(item.serTableName)!}</td>
       <td>${(item.stepTable)!}</td>
       <td>
@@ -21,6 +23,10 @@
 	    <a href="#del"><i class="fa fa-remove"></i></a>
      </td>
   </tr>
+</@>
+
+<@tern.override name="list-query">
+    <@tern.query name="query" source=records pagesize=20 sort="tcode"/>
 </@>
 
 <#include "/model/index.html">

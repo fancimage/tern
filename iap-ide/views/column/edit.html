@@ -67,7 +67,7 @@
    <div class="form-group" id="numScale" style="display:none">
           <label class="control-label col-sm-2">小数位数</label>
           <div class="col-sm-4">
-              <@tern.field name="scale" class="form-control"/>
+              <@tern.field name="scale" id="scale" class="form-control"/>
           </div>
    </div>
    
@@ -95,11 +95,19 @@
           </div>
    </div>
    
-   <div class="form-group">
+   <div class="form-group" id="divdef">
           <label class="control-label col-sm-2">默认值</label>
           <div class="col-sm-4">
               <@tern.field name="cdefault"/>
           </div>
+   </div>
+   
+    <div class="form-group" id="savemode">
+          <label class="control-label col-sm-2">存储方式</label>        
+          <div class="col-sm-4">  
+                <label class="radio-inline"><input type="radio" value="" name="smode" checked data-mode="1">文件服务器</label>
+                <label class="radio-inline"><input type="radio" value="" name="smode" data-mode="2">数据库</label>               
+          </div>     
    </div>
        
   </@>
@@ -143,6 +151,11 @@
              $('#cmax').val($(this).val());
         });
         
+        if(scale=='2')  $('input[data-mode=2]').prop("checked","checked");
+        $('input[name=smode]').click(function(){
+            $('#scale').val($(this).data('mode'));
+        });
+        
         isinit = false;
     });
     
@@ -153,9 +166,11 @@
         $('#dateFormate').hide();
         $('#enumRef').hide();
         $('#childmode').hide();
+        $('#savemode').hide();
         
         $('#cb_auto').hide();
         $('#cb_iskey').show();
+        $('#divdef').show();
         
         $('#ctype').val(type=='integer'?'numeric':type);
         
@@ -175,9 +190,9 @@
         } else if('enum' == type){
         	var $ele = $('#enumRef');
         	$ele.find('label').text('枚举类型');
-        	if(!isinit) $ele.find('input').text('');
+        	if(!isinit) $ele.find('input').val('');
         	$ele.show();
-        }else if('string' == type){
+        }else if('string' == type || 'text'== type ){
             $('#strLen').show();
             $('#cmin').val($('#strLenMin').val());
             $('#cmax').val($('#strLenMax').val());
@@ -187,7 +202,7 @@
         }  else if('belongs' == type || 'having' == type){
         	var $ele = $('#enumRef');
         	$ele.find('label').text('引用表');
-        	if(!isinit) $ele.find('input').text('');
+        	if(!isinit) $ele.find('input').val('');
         	$ele.show();
         	
         	if('having' == type){
@@ -196,6 +211,17 @@
         		
         		$('#childmode').show();
         	}
+        } else if('image' == type){
+            $('#divdef').hide();
+            $('#savemode').show();
+        } else if('binary' == type){
+            $('#divdef').hide();
+            $('#savemode').show();
+            
+            var $ele = $('#enumRef');
+        	$ele.find('label').text('Content Type');
+            if(!isinit) $ele.find('input').val('');
+        	$ele.show();
         }
     }
     

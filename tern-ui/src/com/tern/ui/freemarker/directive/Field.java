@@ -191,7 +191,7 @@ class FieldRender
 			   .append(v==null?"":v.getName()).append("\" class=\"form-control\"><input type=\"hidden\" value=\"")
 			   .append(v==null?"":v.getValue()).append("\" name=\"").append(col.getName())
 			   .append("\" data-type=\"").append(col.getEnum())
-			   .append("\"><div class=\"input-group-addon enumbtn\"><i class=\"icon-folder-open\"></i></div></div>");
+			   .append("\"><div class=\"input-group-addon enumbtn\"><i class=\"fa fa-folder-open\"></i></div></div>");
 			
 			style |= STYLE_ENUM;
 		}
@@ -217,6 +217,18 @@ class FieldRender
 		else if(type == DataType.Text)
 		{
 			//textarea
+			String val = r.getString(col.getName());
+			if(val == null) val="";
+			
+			int lines = 3;
+			if(col.getLength() <= 128) lines = 3;
+			else if(col.getLength() <= 256) lines = 5;
+			else if(col.getLength() <= 512) lines = 8;
+			else lines = 10;
+			
+			out.append("<textarea class=\"form-control\" rows=\"").append(Convert.toString(lines))
+			   .append("\" name=\"").append(col.getName());
+			out.append("\">").append(val).append("</textarea>");
 		}
 		else if(type == DataType.Having)
 		{
@@ -232,7 +244,7 @@ class FieldRender
 			    	out.append("\" data-mode=\"one");
 			    }
 			    
-			    out.append("\" class=\"refbtn\"><i class=\"icon-edit\"></i></a></label>");
+			    out.append("\" class=\"refbtn\"><i class=\"fa fa-edit\"></i></a></label>");
 			    
 			    style |= STYLE_HAVING;
 			}
@@ -273,7 +285,7 @@ class FieldRender
 			
 			out.append("<div class=\"input-group date\">\n<input name=\"").append(col.getName()).append("\" data-format=\"").append(formater)
 			   .append("\" type=\"text\" class=\"form-control\" value=\"")
-			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"icon-calendar\"></i></div>\n")
+			   .append(val).append("\">\n<div class=\"input-group-addon\"><i class=\"fa fa-calendar\"></i></div>\n")
 			   .append("</div>\n");
 			
 			style |= STYLE_DATE;

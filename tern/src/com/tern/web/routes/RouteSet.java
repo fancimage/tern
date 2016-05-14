@@ -168,6 +168,8 @@ public class RouteSet
          }
      }
      
+     public Map<String,List<Path>> getPaths(){return paths;}
+     
      /*public static void sort()
      {
     	 root._sort();

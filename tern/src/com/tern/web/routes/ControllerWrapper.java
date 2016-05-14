@@ -49,6 +49,8 @@ public class ControllerWrapper
     	actionPaths.sort();
     }
     
+    public RouteSet getRouteSet(){return actionPaths;}
+    
     private void addClass(Class<Controller> clazz) 
     {
         Method[] methods = clazz.getMethods();//clazz.getDeclaredMethods();        
@@ -224,5 +226,9 @@ public class ControllerWrapper
         }
     }
 
-    
+    @Override
+    public String toString()
+    {
+    	return target.getName();
+    }
 }
