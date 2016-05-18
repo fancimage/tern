@@ -34,6 +34,7 @@ public class DBModelReader extends ModelReader
 		Column col = createColumn();
 		
 		col.name = rs.getString("cname");
+		if(col.name!=null) col.name = col.name.trim();
 		col.caption = rs.getString("ccaption");
 		col.type = parseType(rs.getString("ctype"));
 		

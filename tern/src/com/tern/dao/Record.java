@@ -500,9 +500,13 @@ public class Record implements Map<String,Object>,IRow
 				{
 					//pass
 				}
-				else if( (val instanceof Double) || (val instanceof Float) )
+				else if( val instanceof Double )
 				{
 					_val = Convert.round( (Double)val , col.getScale());
+				}
+				else if( val instanceof Float )
+				{
+					_val = Convert.round( (Float)val , col.getScale());
 				}
 				else if(val instanceof java.math.BigDecimal)
 				{
