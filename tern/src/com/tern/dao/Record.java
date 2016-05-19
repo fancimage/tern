@@ -371,7 +371,7 @@ public class Record implements Map<String,Object>,IRow
 					return null;
 				}
 				
-				buf.insert(0, src.name+" IN (");
+				buf.insert(0, rel.map[0][1]+" IN (");
 				buf.append(")");
 				
 				RecordSet rs = rel.getRef().query(buf.toString());				

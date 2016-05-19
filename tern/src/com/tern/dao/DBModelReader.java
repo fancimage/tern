@@ -133,7 +133,7 @@ public class DBModelReader extends ModelReader
 				|| col.getType() == DataType.Having)
 			{
 				if(col.extra1==null) continue;
-				Relation relation = new Relation(col.extra1.toString(),model);
+				Relation relation = new Relation(col.getName()+"$"+col.extra1.toString(),model);
 				relation.ref = col.extra1.toString();
 				relation.caption = col.getCaption();
 				
