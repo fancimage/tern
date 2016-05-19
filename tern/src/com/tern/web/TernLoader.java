@@ -16,6 +16,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.HashMap;
 
+import com.tern.util.Trace;
 import com.tern.util.config;
 
 public class TernLoader 
@@ -229,7 +230,7 @@ public class TernLoader
     		} 
         	catch (ClassNotFoundException e) 
         	{
-        		//pass
+        		Trace.write(Trace.Warning, "Application[%s] does not exists.", clazz);
     		}
     	}
     	

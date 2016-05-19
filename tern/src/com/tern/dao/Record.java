@@ -371,11 +371,12 @@ public class Record implements Map<String,Object>,IRow
 					return null;
 				}
 				
-				buf.insert(0, rel.map[0][1]+" IN (");
+				String dst = rel.getRef().column(rel.map[0][1]).name;
+				
+				buf.insert(0, dst + " IN (");
 				buf.append(")");
 				
 				RecordSet rs = rel.getRef().query(buf.toString());				
-				String dst = rel.getRef().column(rel.map[0][1]).name;
 				for(Record r:_rs)
 				{
 					Object v = r.get(src.name);					
