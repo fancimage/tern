@@ -42,6 +42,7 @@
      <li class="active">流程处理</li>
    </ul>
    
+   <#if steps??>
    	<#foreach s in steps>
    	  <div class="panel panel-default">
    	      <div class="panel-heading" data-toggle="collapse"
@@ -79,6 +80,7 @@
           </div>
      </div>
    </#foreach>
+   </#if>
    
    	<div class="panel panel-default">
    	    <div class="panel-heading" data-toggle="collapse"

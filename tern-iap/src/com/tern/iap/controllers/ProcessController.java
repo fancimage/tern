@@ -63,8 +63,8 @@ public class ProcessController extends Controller
 		
 		Model model = Model.from(service.getDataTableName());
         RecordSet records = model.query()
-                                 .join("process",true,new String[]{"id","id"});
-                                 //.where("B.creator=?",op.getId());
+                                 .join("process",true,new String[]{"id","serid"})
+                                 .where("B.tid=? and A.pid=?",service.getId(),pid);
 		
 		request.setAttribute("model", model);
 		request.setAttribute("records", records);
