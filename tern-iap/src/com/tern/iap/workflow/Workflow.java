@@ -42,6 +42,8 @@ import org.dom4j.io.SAXReader;
 public class Workflow implements com.opensymphony.workflow.Workflow
 {
     private static final Workflow instance = new Workflow();	
+    private static final WorkflowPermission wfPermission = new DefaultWorkflowPermission();
+    
 	public static Workflow getInstance()
 	{
 		return instance;
@@ -91,7 +93,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
         try 
         {
             WorkflowStore store = getPersistence();
-            WorkflowEntry entry = store.findEntry(id,inputs);
+            IAPWorkflowEntry entry = (IAPWorkflowEntry)store.findEntry(id,inputs);
 
             if (entry == null) 
             {
@@ -145,10 +147,10 @@ public class Workflow implements com.opensymphony.workflow.Workflow
                     iterator.hasNext();) 
             {
                 Step step = (Step) iterator.next();
-                if(hasStepPermission(wf.getStep(step.getStepId())))
+                if(getPermissionHandler(wf).hasRight(entry, wf.getStep(step.getStepId()).getMetaAttributes() ))
                 {
-                    l.addAll(getAvailableActionsForStep(wf, step, transientVars, ps));
-                }
+                	l.addAll(getAvailableActionsForStep(wf, step, transientVars, ps));
+                }                
             }
 
             int[] actions = new int[l.size()];
@@ -164,6 +166,33 @@ public class Workflow implements com.opensymphony.workflow.Workflow
             Trace.write(Trace.Error, e, "Error checking available actions");
             return new int[0];
         }
+    }
+    
+    protected WorkflowPermission getPermissionHandler(WorkflowDescriptor wf)
+    {
+    	String cls = Convert.toString(wf.getMetaAttributes().get("op.permission.class"));
+    	if(cls!=null && cls.length()>0)
+    	{
+    		/*从缓存中读取*/
+    		
+    		Class<?> clz = AppContext.current().findClass("workflow."+cls);
+    		if(!WorkflowPermission.class.isAssignableFrom(clz))
+    		{
+    			Trace.write(Trace.Error, "Permission Class[%s] does not exists!", cls);
+    			return null;
+    		}
+    		
+    		try 
+    		{
+				return (WorkflowPermission)clz.newInstance();
+			} 
+    		catch (Exception e) 
+    		{
+    			Trace.write(Trace.Error, e,"Load Permission Class[%s]!", cls);
+				return null;
+			}
+    	}
+    	return wfPermission;
     }
 
     /**
@@ -189,46 +218,6 @@ public class Workflow implements com.opensymphony.workflow.Workflow
         	Trace.write(Trace.Error, e,"Error checking current steps for instance #" + id);
             return Collections.EMPTY_LIST;
         }
-    }
-    
-    public boolean hasStepPermission(StepDescriptor step)
-    {
-    	Map map = step.getMetaAttributes();
-    	Object roleCode = map.get("op.code");
-    	if(null == roleCode)
-    	{
-    		return true; /*没有进行权限限定,则认为有权限？*/
-    	}
-    	
-    	String type = Convert.toStringIgnoreEmpty(map.get("op.type"), "role");
-    	String opName = Convert.toStringIgnoreEmpty(map.get("op.name"), "");
-    	
-    	long id = Convert.parseLong(roleCode, 0);
-    	if(id <= 0)
-    	{
-    		Trace.write(Trace.Error, "workflow step[%d] has no authority define:op.type=%s,op.name=%s", 
-    				step.getId(),type,opName);
-    		return false;
-    	}
-    	
-    	Operator op = Operator.current();
-    	if(type.equals("role"))
-    	{
-    		long[] ids = op.getRoles();
-    		if(ids != null)
-    		{
-    			for(long v:ids)
-    			{
-    				if(v == id) return true;
-    			}
-    		}
-    	}
-    	else if(type.equals("user"))
-    	{
-    		if(id == op.getId()) return true;
-    	}
-    	
-    	return false;
     }
 
     /**
@@ -653,7 +642,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     	try
     	{
     		WorkflowStore store = getPersistence();
-            WorkflowEntry entry = store.findEntry(id,inputs);
+            IAPWorkflowEntry entry = (IAPWorkflowEntry)store.findEntry(id,inputs);
 
             if (entry.getState() != WorkflowEntry.ACTIVATED) 
             {
@@ -711,7 +700,9 @@ public class Workflow implements com.opensymphony.workflow.Workflow
 
                         if (isActionAvailable(action, transientVars, ps, s.getId()))
                         {
-                            validAction = true;
+                        	/*判断对步骤是否有权限*/                        	
+                            //validAction = true;
+                        	validAction = getPermissionHandler(wf).hasRight(entry,s.getMetaAttributes());
                         }
                     }
                 }
@@ -1842,6 +1833,14 @@ public class Workflow implements com.opensymphony.workflow.Workflow
         {
             conditions = restriction.getConditionsDescriptor();
         }
+        
+        /*是否有权限?*/
+        IAPWorkflowEntry entry = (IAPWorkflowEntry)transientVars.get("entry");
+        if(!getPermissionHandler(wf).hasRight(entry,actionDescriptor.getMetaAttributes()))
+        {
+        	Trace.write(Trace.Error, "workflow[%s] can not be initialize for no permission!", wf.getName());
+        	return false;
+        }      
 
         return passesConditions(conditions, new HashMap(transientVars), ps, 0);
     }
@@ -1943,6 +1942,9 @@ public class Workflow implements com.opensymphony.workflow.Workflow
             {
                 throw new WorkflowException("step #" + nextStep + " does not exist");
             }
+            
+            /*得到该步骤有权限处理的操作员*/
+            getPermissionHandler(descriptor).initWorkflowOperators((IAPWorkflowEntry)entry, step.getMetaAttributes());
 
             Step newStep = store.createCurrentStep(step,entry.getId(), owner, startDate, dueDate, status, previousIds);
             
@@ -2294,7 +2296,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     		setDefaultArg("entry.sequence","select max(wfID) + 1 from WF_PROCESS");
     		setDefaultArg("entry.table","WF_PROCESS");
     		setDefaultArg("entry.id","wfID");
-    		setDefaultArg("entry.name","taskName");
+    		setDefaultArg("entry.name","wfcaption");
     		setDefaultArg("entry.state","status");
     		setDefaultArg("step.sequence","select sum(c1) + 1 from (select 1 as tb, count(*) as c1 from os_currentstep union select 2 as tb, count(*) as c1 from os_historystep) as TabelaFinal");
     		setDefaultArg("history.table","wf_stepinfo");
@@ -2311,7 +2313,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     		setDefaultArg("step.startDate","sDate");
     		setDefaultArg("step.finishDate","hDate");
     		
-    		setDefaultArg("step.dueDate","due_date");
+    		setDefaultArg("step.dueDate","dueDate");
     		setDefaultArg("step.status","astatus");
     		setDefaultArg("step.previousId","preStep");
     		

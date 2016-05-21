@@ -9,6 +9,7 @@
 
 package com.tern.iap.workflow;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
 
@@ -63,12 +64,20 @@ public class IAPWorkflowEntry extends SimpleWorkflowEntry
 		if(process.getState() == RecordState.New)
 		{
 			process.set("tid", service.getId());
+			if(record.getModel().column("pid") != null)
+			{
+				process.set("pid", record.getInt("pid"));
+			}
+			
 			process.set("creator", user.getId());
-			process.set("createtime", new Date());
-			process.set("taskName", service.getCaption());
+			process.set("createtime", new Timestamp(new Date().getTime()));
+			process.set("wfcaption", service.getCaption()+":"+record.toString());
+			process.set("serid", record.getId());
+			
 			process.save();
 			
-			record.set("id", process.getId() );
+			record.set("wfid", process.getId() );
+			record.set("wfstatus", WorkflowEntry.ACTIVATED ); //???
 		}
 
 		this.id = process.getId();

@@ -14,15 +14,16 @@
     <script type="text/javascript" src="static/bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript" src="static/datetime/js/bootstrap-datetimepicker.min.js"></script>
     <script language="javascript">
+        var this_url = '${URL}';
         $(function(){
         	$('#btnSave').click(function(){
         		var data = $('#editFrm').serialize();
         		var d2= $('#processFrm').serialize();
         		if(data!=null && data.length>0) data +='&'+d2;
         		else data = d2;
-        		$.post('update',data,function(result){
+        		$.post('${HOME}task/${service.code}/${record.pid}/${record.id}/update.json',data,function(result){
     		      if(0 == result.code){
-    		      	 window.location.href = '${HOME}service/${service.id}/process';
+    		      	 window.location.href = '${HOME}task/${service.code}/${record.pid}';
     		      } else if(result.message){
     			     alert(result.message);
         	      } else {
@@ -37,7 +38,7 @@
 </head>
 <body>	
    <ul class="breadcrumb">
-     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider"></span></li>
+     <li><a href="${HOME}task/${service.code}/${record.pid}">${service.caption}</a><span class="divider"></span></li>
      <li class="active">流程处理</li>
    </ul>
    

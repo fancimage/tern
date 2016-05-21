@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE workflow PUBLIC "-//OpenSymphony Group//DTD OSWorkflow 2.6//EN" "http://www.opensymphony.com/osworkflow/workflow_2_8.dtd"[]>
 <workflow>
+  <meta name="op.permission.class">Permission</meta>
+  
   <initial-actions>
     <action id="0" name="Start Workflow">
       <pre-functions>
@@ -18,7 +20,9 @@
   <steps>
     <step id="1" name="finished">      
     </step>
-    <step id="2" name="项目主管部门意见">
+    <step id="2" name="计量员">
+      <meta name="op.type">role</meta>
+      <meta name="op.name">计量员</meta>
       <actions>
         <action id="1" name="同意">
           <results>

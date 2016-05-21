@@ -589,8 +589,13 @@ abstract class SQLCmd
 			}
 			else
 			{
-			    v = new java.sql.Date(((java.util.Date)v).getTime());
+				/*if(db.getDbType() == DBType.mysql)
+				{
+					
+				}
+			    v = new java.sql.Date(((java.util.Date)v).getTime());*/
 			    //v = new java.sql.Time(((java.util.Date)v).getTime());
+				v = new java.sql.Timestamp(((java.util.Date)v).getTime());
 			}
 		}
 		

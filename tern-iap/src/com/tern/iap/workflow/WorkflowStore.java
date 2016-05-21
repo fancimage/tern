@@ -42,6 +42,7 @@ import com.tern.db.InsertCommand;
 import com.tern.db.SQL;
 import com.tern.db.UpdateCommand;
 import com.tern.db.db;
+import com.tern.iap.Operator;
 import com.tern.util.Convert;
 import com.tern.util.Trace;
  
@@ -281,11 +282,16 @@ public class WorkflowStore extends JDBCWorkflowStore
       	      .set(stepId, id)
       	      .set(stepStepId, step.getId())
       	      .set(stepActionId, 0)
-      	      .set(stepStartDate, startDate)
-      	      .set(stepDueDate, dueDate)
+      	      .set(stepStartDate, new Timestamp(startDate.getTime()))
+      	      //.set(stepDueDate, dueDate)
       	      .set(stepStatus, status)
       	      .set("sstate", 0)
       	      .set("stepName", step.getName());
+        	
+        	if(dueDate != null)
+        	{
+        		cmd.set(stepDueDate, new Timestamp(dueDate.getTime()));
+        	}
         	
         	if(null == previousIds || previousIds.length <= 1)
         	{
@@ -296,6 +302,7 @@ public class WorkflowStore extends JDBCWorkflowStore
         	{
         		cmd.exec();
         		
+        		/*�������������*/
         		String sql = "INSERT INTO " + currentPrevTable + " (" + stepEntryId + "," + stepId + ", " + stepPreviousId + ") VALUES (?, ?, ?)";
         		SQL cmd2 = db.sql(sql);
         		
@@ -382,6 +389,8 @@ public class WorkflowStore extends JDBCWorkflowStore
     public Step markFinished(Step step, int actionId, Date finishDate, String status, String caller,Map inputs) throws StoreException {
         //Connection conn = null;
         //PreparedStatement stmt = null;
+    	
+    	Operator op = Operator.current();
 
         try 
         {
@@ -389,8 +398,10 @@ public class WorkflowStore extends JDBCWorkflowStore
         	  .set("sstate", 1)
         	  .set(stepStatus, status)
         	  .set(stepActionId, actionId)
-        	  .set(stepFinishDate, finishDate)
-        	  .set(stepCaller, caller)        	  
+        	  .set(stepFinishDate, new Timestamp(finishDate.getTime()))
+        	  .set(stepCaller, caller)
+        	  .set(this.stepOwner, op.getId())
+        	  .set("ownername", op.getName())
         	  .where(stepEntryId+"=? AND "+stepId+"=?" , step.getEntryId(),step.getId());
         	
         	if(inputs!=null)
@@ -448,7 +459,7 @@ public class WorkflowStore extends JDBCWorkflowStore
         	
             if(WorkflowEntry.COMPLETED == state || WorkflowEntry.KILLED == state)
             {            	
-            	cmd.set("finishtime", new Date());            	
+            	cmd.set("finishtime", new Timestamp(new Date().getTime()));            	
             	Trace.write(Trace.Information, "setEntryState: %s", (WorkflowEntry.KILLED == state)?"Killed":"Completed" );
             }
             else

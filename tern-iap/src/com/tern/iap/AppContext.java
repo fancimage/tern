@@ -35,6 +35,8 @@ public class AppContext extends TernContext
 	Template template;
 	Database metadb;
 	
+	IapClassLoader classLoader;
+	
 	/*缓存controller的权限信息*/
 	Map<Object,Integer> actionPermission;
 	Map<Object,Integer> ctrlPermission;
@@ -92,6 +94,11 @@ public class AppContext extends TernContext
 	public static AppContext getDefault()
 	{
 		return ProxyContext.defContext;
+	}
+	
+	public Class<?> findClass(String name)
+	{
+		return classLoader.findClass(name);
 	}
 	
 	public static String getCurrentAppName()

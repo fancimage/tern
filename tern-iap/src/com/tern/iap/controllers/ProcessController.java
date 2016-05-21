@@ -108,8 +108,8 @@ public class ProcessController extends Controller
 						row.put("ownername", rs.getString("ownername"));
 						row.put("sstate", rs.getInt("sstate"));
 						
-						row.put("sDate", rs.getDate("sDate"));
-						row.put("hDate", rs.getDate("hDate"));
+						row.put("sDate", rs.getTimestamp("sDate"));
+						row.put("hDate", rs.getTimestamp("hDate"));
 						
 						row.put("actionid", rs.getInt("actionid"));
 						row.put("hDescription", rs.getString("hDescription"));
@@ -156,11 +156,13 @@ public class ProcessController extends Controller
 	    inputs.put("wfName", service.getName());
     	inputs.put("data", record);
     	inputs.put("service", service);
+    	
+    	long wfid = record.getLong("wfid");
 				
 		//get available actions
     	Map<Integer,StepInfo> steps = new HashMap<Integer,StepInfo>();
     	//List<ActionDescriptor> actions = new ArrayList<ActionDescriptor>();
-		int[] arr = Workflow.getInstance().getAvailableActions(pid,inputs);
+		int[] arr = Workflow.getInstance().getAvailableActions(wfid,inputs);
 		for(int a : arr)
 		{
 			ActionDescriptor ad = wd.getAction(a);
@@ -199,7 +201,7 @@ public class ProcessController extends Controller
 		
 		//history steps
 		//DataTable history = null;
-		List<Map<String,Object>> history = getHistorySteps(pid);
+		List<Map<String,Object>> history = getHistorySteps(wfid);
 		
 		request.setAttribute("model",  model);
 		request.setAttribute("record", record);
@@ -346,8 +348,9 @@ public class ProcessController extends Controller
 	    	inputs.put("service", service);
 	    	inputs.put("suggest", request.getParameter("actionSuggest"));
 		    
+	    	long wfid = record.getLong("wfid");
 		    //fetch process	    	
-		    Workflow.getInstance().doAction(eid, actionID ,inputs);
+		    Workflow.getInstance().doAction(wfid, actionID ,inputs);
 		    
 		    //actionSuggest
 		    db.commit();

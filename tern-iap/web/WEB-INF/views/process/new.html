@@ -16,27 +16,12 @@
     <script type="text/javascript" src="static/js/modal.js"></script>
     <script type="text/javascript" src="static/js/edit.js"></script>
     <script language="javascript">
-        $(function(){
-        	$('#btnSave').click(function(){
-        		var $frm = $('#editFrm');
-        		$.post('create',$frm.serialize(),function(result){
-    		      if(0 == result.code){
-    		      	 window.location.href = '${HOME}service/${service.id}/process';
-    		      } else if(result.message){
-    			     alert(result.message);
-        	      } else {
-        		     alert('操作失败，errcode='+result.code);
-        	      }
-    	        },'json').error(function(){
-    		         alert('操作失败！');
-    	        });
-        	});
-        });
+        var this_url = '${URL}';
     </script>
 </head>
 <body>
 	<ul class="breadcrumb">
-     <li><a href="${HOME}service/${service.id}/process">${service.caption}</a><span class="divider">/</span></li>
+     <li><a href="${HOME}task/${service.code}/1">${service.caption}</a><span class="divider">/</span></li>
      <li class="active">新建</li>
    </ul>
 

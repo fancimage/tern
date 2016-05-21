@@ -170,6 +170,7 @@ public class Application extends TernWebApplication
 		AppContext ctx = new AppContext(name,path);
 		ctx.router = loader.router;
 		ctx.metadb = metadb;
+		ctx.classLoader = appLoader;
 		if(0 == index) 
 		{
 			ProxyContext.defContext = ctx;
@@ -181,7 +182,7 @@ public class Application extends TernWebApplication
 		}
 		appContexts.put(name, ctx);
 		
-		/*±ê¼Ç²Ëµ¥µÄÈ¨ÏŞ*/
+		/*æ ‡è®°èœå•çš„æƒé™*/
 		ctx.assignPermission();
 		
 		Trace.write(Trace.Running, "app[%s] load successfully!!", name);

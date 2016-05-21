@@ -52,8 +52,8 @@ CREATE TABLE wf_service(
 	createtime datetime NULL,
 	finishtime datetime NULL,
 	serid int NOT NULL,
-	status int NULL
-	#taskName varchar(256) NULL
+	status int NULL,
+	taskName varchar(256) NULL
 	#tname   varchar(16)
 );
 
@@ -76,7 +76,7 @@ CREATE TABLE wf_stepinfo(
 	--ownertype int NULL,	
 	hDate datetime NULL,
 	sDate datetime NULL,
-	due_date datetime,	
+	dueDate datetime,	
 	sstate int NULL,
 	ownername varchar(64) NULL,
 	caller    varchar(16) null,
@@ -182,6 +182,8 @@ create table leaveApply
     reqtype     varchar(16),
     start_date  datetime,
     end_date    datetime,
-    reason      varchar(256)         
+    reason      varchar(256),
+    wfid        int,
+    wfstatus    int
 );
 

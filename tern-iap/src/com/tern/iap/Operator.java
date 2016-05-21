@@ -26,7 +26,7 @@ public class Operator
 	protected String loginName;
 	protected String name;
 	
-	protected long[] roleIds;
+	//protected long[] roleIds;
 	
 	protected int[] myMenus;
 	
@@ -43,7 +43,7 @@ public class Operator
 	public String getName() {return name;}
 	public String getLoginName(){return loginName;}
 	
-	public long[] getRoles(){return roleIds;}
+	//public long[] getRoles(){return roleIds;}
 	
 	public static Operator current()
 	{
@@ -55,26 +55,55 @@ public class Operator
 		AppContext.setCurrentOperator(op);
 	}
 	
-	public int getIDByName(String name,String type)
+	/*是否属于某个角色?*/
+	public boolean isRole(String rname,int pid)
 	{
-		if(name.indexOf("'")>=0 || name.indexOf(" ")>=0)
+		if(rname == null) return false;
+		
+		String[] rns = rname.split(","); 		
+		StringBuffer buf = new StringBuffer();
+		for(String s:rns)
 		{
-			return 0;
+			if(buf.length() > 0) buf.append(",");
+			buf.append("'").append(s).append("'");
 		}
 		
-		try
+		buf.append(")").insert(0, "select rid from t_role where rname in(");
+		
+		final StringBuffer sqlBuf = new StringBuffer();
+		try 
 		{
-			return db.sql("select roleID from t_role where roleName=?",name).queryInt();
-		}
-		catch(SQLException e)
+			TernContext.current().getMetaDB().sql(buf.toString())
+			   .query(new RowMapper<Object>(){
+
+				@Override
+				public Object map(ResultSet rs, int rowNum) throws SQLException {
+					if(sqlBuf.length()>0) sqlBuf.append(",");
+					sqlBuf.append(rs.getInt("rid"));
+					return null;
+				}				   
+			   });
+			
+			if(sqlBuf.length()<=0) return false;
+			sqlBuf.append(")").insert(0, "select count(*) from t_userrole where operatorID=? and pid=? and rid in (");
+			
+			int counter = db.sql(sqlBuf.toString() , this.operatorID , pid).queryInt();
+			if(counter >= 1) return true;
+		} 
+		catch (SQLException e) 
 		{
-			return 0;
+			Trace.write(Trace.Error, e, "isRole");
 		}
-	}
+		
+		return false;
+	}		
 	
 	public boolean hasPermission(int mid)
 	{
 		loadPermission();
+		
+		if(myMenus == null || myMenus.length <=0) return false;
+		
 		for(int i:myMenus)
 		{
 			if(i == mid) return true;
