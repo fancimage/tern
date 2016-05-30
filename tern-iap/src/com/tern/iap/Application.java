@@ -140,6 +140,7 @@ public class Application extends TernWebApplication
 		    	try
 		    	{
 		    		metadb = db.establish(new java.util.HashMap<String, Object>(){{
+		    			this.put("pool", config.getString("database.pool"));
 			    	    this.put("dbn", "sqlite");
 			    	    this.put("db", f.getAbsolutePath());
 			    	    this.put("encoding", "utf-8");
