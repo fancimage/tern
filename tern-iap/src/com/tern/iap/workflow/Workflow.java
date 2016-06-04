@@ -170,7 +170,7 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     
     protected WorkflowPermission getPermissionHandler(WorkflowDescriptor wf)
     {
-    	String cls = Convert.toString(wf.getMetaAttributes().get("op.permission.class"));
+    	String cls = Convert.toString(wf.getMetaAttributes().get("permission.class"));
     	if(cls!=null && cls.length()>0)
     	{
     		/*从缓存中读取*/

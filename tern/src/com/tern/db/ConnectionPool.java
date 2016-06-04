@@ -152,7 +152,7 @@ public class ConnectionPool implements DataSource//implements IDBProvider
         m_ConnectionPoolMax = Convert.parseInt(config.get("maxActive"));
         if(m_ConnectionPoolMax<=0)
         {
-        	m_ConnectionPoolMax = 2;
+        	m_ConnectionPoolMax = 2*m_ConnectionPoolSize;
         }
         
         m_ConnectionTimeout = Convert.parseInt(config.get("maxUsedTime"));                
