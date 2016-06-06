@@ -128,6 +128,57 @@ public class config
     	//return loadConfig(url,true);
     	return true;
     }
+        
+    public static final boolean addConfig(String name,java.io.File cfgFile)
+    {
+    	/*if ((filepath == null) || (filepath.length() <= 0))
+        {
+            return false;
+        }
+    	
+    	java.io.File cfgFile = new java.io.File(filepath);
+        if (!cfgFile.exists())
+        {
+        	System.out.println("can not load configuaration file:" + filepath);
+            return false;
+        }*/
+        
+        if(data == null)
+        {
+        	System.out.println("error:please load main configuration first!load failed:"+cfgFile.getName());
+        	return false;
+        }
+        
+        if(data.containsKey(name))
+        {
+        	System.out.println("error:configration name has been exists!name:"+name);
+        	return false;
+        }
+        
+        Yaml yaml = new Yaml();
+    	java.io.Reader in = null;
+    	Map<String,Object> configData = null;
+    	
+    	try
+    	{
+    		in = new java.io.BufferedReader(
+    				new java.io.InputStreamReader(new java.io.FileInputStream(cfgFile.getPath()), 
+    						encoding));
+    		configData = (Map<String,Object>)yaml.load(in);    		
+    		data.put(name, configData);
+    	}
+    	catch(Exception e)
+    	{
+    		e.printStackTrace();
+    		return false;   
+    	}
+    	finally
+    	{
+    		if(in != null) try{in.close();}catch(Exception e){}
+    	}
+    	
+    	return true;
+    }
     
     public static String getString(String key)
     {

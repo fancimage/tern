@@ -95,6 +95,8 @@ public class Application extends TernWebApplication
     				Trace.write(Trace.Error, "the config file(app.yml) of app[%s] does not exists!!", name);
     				continue;
     			}
+    			
+    			config.addConfig(name, f);
     			    			
     			load_app(name,path,appCount);
     			appCount++;
