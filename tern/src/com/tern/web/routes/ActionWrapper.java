@@ -67,6 +67,11 @@ public class ActionWrapper
         return parameters;
     }
     
+    public String getIdentity()
+    {
+    	return self.getClass().getName()+"."+method.getName();
+    }
+    
     @Override
     public String toString()
     {

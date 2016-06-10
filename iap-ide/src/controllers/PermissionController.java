@@ -108,4 +108,28 @@ public class PermissionController extends DataResourceController
 		
 		return modelName+"/edit";
 	}
+	
+	public void delete()
+	{
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+		
+		model = getModel();
+		
+		String ids = request.getParameter("items");
+		if(ids==null || ids.length()<=0)
+		{
+			r.setResult(1);
+			return;
+		}
+		
+		String[] arr = ids.split(",");
+	    if(arr.length<=0)
+	    {
+	    	r.setResult(1);
+	    	return;
+	    }
+	    
+	    model.delete("pgid=? and mid in ("+ids+")", pgid);
+	}
 }

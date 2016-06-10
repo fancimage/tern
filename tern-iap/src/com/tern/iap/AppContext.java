@@ -165,7 +165,7 @@ public class AppContext extends TernContext
 	{
 		if(actionPermission == null) return true;
 		
-		Integer mid = actionPermission.get(action.getMethod());
+		Integer mid = actionPermission.get(action.getIdentity());
 		if(mid != null)
 		{
 			return Operator.current().hasPermission(mid);
@@ -206,7 +206,7 @@ public class AppContext extends TernContext
 				}
 				else
 				{
-					actionPermission.put(action.getMethod(), m.getId());
+					actionPermission.put(action.getIdentity(), m.getId());
 					
 					if(action.getMethod().getName().equals("index"))
 					{

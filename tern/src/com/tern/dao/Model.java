@@ -654,6 +654,25 @@ public class Model
     	execSQL(String.format("DELETE FROM %s WHERE %s", _name, where));
     }    
     
+    public void delete(String where,Object... params) throws ModelException
+    {
+    	if(where == null || where.length()<=0)
+    	{
+    		throw new ModelException(this,"no 'where' clause.");
+    	}
+    	
+    	String sql = String.format("DELETE FROM %s WHERE %s", _name, where);
+    	
+    	try
+		{
+			db.sql(sql,params).exec();
+		}
+		catch(Exception e)
+		{
+			throw new ModelException(this,e.getMessage()); 
+		}
+    }
+    
     public static String sqlvalue(Column col,Object v)
     {
     	if(v==null)
