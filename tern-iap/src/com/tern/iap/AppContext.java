@@ -96,9 +96,9 @@ public class AppContext extends TernContext
 		return ProxyContext.defContext;
 	}
 	
-	public Class<?> findClass(String name)
+	public Class<?> loadClass(String name) throws ClassNotFoundException
 	{
-		return classLoader.findClass(name);
+		return classLoader.loadClass(name);
 	}
 	
 	public static String getCurrentAppName()

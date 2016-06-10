@@ -175,7 +175,17 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     	{
     		/*从缓存中读取*/
     		
-    		Class<?> clz = AppContext.current().findClass("workflow."+cls);
+    		Class<?> clz = null;
+			try 
+			{
+				clz = AppContext.current().loadClass("workflow."+cls);
+			} 
+			catch (ClassNotFoundException e1) 
+			{
+				Trace.write(Trace.Error, e1,"Load Permission Class[%s]!", cls);
+				return null;
+			}
+			
     		if(!WorkflowPermission.class.isAssignableFrom(clz))
     		{
     			Trace.write(Trace.Error, "Permission Class[%s] does not exists!", cls);
