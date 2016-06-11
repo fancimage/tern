@@ -799,7 +799,9 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     			if(!inTrans) this.context.setRollbackOnly();
     			Trace.write(Trace.Error,"wfID = %d after initialize!" , wfid);    			
     			return 0;
-    		}    		
+    		}    
+    		
+    		entity.save();
     		
     		if(!inTrans)  db.commit();
     		
