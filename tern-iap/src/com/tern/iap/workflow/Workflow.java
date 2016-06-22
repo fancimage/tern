@@ -313,7 +313,22 @@ public class Workflow implements com.opensymphony.workflow.Workflow
     {
         if (typeResolver == null) 
         {
-            typeResolver = TypeResolver.getResolver();
+            //typeResolver = TypeResolver.getResolver();
+            typeResolver = new TypeResolver(){
+                @Override
+                protected Object loadObject(String clazz)
+                {
+                    try
+                    {
+                        return AppContext.current().loadClass(clazz).newInstance();
+                    }
+                    catch (Exception e)
+                    {
+                        return super.loadObject(clazz);
+                    }
+
+                }
+            };
         }
 
         return typeResolver;

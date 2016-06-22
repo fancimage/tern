@@ -91,12 +91,12 @@
     function changeSort(first,sencond){
         var url = this_url+'/resort/'+first+'/'+sencond;
         $.post(url,{},function(result){
-            if(0 == result.code){
+            if(0 == result.result){
                 window.location.reload();
             }else if(result.message){
         	    alert(result.message);
             } else {
-        	    alert('操作失败，errcode='+result.code);
+        	    alert('操作失败，errcode='+result.result);
             }
         },'json').error(function(){
            alert('操作失败！');

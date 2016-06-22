@@ -166,7 +166,6 @@
 					<!--mvn jetty:run-forked -->
                     <!--<webApp>web</webApp>-->
                     <webAppSourceDirectory>web</webAppSourceDirectory>
-					<contextPath>/</contextPath>
 					<jvmArgs>-Xmx768m -Dfile.encoding=UTF-8 -Djetty.port=8080</jvmArgs>
 					<stopPort>8989</stopPort>
 					<stopKey>stopStop</stopKey>

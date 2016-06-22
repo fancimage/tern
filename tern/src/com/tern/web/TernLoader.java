@@ -11,10 +11,11 @@ package com.tern.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import com.tern.util.Trace;
 import com.tern.util.config;
@@ -108,70 +109,138 @@ public class TernLoader
 		
 		public abstract void process(Class<?> clazz,String relitivePath);
 	}
+
+	public static void findClasses(ClassLoader classLoader,ScanHandler handler,String path,String pkgname)
+	{
+		if(path == null || path.length() <= 0) return;
+		File file = new File(path);
+		if(!file.exists())
+		{
+			Trace.write(Trace.Warning, "find class[path=%s], but file does not exists.", path);
+			return;
+		}
+
+		if(file.isDirectory())
+		{
+			String root = file.getAbsolutePath();
+			if(pkgname != null && pkgname.length() > 0)
+			{
+				file = new File(file.getAbsolutePath()+File.separator + pkgname);
+				if(!file.exists() || ! file.isDirectory())
+				{
+					Trace.write(Trace.Warning, "find class[path=%s], but not illegal class directory.", file.getAbsolutePath());
+					return;
+				}
+			}
+			findClassesFromDir(classLoader,file,root,pkgname,handler);
+		}
+		else if(path.endsWith(".jar"))
+		{
+			try
+			{
+				JarFile jarFile = new JarFile(file);
+				findClassesFromJar(classLoader,jarFile,pkgname,handler);
+			}
+			catch (IOException e)
+			{
+				Trace.write(Trace.Error,e, "illegal jar file.");
+				return;
+			}
+		}
+	}
+
+	private static void findClassesFromJar(ClassLoader classLoader,JarFile jarFile,String pkgname,ScanHandler handler)
+	{
+		Enumeration<JarEntry> enumes = jarFile.entries();
+		int plen = pkgname.length();
+		while (enumes.hasMoreElements())
+		{
+			JarEntry entry = enumes.nextElement();
+			if(entry.getName().endsWith(".class") && entry.getName().startsWith(pkgname))
+			{
+				String className = entry.getName().replace('/', '.');
+				if(!handler.matchName(className)) continue;
+
+				className = className.substring(0, className.length() - 6);
+				Class<?> clazz = null;//Class.forName(className);
+				try
+				{
+					clazz = classLoader.loadClass(className);
+				}
+				catch (ClassNotFoundException e)
+				{
+				}
+
+				if(clazz!=null)
+				{
+					int i = className.lastIndexOf('.');
+					String pname = "";
+					if(i>plen)
+					{
+						pname = className.substring(plen,i);
+					}
+					handler.process(clazz , pname);
+				}
+			}
+		}
+	}
 	
-	public static void findClasses(ClassLoader classLoader,File file,String prefix,
+	private static void findClassesFromDir(ClassLoader classLoader,File file,String root,
 			String packageName,ScanHandler handler)
-	{		
-		if(!file.isDirectory()) return;
-		
+	{
 		File[] files = file.listFiles();
+
+		int plen = root.length()+1;
+		String pname = file.getAbsolutePath().substring(plen+packageName.length());
 		
 		for (File f : files) 
 		{
 			if(f.isFile())
 			{
-				String fileName = f.getName();
-				if (fileName.endsWith(".class")) 
+				String fileName = f.getAbsolutePath().substring(plen);
+				if (fileName.endsWith(".class") && fileName.startsWith(packageName))
 				{
-					if(handler.matchName(fileName))
+					String className = fileName.replace(File.separatorChar, '.');
+					if(!handler.matchName(className)) continue;
+
+					Class<?> clazz = null;
+					className = className.substring(0, className.length() - 6);
+
+					try
 					{
-						try 
-						{
-							String className = prefix;
-							if(packageName!=null && packageName.length()>0)
-							{
-								if(className.length()>0)
-								{
-									className += '.';
-								}
-								className += packageName;
-							}
-							if(className.length()>0)
-							{
-								className += '.';
-							}
-							
-							className += fileName.substring(0, fileName.length() - 6);							
-							Class<?> clazz = classLoader.loadClass(className);//Class.forName(className);
-							if(clazz!=null) handler.process(clazz , packageName);
-						} 
-						catch (ClassNotFoundException e)
-						{
-						}
+						clazz = classLoader.loadClass(className);
+					}
+					catch (ClassNotFoundException e)
+					{
+					}
+
+					if(clazz!=null)
+					{
+						handler.process(clazz , pname);
 					}
 				}
 			}
 			else
 			{
-				String _name = f.getName();
+				/*String _name = f.getName();
 				if(packageName!=null && packageName.length()>0)
 				{
-					_name = packageName + "." + _name;
-				}
-				
-				findClasses(classLoader,f,prefix,_name,handler);
+					_name = packageName + "/" + _name;
+				}*/
+
+				findClassesFromDir(classLoader,f,root,packageName,handler);
 			}
 			
 		}				
-	}	
+	}
 	
 	public static void scan(String _package, ScanHandler handler)
-	{		
+	{
 		ClassLoader classLoader = TernLoader.class.getClassLoader();
 		for(String src: srcPaths)
 		{
 			String _prefix = src + "." + _package;
-			String _path = _prefix.replace('.', '/'); 
+			String _path = _prefix.replace('.','/');
 			
 			Enumeration<URL> resources = null;
 			
@@ -187,10 +256,33 @@ public class TernLoader
 			{
 				while (resources.hasMoreElements()) 
 				{ 
-					URL resource = resources.nextElement(); 
-					File f = new File(resource.getFile());					
-					
-					findClasses(classLoader,f,_prefix,"",handler);
+					URL resource = resources.nextElement();
+					String protocol = resource.getProtocol();
+					if("file".equals(protocol))
+					{
+						File f = new File(resource.getFile());
+						String root = f.getAbsolutePath();
+						root = root.substring(0,root.length() - _prefix.length()-1);
+
+						String pname = _path;
+						if(File.separatorChar == '\\')
+						{
+							pname = pname.replace('/','\\');
+						}
+						findClassesFromDir(classLoader,f,root,pname,handler);
+					}
+					else if("jar".equals(protocol))
+					{
+						try
+						{
+							JarFile jarFile = ((JarURLConnection) resource.openConnection()).getJarFile();
+							findClassesFromJar(classLoader,jarFile,_path,handler);
+						}
+						catch (IOException e)
+						{
+							e.printStackTrace();
+						}
+					}
 				}
 			}
 			

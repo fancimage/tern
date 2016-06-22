@@ -9,6 +9,8 @@
 
 package com.tern.iap;
 
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -164,10 +166,8 @@ public class Application extends TernWebApplication
 		//3. load controllers
 		String defPre = index==0?null:name;
 		ControllerLoader loader = new ControllerLoader(defPre);
-		TernLoader.findClasses(appLoader,
-				new File(path+"/bin/controllers"),
-				"controllers", null,
-				loader);
+		TernLoader.findClasses(appLoader,loader,
+				appLoader.getClassesPath(), "controllers");
 		
 		//app context
 		AppContext ctx = new AppContext(name,path);
@@ -269,18 +269,42 @@ class IapClassLoader extends ClassLoader
 {
 	private String appPath;
 	Configuration templateCfg;
-	
+	URLClassLoader jarLoader;
+
 	public IapClassLoader(String path,ClassLoader p)
 	{
 		super(p);
-		appPath = path ;//+ "/bin";
+		appPath = path;
+
+		File file = new File(path+"/classes.jar");
+		if(file.exists() && file.isFile())
+		{
+			try
+			{
+				jarLoader = new URLClassLoader(new URL[]{new URL(file.getAbsolutePath())});
+			}
+			catch(Exception e)
+			{
+				jarLoader = null;
+			}
+		}
 	}
 	
 	public String getAppPath(){return appPath;}
+	public String getClassesPath()
+	{
+		if(jarLoader != null) return appPath+"/classes.jar";
+		else return appPath+"/bin";
+	}
 	
 	@Override
-	public Class<?> findClass(String name)
+	public Class<?> findClass(String name) throws ClassNotFoundException
 	{
+		if(jarLoader != null)
+		{
+			return jarLoader.loadClass(name);
+		}
+
 		byte[] data = loadClassData(name);
 		if(data==null || data.length<=0) return null;
 		else return defineClass(name,data,0,data.length);

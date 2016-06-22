@@ -208,17 +208,24 @@ public class ActionHandler extends com.tern.web.ActionHandler
 		ActionHandler ah = new ActionHandler();
 		
 		PathInfo pi = ah.parseUrl(path);
-		Object target = rs1.resolve(pi.path, "GET");
-		if(target instanceof ActionWrapper)
+		if(rs1 != null)
 		{
-			return (ActionWrapper)target;
+			Object target = rs1.resolve(pi.path, "GET");
+			if(target instanceof ActionWrapper)
+			{
+				return (ActionWrapper)target;
+			}
 		}
-		
-		target = rs2.resolve(pi.path, "GET");
-		if(target instanceof ActionWrapper)
+
+		if(rs2 != null)
 		{
-			return (ActionWrapper)target;
+			Object target = rs2.resolve(pi.path, "GET");
+			if(target instanceof ActionWrapper)
+			{
+				return (ActionWrapper)target;
+			}
 		}
+
 		
 		return null;
 	}

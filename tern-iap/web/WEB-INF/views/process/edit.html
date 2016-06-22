@@ -22,12 +22,12 @@
         		if(data!=null && data.length>0) data +='&'+d2;
         		else data = d2;
         		$.post('${HOME}task/${service.code}/${record.pid}/${record.id}/update.json',data,function(result){
-    		      if(0 == result.code){
+    		      if(0 == result.result){
     		      	 window.location.href = '${HOME}task/${service.code}/${record.pid}';
     		      } else if(result.message){
     			     alert(result.message);
         	      } else {
-        		     alert('操作失败，errcode='+result.code);
+        		     alert('操作失败，errcode='+result.result);
         	      }
     	        },'json').error(function(){
     		         alert('操作失败！');

@@ -16,5 +16,39 @@
         <properties>
             <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         </properties>
+		
+		<build>
+		    <pluginManagement>
+			  <plugins>
+                <plugin>
+					<groupId>org.mortbay.jetty</groupId>
+					<artifactId>jetty-maven-plugin</artifactId>
+					<version>8.1.16.v20140903</version>
+				</plugin>
+			  </plugins>
+		    </pluginManagement>
+			
+			<!--<plugins>
+			    <plugin>
+				    <groupId>org.mortbay.jetty</groupId>
+				    <artifactId>jetty-maven-plugin</artifactId>
+				    <configuration>					
+                        <webAppSourceDirectory>tern-iap/web</webAppSourceDirectory>	
+                        <classesDirectory>tern-iap/target/classes</classesDirectory>						
+					    <jvmArgs>-Xmx768m -Dfile.encoding=UTF-8 -Djetty.port=8080</jvmArgs>
+					    <stopPort>8989</stopPort>
+					    <stopKey>stopStop</stopKey>
+					    <connectors>
+						    <connector implementation="org.eclipse.jetty.server.nio.SelectChannelConnector">
+							    <port>8080</port>
+						    </connector>
+					    </connectors>
+					    <webAppConfig>
+						    <defaultsDescriptor>tern-iap/jettyweb.xml</defaultsDescriptor>
+					    </webAppConfig>
+				    </configuration>
+			    </plugin>
+			</plugins>-->
+	    </build>
     
     </project>  

@@ -8,6 +8,7 @@ import java.util.Map;
 import com.opensymphony.workflow.WorkflowException;
 import com.tern.db.InsertCommand;
 import com.tern.db.RowMapper;
+import com.tern.db.SQL;
 import com.tern.db.db;
 import com.tern.iap.Operator;
 import com.tern.util.Convert;
@@ -68,11 +69,13 @@ public class DefaultWorkflowPermission implements WorkflowPermission
 		try 
 		{
 			db.delete("wf_operator").where("wfID=?",entry.getId()).exec();
-			
-			InsertCommand cmd = db.insert("wf_operator").set("wfID", entry.getId());
+
+			SQL sql = db.sql("insert into wf_operator(wfID,operatorID) values(?,?)").param(0,entry.getId());
+			//InsertCommand cmd = db.insert("wf_operator").set("wfID", entry.getId());
 			for(int op : ops)
 			{
-				cmd.set("operatorID", op).exec();
+				//cmd.set("operatorID", op).exec();
+				sql.param(1 , op).exec();
 			}
 		}
 		catch (SQLException e) 
