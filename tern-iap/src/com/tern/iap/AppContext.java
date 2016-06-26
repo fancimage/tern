@@ -135,7 +135,7 @@ public class AppContext extends TernContext
 		
 		try
 		{
-			List<Menu> list = metadb.table("t_menu").order("mcode").query(new RowMapper<Menu>(){
+			List<Menu> list = metadb.table("t_menu").where("mismenu=1").order("mcode").query(new RowMapper<Menu>(){
 
 				@Override
 				public Menu map(ResultSet rs, int rowNum) throws SQLException {
