@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.opensymphony.util.Data;
 import com.opensymphony.workflow.loader.ActionDescriptor;
 import com.opensymphony.workflow.loader.StepDescriptor;
 import com.opensymphony.workflow.loader.WorkflowDescriptor;
@@ -202,7 +203,18 @@ public class ProcessController extends Controller
 		//history steps
 		//DataTable history = null;
 		List<Map<String,Object>> history = getHistorySteps(wfid);
-		
+
+		// Get the preview chmoney
+		float prev_chmoney = 0;
+		try {
+			DataTable wf_ct_change = db.table("wf_ct_change").where("wfID=?", wfid).order("stepID").query();
+			if (wf_ct_change.size() != 0) {
+				prev_chmoney = wf_ct_change.get(0).getFloat("chmoney");
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
 		request.setAttribute("model",  model);
 		request.setAttribute("record", record);
 		request.setAttribute("service",service);
@@ -210,6 +222,7 @@ public class ProcessController extends Controller
 		//request.setAttribute("actions",actions);
 		//request.setAttribute("sysactions",sysActions);
 		request.setAttribute("history",history);
+		request.setAttribute("prev_chmoney", prev_chmoney);
 		
 		return String.format("service/%s/edit", service.getName() );
 	}
@@ -349,10 +362,32 @@ public class ProcessController extends Controller
 	    	inputs.put("suggest", request.getParameter("actionSuggest"));
 		    
 	    	long wfid = record.getLong("wfid");
-		    //fetch process	    	
+		    // fetch process
 		    Workflow.getInstance().doAction(wfid, actionID ,inputs);
-		    
-		    //actionSuggest
+
+			DataTable stepinfo = db.table("wf_stepinfo").where("wfID= ?", wfid).query();
+			for (int i = 0; i < stepinfo.size(); i++) {
+				Trace.write(Trace.Running,stepinfo.get(i).getInt("stepID") + " " + stepinfo.get(i).getDateTime("sDate") + " " + " " + stepinfo.get(i).getDateTime("hDate") + " " + stepinfo.get(i).getInt("sstate") + " " + i);
+			}
+			Trace.write(Trace.Running, stepinfo.size() + " stepinfo.size() ");
+			int stepID = stepinfo.get(stepinfo.size() - 2).getInt("stepID");
+			Trace.write(Trace.Running, "stepID:" + stepID);
+			Trace.write(Trace.Running, "chmoney:" + request.getParameter("chmoney"));
+			if (scode.compareTo("ct_change") == 0) {
+				DataTable ct_change = db.table("ct_change").where("wfid = ?", wfid).query();
+				Trace.write(Trace.Running, ct_change.size() + " ct_change.size() ");
+				int chid = ct_change.get(0).getInt("chid");
+				float chmoney = Float.parseFloat(request.getParameter("chmoney"));
+
+				Map<String, Object> value = new HashMap<String, Object>();
+				value.put("wfID", wfid);
+				value.put("stepID", stepID);
+				value.put("chid", chid);
+				value.put("chmoney", chmoney);
+				db.insert("wf_ct_change").values(value).exec();
+			}
+
+		    // actionSuggest
 		    db.commit();
 		}
 		catch(com.tern.dao.ValueException e)
