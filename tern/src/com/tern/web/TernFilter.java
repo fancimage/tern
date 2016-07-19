@@ -10,6 +10,8 @@
 package com.tern.web;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -30,6 +32,8 @@ public class TernFilter implements Filter
     //protected FilterConfig filterConfig;
 	TernWebApplication webApp = null;
 	IHandler[] handlers;
+
+	Set<String> staticPaths = new HashSet<String>();
 	
 	//private int rootPathLen;
 
@@ -53,6 +57,21 @@ public class TernFilter implements Filter
         }
 				
 		TernLoader.init();
+
+		Object[] paths = config.getArray("server.static");
+		if(paths!=null && paths.length > 0)
+		{
+			for(Object s : paths)
+			{
+				staticPaths.add(s.toString());
+			}
+		}
+		else
+		{
+			staticPaths.add("static");
+			staticPaths.add("skins");
+			staticPaths.add("js");
+		}
 		
 		String clazzName = config.getString("application.class");
 		if(clazzName==null || clazzName.trim().length()<=0)
@@ -161,11 +180,16 @@ public class TernFilter implements Filter
         
         if(config.isDebug() && Trace.needTrace(Trace.Information))
         {
-        	if(!path.endsWith(".jsp") 
-        	   && !path.startsWith("/static")
-        	   && !path.startsWith("/js") && !path.startsWith("/skins") )
+        	if(path.length() > 0 && !path.endsWith(".jsp"))
         	{
-                Trace.write(Trace.Information, "un-handler request: %s,method=%s", path , request.getMethod());
+				//&& !path.startsWith("/static") && !path.startsWith("/js") && !path.startsWith("/skins")
+				int _last = path.indexOf("/",1);
+				if(_last < 1) _last = path.length();
+				String prefix = path.substring(1,_last);
+				if(!staticPaths.contains(prefix))
+				{
+					Trace.write(Trace.Information, "un-handler request: %s,method=%s", path , request.getMethod());
+				}
         	}
         }
         filterChain.doFilter(srequest, sresponse);                

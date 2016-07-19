@@ -257,7 +257,7 @@ public class Trace
     		}
     		else
     		{
-    			_out(level,String.format(format, params),null);
+    			_out(level,String.format(format, params),t);
     		}
     	}
     }

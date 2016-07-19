@@ -47,9 +47,21 @@ class MapDataRow implements java.util.Map<String, Object>,IRow
 	}
 
 	@Override
-	public Object get(Object arg0) {
-		if(arg0 == null) return null;
-		return row.get(arg0.toString());
+	public Object get(Object key) {
+		if(key == null) return null;
+
+		String k = key.toString();
+		Object ret = row.get(k);
+		if(ret == null)
+		{
+			if(k.equals("data")) return row.getData();
+			else if(k.equals("map")) return this;
+			else return null;
+		}
+		else
+		{
+			return ret;
+		}
 	}
 
 	@Override

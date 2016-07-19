@@ -66,7 +66,7 @@ function chooseEnum(src){
 	var type = val_input.data('type');
 	if(type==null || type == '') modal.popContent('无法选择枚举值!');
 	
-	modal.openURL('/iap/enum/'+type+'?value='+val_input.val(),{title:'枚举值选择',callback:function(eid,ename){
+	modal.openURL('enum/'+type+'?value='+val_input.val(),{title:'枚举值选择',callback:function(eid,ename){
 		val_input.val(eid);
 		val_input.prev().val(ename);
 	}});

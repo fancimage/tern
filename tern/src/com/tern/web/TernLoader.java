@@ -322,10 +322,22 @@ public class TernLoader
     		} 
         	catch (ClassNotFoundException e) 
         	{
-        		Trace.write(Trace.Warning, "Application[%s] does not exists.", clazz);
+        		//Trace.write(Trace.Warning, "Application[%s] does not exists.", clazz);
     		}
     	}
-    	
+
+		if(ret == null)
+		{
+			try
+			{
+				ret = Class.forName(name);
+			}
+			catch (ClassNotFoundException e)
+			{
+				Trace.write(Trace.Warning, "Application[%s] does not exists.", name);
+			}
+		}
+
     	if(!config.isDebug() && cached )
     	{
     		synchronized(caches)
