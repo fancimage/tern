@@ -151,7 +151,7 @@ public class TernWebApplication
 		router.sort();
 	}
 	
-	void setInstance(TernWebApplication ins)
+	static void setInstance(TernWebApplication ins)
 	{
 		instance = ins;
 	}

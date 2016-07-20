@@ -47,19 +47,24 @@ public class DefaultWorkflowPermission implements WorkflowPermission
     	return false;
 	}
 
-	@Override
-	public void initWorkflowOperators(IAPWorkflowEntry entry, Map attrs) throws WorkflowException 
+	public List<Integer> getWorkflowOperators(IAPWorkflowEntry entry, Map attrs) throws WorkflowException
 	{
 		if(attrs==null || !attrs.containsKey("op.name"))
 		{
-			return;
+			return null;
 		}
-		
+
 		String opName = Convert.toStringIgnoreEmpty(attrs.get("op.name"), "");
 		int pid = entry.getProcess().getInt("pid");
 		String type = Convert.toStringIgnoreEmpty(attrs.get("op.type"), "role");
-		
-		List<Integer> ops = getIDByName(opName,type,pid);
+
+		return getIDByName(opName,type,pid);
+	}
+
+	@Override
+	public void initWorkflowOperators(IAPWorkflowEntry entry, Map attrs) throws WorkflowException 
+	{
+		List<Integer> ops = getWorkflowOperators(entry,attrs);
 		if(ops==null || ops.size() <=0)
 		{
 			throw new WorkflowException("no operator has permission to process workflow.");

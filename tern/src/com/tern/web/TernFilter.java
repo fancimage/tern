@@ -101,6 +101,7 @@ public class TernFilter implements Filter
         {
         	webApp = new TernWebApplication();
         }
+		TernWebApplication.setInstance(webApp);
         
         if(!webApp.start(cfg.getServletContext()))
         {

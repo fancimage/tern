@@ -25,6 +25,7 @@ import com.opensymphony.workflow.spi.*;
 import com.opensymphony.workflow.util.DefaultVariableResolver;
 import com.opensymphony.workflow.util.VariableResolver;
 import com.tern.dao.Record;
+import com.tern.db.DataTable;
 import com.tern.db.db;
 import com.tern.iap.AppContext;
 import com.tern.iap.Operator;
@@ -1971,7 +1972,26 @@ public class Workflow implements com.opensymphony.workflow.Workflow
             }
             
             /*得到该步骤有权限处理的操作员*/
-            getPermissionHandler(descriptor).initWorkflowOperators((IAPWorkflowEntry)entry, step.getMetaAttributes());
+            int nextOperator = Convert.parseInt(transientVars.get("nextOperator"));
+            if(nextOperator > 0)
+            {
+                try
+                {
+                    db.delete("wf_operator").where("wfID=?",entry.getId()).exec(); //clear first
+                    db.sql("insert into wf_operator(wfID,operatorID) values(?,?)")
+                      .param(0,entry.getId())
+                      .param(1,nextOperator)
+                      .exec();
+                }
+                catch (SQLException e)
+                {
+                    throw new WorkflowException(e);
+                }
+            }
+            else
+            {
+                getPermissionHandler(descriptor).initWorkflowOperators((IAPWorkflowEntry) entry, step.getMetaAttributes());
+            }
 
             Step newStep = store.createCurrentStep(step,entry.getId(), owner, startDate, dueDate, status, previousIds);
             
@@ -2002,30 +2022,21 @@ public class Workflow implements com.opensymphony.workflow.Workflow
             throw e;
         }
     }
-    
-    /*
-     * try to get the id of next step
-     * */
-    public StepDescriptor getNextStep(long id,int actionId,Map inputs)
-    {    	    	
-    	try
-    	{
-    		db.transaction();
-    		
-    		WorkflowStore store = getPersistence();
+
+    public DataTable getNextStepOperators(long id, int actionId, Map inputs)
+    {
+        try
+        {
+            db.transaction();
+
+            WorkflowStore store = getPersistence();
             WorkflowEntry entry = store.findEntry(id,inputs);
 
-            if (entry.getState() != WorkflowEntry.ACTIVATED) 
+            if (entry.getState() != WorkflowEntry.ACTIVATED)
             {
                 return null;
             }
 
-            WorkflowDescriptor wf = getConfiguration().getWorkflow(entry.getWorkflowName());
-
-            List currentSteps = store.findCurrentSteps(id);
-            ActionDescriptor action = null;
-
-            PropertySet ps = store.getPropertySet(id);
             Map transientVars = new HashMap();
 
             if (inputs != null)
@@ -2033,101 +2044,147 @@ public class Workflow implements com.opensymphony.workflow.Workflow
                 transientVars.putAll(inputs);
             }
 
-            populateTransientMap(entry, transientVars, wf.getRegisters(), new Integer(actionId), currentSteps, ps);
-
-            //boolean validAction = false;
-            Step step = null;
-            for (Iterator iter = currentSteps.iterator();iter.hasNext();)
+            WorkflowDescriptor wf = getConfiguration().getWorkflow(entry.getWorkflowName());
+            StepDescriptor sd = getNextStep(wf,entry,actionId,transientVars);
+            if(sd != null)
             {
-            	Step _step = (Step) iter.next();
-                StepDescriptor s = wf.getStep( _step.getStepId());
-                ActionDescriptor actionDesc = s.getAction(actionId);
-                if(actionDesc != null)
+                List<Integer> ops = getPermissionHandler(wf).getWorkflowOperators((IAPWorkflowEntry)entry,sd.getMetaAttributes());
+                if(ops != null && ops.size() > 0)
                 {
-                	action = actionDesc;
-                	step = _step;
-                	break;
-                }                
-            }
-
-            if(null == action)
-            {
-            	//check global actions
-                for (Iterator gIter = wf.getGlobalActions().iterator();gIter.hasNext();) 
-                {
-                    ActionDescriptor actionDesc = (ActionDescriptor) gIter.next();
-
-                    if (actionDesc.getId() == actionId) 
+                    StringBuffer sql = new StringBuffer();// + String.;
+                    for(int op : ops)
                     {
-                        action = actionDesc;
-
-                        //if (isActionAvailable(action, transientVars, ps, 0))
-                        //{
-                        //    validAction = true;
-                        //}
-                        break;
+                        if(sql.length() > 0) sql.append(',');
+                        sql.append(op);
                     }
+                    sql.insert(0,"select operatorID,oname from t_operator where operatorID in (")
+                       .append(')');
+
+                    return db.sql(sql.toString()).query();
                 }
-            }                       
-
-            if (null == action) 
-            {
-                throw new InvalidActionException("Action " + actionId + " does not exists!");
             }
-            
-            if (action.isFinish())
-            {
-            	return null;
-            }
-            
-            //post銆乸re-functions??---do not execute those functions.
-            //check each conditional result
-            List conditionalResults = action.getConditionalResults();
-            ResultDescriptor[] theResults = new ResultDescriptor[1];
-            for (Iterator iterator = conditionalResults.iterator();iterator.hasNext();) 
-            {
-                ConditionalResultDescriptor conditionalResult = (ConditionalResultDescriptor) iterator.next();
+        }
+        catch(Exception e)
+        {
+            Trace.write(Trace.Error,e,"getNextStepOperators");
+        }
+        finally
+        {
+            db.rollback();
+        }
 
-                if (passesConditions(null, conditionalResult.getConditions(),
-                		Collections.unmodifiableMap(transientVars), 
-                		ps, (step != null) ? step.getStepId() : (-1))) 
+        return null;
+    }
+
+    //public StepDescriptor getNextStep(long id,int actionId,Map inputs){}
+    
+    /*
+     * try to get the id of next step
+     * */
+    private StepDescriptor getNextStep(WorkflowDescriptor wf,WorkflowEntry entry,int actionId,Map transientVars) throws WorkflowException
+    {
+        WorkflowStore store = getPersistence();
+        List currentSteps = store.findCurrentSteps(entry.getId());
+        ActionDescriptor action = null;
+
+        PropertySet ps = store.getPropertySet(entry.getId());
+
+
+        populateTransientMap(entry, transientVars, wf.getRegisters(), new Integer(actionId), currentSteps, ps);
+
+        //boolean validAction = false;
+        Step step = null;
+        for (Iterator iter = currentSteps.iterator();iter.hasNext();)
+        {
+            Step _step = (Step) iter.next();
+            StepDescriptor s = wf.getStep( _step.getStepId());
+            ActionDescriptor actionDesc = s.getAction(actionId);
+            if(actionDesc != null)
+            {
+                action = actionDesc;
+                step = _step;
+                break;
+            }
+        }
+
+        if(null == action)
+        {
+            //check global actions
+            for (Iterator gIter = wf.getGlobalActions().iterator();gIter.hasNext();)
+            {
+                ActionDescriptor actionDesc = (ActionDescriptor) gIter.next();
+
+                if (actionDesc.getId() == actionId)
                 {
-                    //if (evaluateExpression(conditionalResult.getCondition(), entry, wf.getRegisters(), null, transientVars)) {
-                    theResults[0] = conditionalResult;
+                    action = actionDesc;
 
-                    //if (conditionalResult.getValidators().size() > 0) 
+                    //if (isActionAvailable(action, transientVars, ps, 0))
                     //{
-                    //    verifyInputs(entry, conditionalResult.getValidators(), Collections.unmodifiableMap(transientVars), ps);
+                    //    validAction = true;
                     //}
-
                     break;
                 }
             }
+        }
 
-            // use unconditional-result if a condition hasn't been met
-            if (theResults[0] == null)
+        if (null == action)
+        {
+            throw new InvalidActionException("Action " + actionId + " does not exists!");
+        }
+
+        if (action.isFinish())
+        {
+            return null;
+        }
+
+        //post銆乸re-functions??---do not execute those functions.
+        //check each conditional result
+        List conditionalResults = action.getConditionalResults();
+        ResultDescriptor[] theResults = new ResultDescriptor[1];
+        for (Iterator iterator = conditionalResults.iterator();iterator.hasNext();)
+        {
+            ConditionalResultDescriptor conditionalResult = (ConditionalResultDescriptor) iterator.next();
+
+            if (passesConditions(null, conditionalResult.getConditions(),
+                    Collections.unmodifiableMap(transientVars),
+                    ps, (step != null) ? step.getStepId() : (-1)))
             {
-                theResults[0] = action.getUnconditionalResult();
-                //verifyInputs(entry, theResults[0].getValidators(), Collections.unmodifiableMap(transientVars), ps);
+                //if (evaluateExpression(conditionalResult.getCondition(), entry, wf.getRegisters(), null, transientVars)) {
+                theResults[0] = conditionalResult;
+
+                //if (conditionalResult.getValidators().size() > 0)
+                //{
+                //    verifyInputs(entry, conditionalResult.getValidators(), Collections.unmodifiableMap(transientVars), ps);
+                //}
+
+                break;
             }
-                       
-            //split,join??
-            if (theResults[0].getSplit() != 0)
-            {
-            	return null;
-            }
-            else if (theResults[0].getJoin() != 0)
-            {
-            	return null;
-            }
-            else
-            {
-            	StepDescriptor ret = wf.getStep( theResults[0].getStep() );
+        }
+
+        // use unconditional-result if a condition hasn't been met
+        if (theResults[0] == null)
+        {
+            theResults[0] = action.getUnconditionalResult();
+            //verifyInputs(entry, theResults[0].getValidators(), Collections.unmodifiableMap(transientVars), ps);
+        }
+
+        //split,join??
+        if (theResults[0].getSplit() != 0)
+        {
+            return null;
+        }
+        else if (theResults[0].getJoin() != 0)
+        {
+            return null;
+        }
+        else
+        {
+            StepDescriptor ret = wf.getStep( theResults[0].getStep() );
             	/*if(inputs != null && ret != null)
             	{
             		List preFunctions = ret.getPreFunctions();
                     for (Iterator iterator = preFunctions.iterator();
-                            iterator.hasNext();) 
+                            iterator.hasNext();)
                     {
                         FunctionDescriptor function = (FunctionDescriptor) iterator.next();
                         String fname = function.getName();
@@ -2140,17 +2197,8 @@ public class Workflow implements com.opensymphony.workflow.Workflow
                         }
                     }
             	}*/
-            	return ret;
-            }
-    	}
-    	catch(Exception e)
-    	{
-    		return null;
-    	}
-    	finally
-    	{
-    		db.rollback();
-    	}    	    	
+            return ret;
+        }
     }
     
     public Configuration getConfiguration()

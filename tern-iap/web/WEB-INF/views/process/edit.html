@@ -33,7 +33,32 @@
     		         alert('操作失败！');
     	        });
         	});
+
+        	$('#actionID').change(function(){
+        	    var actionid = $(this).val();
+        	    getNextStepOperators(actionid);
+        	});
+
+        	getNextStepOperators($('#actionID').val());
         });
+
+        function getNextStepOperators(aid){
+            var data = {wfid : ${wfid} , actionid: aid};
+            $.post('${HOME}task/${service.code}/${record.pid}/operators.json',data,function(result){
+    		    if(result && result.length){
+    		        var $ops = $('#operator').empty();
+    		        for(var i = 0;i<result.length;i++){
+    		            $('<option></option>').val(result[i].operatorid)
+    		               .text(result[i].oname)
+    		               .appendTo($ops);
+    		        }
+    		    } else {
+        		   $('#operator').empty();
+        	    }
+    	    },'json').error(function(){
+    		    $('#operator').empty();
+    	    });
+        }
     </script>
 </head>
 <body>
@@ -70,6 +95,13 @@
                      <div class="col-sm-4">
                      	<textarea name="actionSuggest" class="form-control">同意！</textarea>
                      </div>
+                  </div>
+
+                  <div class="form-group">
+                      <label class="col-sm-2">审批人</label>
+                      <div class="col-sm-4">
+                          <select id="operator" name="operator" class="form-control"></select>
+                      </div>
                   </div>
 
                   <div class="form-group">

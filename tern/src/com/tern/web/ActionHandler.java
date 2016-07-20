@@ -12,6 +12,7 @@ package com.tern.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.tern.db.DataTable;
 import com.tern.util.TernContext;
 import com.tern.util.Trace;
 import com.tern.util.config;
@@ -76,6 +77,11 @@ public class ActionHandler implements IHandler
 			{
 				response.setContentType("text/javascript");
 				response.setCharacterEncoding(config.getEncoding());
+
+				if(vo instanceof DataTable)
+				{
+					vo = ((DataTable)vo).getRows();
+				}
 				
 				ctrl.getStream()
 				    .append(JSON.toJSONString(vo))

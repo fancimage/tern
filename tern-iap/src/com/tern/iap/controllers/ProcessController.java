@@ -126,6 +126,22 @@ public class ProcessController extends Controller
 			throw new ActionException( String.format("query process history-steps failed."));
 		}
 	}
+
+	public void operators()
+	{
+		long wfid = Convert.parseLong(request.getParameter("wfid"));
+		int actionid = Convert.parseInt(request.getParameter("actionid"));
+
+		if(actionid <= 0)
+		{
+			this.setViewObject(new DataTable());
+			return;
+		}
+
+		DataTable dt = Workflow.getInstance().getNextStepOperators(wfid,actionid,null);
+		if(dt == null) dt = new DataTable();
+		this.setViewObject(dt);
+	}
 	
 	public String edit(long eid)
 	{			
@@ -217,6 +233,7 @@ public class ProcessController extends Controller
 
 		request.setAttribute("model",  model);
 		request.setAttribute("record", record);
+		request.setAttribute("wfid", wfid);
 		request.setAttribute("service",service);
 		request.setAttribute("steps",steps.values());
 		//request.setAttribute("actions",actions);
@@ -360,6 +377,7 @@ public class ProcessController extends Controller
 	    	inputs.put("data", record);
 	    	inputs.put("service", service);
 	    	inputs.put("suggest", request.getParameter("actionSuggest"));
+			inputs.put("nextOperator", request.getParameter("operator"));
 		    
 	    	long wfid = record.getLong("wfid");
 		    // fetch process
