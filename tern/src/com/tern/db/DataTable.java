@@ -9,6 +9,7 @@
 
 package com.tern.db;
 
+import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
@@ -133,20 +134,6 @@ public class DataTable implements Serializable,com.tern.dao.ITable,Iterable<Data
     public final DataTable retriveFromDB(String sqlStr) throws java.sql.SQLException
     {
     	return db.sql(sqlStr).query(this);
-    	/*try
-    	{
-    		
-    		cmd = SqlHelper.helper().createCommand(sqlStr);
-    		cmd.execute(this);
-    	}
-    	catch(Exception e)
-    	{
-    		throw new DBException(e.getMessage());
-    	}
-    	finally
-    	{
-    		if(cmd != null) cmd.Dispose();
-    	}*/
     }
     
     /*@Deprecated
@@ -160,7 +147,7 @@ public class DataTable implements Serializable,com.tern.dao.ITable,Iterable<Data
     	{
     		throw new DBException(e.getMessage());
     	}
-    }
+    }*/
     
     @Deprecated
     public final void retriveFromDB(java.sql.ResultSet rs) throws SQLException
@@ -171,12 +158,12 @@ public class DataTable implements Serializable,com.tern.dao.ITable,Iterable<Data
     		{
     			this.fill(rs);
     		}
-    		catch(Exception e)
+    		catch(SQLException e)
         	{
-        		throw new DBException(e.getMessage());
+        		throw e;
         	}
     	}
-    }*/
+    }
 
     //从一个ResultSet获得DataTable的数据(目前，唯一生成DataTable的方法)
     final void fill(ResultSet rs) throws java.sql.SQLException
