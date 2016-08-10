@@ -10,7 +10,6 @@
 package com.tern.db;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +43,12 @@ class MapDataRow implements java.util.Map<String, Object>,IRow
 	public Set<java.util.Map.Entry<String, Object>> entrySet() 
 	{
 		return null;
+	}
+
+	@Override
+	public Object get(int i)
+	{
+		throw new UnsupportedOperationException();
 	}
 
 	@Override

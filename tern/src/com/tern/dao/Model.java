@@ -754,6 +754,12 @@ class ColumnsMap implements Map<String,Column>,IRow
 	}
 
 	@Override
+	public Object get(int i)
+	{
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
 	public boolean isEmpty() 
 	{
 		return model._colmaps.isEmpty();

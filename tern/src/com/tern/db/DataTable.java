@@ -154,14 +154,7 @@ public class DataTable implements Serializable,com.tern.dao.ITable,Iterable<Data
     {
     	if (rs != null)
     	{
-    		try
-    		{
-    			this.fill(rs);
-    		}
-    		catch(SQLException e)
-        	{
-        		throw e;
-        	}
+            this.fill(rs);
     	}
     }
 

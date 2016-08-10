@@ -231,6 +231,12 @@ public class Record implements Map<String,Object>,IRow
 			}
 		}
 	}
+
+	@Override
+	public Object get(int i)
+	{
+		throw new UnsupportedOperationException();
+	}
 	
 	public Object get(String key)
 	{

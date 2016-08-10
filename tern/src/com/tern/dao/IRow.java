@@ -11,6 +11,7 @@ package com.tern.dao;
 
 public interface IRow
 {
+	Object get(int i);
 	Object get(String key);
 	IRow set(String key,Object val);
 }
