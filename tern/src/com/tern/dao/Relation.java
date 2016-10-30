@@ -174,8 +174,13 @@ public class Relation
     		  .exec();
     	}
     }
-    
-    public RecordSet queryAvailableParents(String src,java.util.Map<String, Object> child/*,Model srcModel*/)
+
+	public RecordSet queryAvailableParents(String src,java.util.Map<String, Object> child/*,Model srcModel*/)
+	{
+		return queryAvailableParents(src,child,null);
+	}
+
+    public RecordSet queryAvailableParents(String src,java.util.Map<String, Object> child,String filter)
     {
     	if(mode != BELONGS)
     	{
@@ -189,7 +194,7 @@ public class Relation
     	
     	if(src == null || src.length()<=0 || child==null || map.length<=1)
     	{
-    		return this.getRef().query();
+    		return this.getRef().query(filter);
     	}
     	else
     	{
@@ -203,6 +208,12 @@ public class Relation
     			buf.append(m[1]).append(" = ").append(Model.sqlvalue(parent.column(m[0]),child.get(m[0])));
     			c++;
     		}
+
+    		if(filter != null)
+			{
+				if(c > 0) buf.append(" AND ");
+				buf.append(filter);
+			}
     		
     		return this.getRef().query(buf.toString());
     	}
