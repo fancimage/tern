@@ -281,7 +281,7 @@ public class Record implements Map<String,Object>,IRow
 		}
 		else
 		{
-			if(this.state == RecordState.New)
+			if(this.state == RecordState.New || this.state == RecordState.Error)
 			{
 				if(col.type == DataType.Bool) return false;
 				else return null;

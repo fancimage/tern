@@ -18,7 +18,7 @@ import com.tern.dao.Record;
 
 public class html 
 {
-	private static Map<String, Object> _new_record(Model m,javax.servlet.ServletRequest request,boolean isNew)
+	public static Map<String, Object> getValuesFromRequest(Model m,javax.servlet.ServletRequest request,boolean isNew)
     {
     	Map<String, Object> vars = new java.util.HashMap<String, Object>();
     	//javax.servlet.ServletRequest request = page.pageContext.getRequest();
@@ -96,7 +96,7 @@ public class html
     
     public static Record new_record(Model m,javax.servlet.ServletRequest request)
     {
-    	return m.create(_new_record(m,request,true));
+    	return m.create(getValuesFromRequest(m,request,true));
     }
     
     public static Record update_record(Model m,javax.servlet.ServletRequest request)
@@ -139,7 +139,7 @@ public class html
     	
     	return m.update(vars);*/
     	
-    	Map<String, Object> vars = _new_record(m,request,false);
+    	Map<String, Object> vars = getValuesFromRequest(m,request,false);
     	Map<String, Object> keys = null;//new java.util.HashMap<String, Object>();
     	if(m.getId() == null && m.getKeys() != null)
     	{
