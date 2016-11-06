@@ -436,6 +436,16 @@ public class Model
     		throw new ModelException(this,e.getMessage());
     	}    	    
     }
+
+	public RecordSet sql(String sql,Object... params)
+	{
+		RecordSet rs = new RecordSet(this);
+
+		rs.query = this.db.table("("+sql+")" , "A");
+		rs.query.where(null,params);
+
+		return rs;
+	}
     
     //select('t1,t2').where('s=$s',vars).order('').limit(10)
     public RecordSet query(String where,Map<String,Object> vars)
