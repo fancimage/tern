@@ -46,6 +46,7 @@ public class html
     		if(col != null)
     		{
     			if(vars.containsKey(col.getName())) continue;
+				if(isNew && col.isId()) continue;
     			
     			count++;
     			vars.put(col.getName(), request.getParameter(pname));
