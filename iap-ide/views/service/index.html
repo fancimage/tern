@@ -21,6 +21,7 @@
       <td>
         <a href="#modify"><i class="fa fa-edit"></i></a>
 	    <a href="#del"><i class="fa fa-remove"></i></a>
+        <a href="#design"><i class="fa fa-th-list"></i></a>
      </td>
   </tr>
 </@>
@@ -29,4 +30,13 @@
     <@tern.query name="query" source=records pagesize=20 sort="tcode"/>
 </@>
 
-<#include "/model/index.html">
+<#include "/model/index.html"/>
+<script>
+    $(function(){
+       $tern.onCommand = function(name,id){
+	       if(name == '#design'){
+	           window.open( '${HOME}service/${appName}/'+id);
+	       }
+	   };
+    });
+</script>

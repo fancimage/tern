@@ -1,0 +1,48 @@
+@charset "UTF-8";
+
+.bs-docs-nav {
+    color: #cdbfe3;
+    margin-bottom: 0;
+    background-color: #fff;
+    border-bottom: 0;
+}
+
+.bs-docs-nav .navbar-brand, .bs-docs-nav .navbar-nav>li>a {
+    font-weight: 500;
+    color: #563d7c;
+}
+
+.breadcrumb-right{
+    float: right !important;
+    margin-right: -15px;
+    margin-bottom: 0px;
+    margin-top: 8px;
+}
+
+#title,.idetitle{
+   color: #cdbfe3;
+   text-shadow: 0 1px 0 rgba(0,0,0,.1);
+   background-color: #6f5499;
+   font-family: 'Helvetica Neue', Helvetica, 'Microsoft Yahei', 'Hiragino Sans GB', 'WenQuanYi Micro Hei', sans-serif;
+}
+
+#title h1{
+   color:white;
+}
+
+.table > tbody > tr.info > th{
+    background-color: #cdbfe3;
+}
+
+a {
+    color: #563d7c;
+    text-decoration: none;
+}
+a:hover, a:focus {
+    color: #563d7c;
+    text-decoration: none;
+}
+
+.pagediv .pagination{
+    margin: 0px 0px;
+}

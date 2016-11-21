@@ -173,6 +173,15 @@ public class ActionHandler extends com.tern.web.ActionHandler
 			response.reset();
 			//response.setContentType("image/jpeg");
 	        //response.addHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+			int index = path.lastIndexOf(".");
+			if(index > 0)
+			{
+				String prefix = path.substring(index+1);
+				if(prefix.equals("css"))
+				{
+					response.setContentType("text/css");
+				}
+			}
 	        
 	        int fileLength = (int) file.length();
             response.setContentLength(fileLength);

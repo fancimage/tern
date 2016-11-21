@@ -1,49 +1,134 @@
-<@tern.override name="list-toolbar">
-	 <div class="btn-group" style="margin:4px">
-		 <button type="button" class="btn btn-default" id="btnNew">新增</button>
-         <button type="button" class="btn btn-default" id="btnDel">删除</button>
-         <button class="btn btn-default" id="btnBack">返回</button>
-	 </div>
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>${model.caption}</title>
+    <base href="${HOME}" />
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.css">
+    <link rel="stylesheet" href="static/bootstrap/css/font-awesome.min.css">
+    <link rel="stylesheet" href="static/ide.css" type="text/css">
+    <script type="text/javascript" src="static/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/modal.js"></script>
+    <script type="text/javascript" src="static/js/tern-list.js"></script>
+    <script language="javascript">
+        var this_url = '${URL}';
+        var $tern = null;
+        $(function(){
+        	$tern = tern_list();
+        	$tern.caption = '${model.caption}';
+        });
+    </script>
+</head>
+<body>
+<header class="navbar navbar-static-top bs-docs-nav" id="top" role="banner">
+    <div class="container">
+        <div class="navbar-header">
+            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a href="${HOME}" class="navbar-brand">IAP</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">
+            <ul class="nav navbar-nav">
+                <li>
+                    <a href="entity/${appName}">数据模型</a>
+                </li>
+                <li>
+                    <a href="enumtype/${appName}">枚举值</a>
+                </li>
+                <li>
+                    <a href="data/${appName}/menu">功能与菜单</a>
+                </li>
+                <li>
+                    <a href="data/${appName}/permgroup">权限组</a>
+                </li>
+                <li>
+                    <a href="data/${appName}/role">角色</a>
+                </li>
+                <li>
+                    <a href="service/${appName}">工作流</a>
+                </li>
+                <li>
+                    <a href="route/${appName}">路由</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<div id="title">
+    <div class="container">
+        <@tern.block name="title"><h1>${model.caption}</h1></@>
+    </div>
+</div>
+
+<div class="container">
+<@tern.block name="list-toolbar">
+<div class="btn-group" style="margin:4px">
+    <button type="button" class="btn btn-default" id="btnNew">新增</button>
+    <button type="button" class="btn btn-default" id="btnDel">删除</button>
+</div>
+</@>
+<@tern.block name="list-query">
+<@tern.query name="query" source=records pagesize=20/>
 </@>
 
+<@tern.block name="grid-start">
 <#assign columns=model.columnList colcount=0>
-<@tern.override name="grid-title">
-  <tr class="info">
-     <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
-     <#foreach col in columns>
-     <#if !col.id>
-     <th>${col.caption}</th><#assign colcount=colcount+1>
-     </#if>
-     </#foreach>
-     <th>操作</th>
-  </tr>
-</@>
-<@tern.override name="grid-detail">
-  <tr>
-      <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
-      <#foreach col in model.columnList>
-        <#if col.id>
-        <#elseif col.belongsTo??>
-           <td>${(item[col.belongsTo.name])!}</td>
-        <#elseif col.type=='Bool'>
-           <td>${(item[col.name]?string('是','否'))!}</td>
-        <#else>
-           <td>${(item[col.name])!}</td>
-       </#if>
-      </#foreach>         	 
-      <td>
-        <a href="#modify"><i class="fa fa-edit"></i></a>
-	    <a href="#del"><i class="fa fa-remove"></i></a>
-     </td>
-  </tr>
+<table id="enTable" class="table table-bordered table-hover" style="margin-bottom:0">
 </@>
 
-<#include "/layout/list.html">
+<@tern.block name="grid-title">
+    <tr class="info">
+        <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
+        <#foreach col in columns>
+            <#if !col.id>
+                <th>${col.caption}</th><#assign colcount=colcount+1>
+            </#if>
+        </#foreach>
+        <th>操作</th>
+    </tr>
+</@>
 
-<script>
-    $(function(){
-       $('#btnBack').click(function(){
-    		   window.location.href = '${HOME}?appname=${appName}';
-    	 }); 
-    });	         
-</script>
+<#assign rowindex = 0>
+<#foreach item in records>
+    <@tern.block name="grid-detail">
+    <tr>
+        <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+        <#foreach col in model.columnList>
+            <#if col.id>
+                <#elseif col.belongsTo??>
+                    <td>${(item[col.belongsTo.name])!}</td>
+                    <#elseif col.type=='Bool'>
+                        <td>${(item[col.name]?string('是','否'))!}</td>
+                        <#else>
+                            <td>${(item[col.name])!}</td>
+            </#if>
+        </#foreach>
+        <td>
+            <a href="#modify"><i class="fa fa-edit"></i></a>
+            <a href="#del"><i class="fa fa-remove"></i></a>
+        </td>
+    </tr>
+    </@>
+<#assign rowindex=rowindex+1>
+</#foreach>
+
+<@tern.block name="grid-footer">
+        <#if (query?? && query.pagecount>1) >
+            <tr class="info">
+                <td colspan="${colcount+2}" class="pagediv" page-current="${query.current}" page-count="${query.pagecount}">
+                </td>
+            </tr>
+        </#if>
+        </table>
+</@>
+</div>
+</body>
+</html>
