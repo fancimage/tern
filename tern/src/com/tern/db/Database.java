@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.el.MethodNotFoundException;
 import javax.sql.DataSource;
 import com.tern.dao.NamedValue;
 import com.tern.util.Convert;
