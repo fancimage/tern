@@ -11,7 +11,7 @@ Modal.prototype.popContent = function(content,options){
     options = $.extend({title:'提示'},options);
     var tmpl = [
         // tabindex is required for focus
-        '<div class="modal fade" tabindex="-1"><div class="modal-dialog"><div class="modal-content">',
+        '<div class="modal fade" tabindex="-1" data-backdrop="static"><div class="modal-dialog"><div class="modal-content">',
            '<div class="modal-header">',
             '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>',
             '<h3>'+options.title+'</h3>', 
