@@ -86,6 +86,11 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 			if(iframe.prop('src')=='') return;
 			iframe.unbind('load');
 		    var win = iframe[0].contentWindow;
+
+		    win.$(win).load(function(){
+            	alert($(this).height());
+            });
+
 			var w = win.document.body.scrollWidth;
 			var h = win.document.body.scrollHeight;
 			if(w < iframe.width()) w = iframe.width();

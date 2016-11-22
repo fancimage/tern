@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模型导入</title>
+    <base href="${HOME}" />
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.css" media="screen">
+    <link rel="stylesheet" href="static/bootstrap/css/font-awesome.min.css" media="screen">
+    <link rel="stylesheet" href="static/tern.css" media="screen">
+    <script type="text/javascript" src="static/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="static/bootstrap/js/bootstrap.js"></script>
+    <script type="text/javascript" src="static/js/modal.js"></script>
+    <script type="text/javascript" src="static/js/edit.js"></script>
+    <script>
+
+    </script>
+</head>
+<body>
+<form id="editFrm" class="form-horizontal" action="${URL}/update">
+    <div class="form-group">
+        <label class="control-label col-sm-2" for="tname">物理表名称</label>
+        <div class="col-sm-4">
+            <input type="text" id="tname" name="tname" placeholder="table name" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-2" for="mname">模型名称</label>
+        <div class="col-sm-4">
+            <input type="text" id="mname" name="mname" placeholder="model name" class="form-control">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-sm-2" for="title">标题</label>
+        <div class="col-sm-4">
+            <input type="text" id="title" name="title" placeholder="标题" class="form-control">
+        </div>
+    </div>
+</form>
+<div class="btn-group" style="margin:4px">
+    <button class="btn" id="btnClose">取消</button>
+    <button class="btn btn-primary" id="btnSave">导入</button>
+</div>
+</body>
+</html>

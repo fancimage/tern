@@ -458,7 +458,7 @@ public class db
 abstract class DataSourceLoader
 {
 	abstract public String[] getClasses();
-	abstract public String[][] getAttribues();
+	abstract public String[][] getAttribues(String clsName);
 }
 
 class DBCPLoader extends DataSourceLoader
@@ -467,19 +467,33 @@ class DBCPLoader extends DataSourceLoader
 	@Override
 	public String[] getClasses()
 	{		
-		return new String[]{"org.apache.tomcat.dbcp.dbcp.BasicDataSource",  //for tomcat
+		return new String[]{
+				"org.apache.tomcat.dbcp.dbcp2.BasicDataSource",  //for tomcat8
+				"org.apache.tomcat.dbcp.dbcp.BasicDataSource",  //for tomcat
+				"org.apache.commons.dbcp2.BasicDataSource",
 				"org.apache.commons.dbcp.BasicDataSource"};
 	}
 
 	@Override
-	public String[][] getAttribues()
+	public String[][] getAttribues(String clsName)
 	{
-		return new String[][]{
+		boolean dbcp = (clsName!=null && clsName.indexOf(".dbcp2.")<0);
+		String[][] ret = new String[][]{
 			{"driverClassName","driver"},
 			{"url"},
 			{"username","user"},
 			{"password","pw"},
-			{"maxActive"},
-		};		
+			{"maxTotal","maxActive"},
+			{"initialSize"},
+			{"minIdle"},
+			{"maxIdle"}
+		};
+
+		if(dbcp)
+		{
+			ret[4][0] = "maxActive";
+		}
+
+		return ret;
 	}
 }

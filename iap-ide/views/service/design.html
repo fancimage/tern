@@ -7,7 +7,7 @@
     <base href="${HOME}" />
     <link rel="stylesheet" href="static/bootstrap/css/bootstrap.css" media="screen">
     <link rel="stylesheet" href="static/tern.css" media="screen">
-    <script type="text/javascript" src="static/js/jquery-1.9.0.min.js"></script>
+    <script type="text/javascript" src="static/js/jquery-1.10.1.min.js"></script>
     <script type="text/javascript" src="static/js/ternlight/base.js"></script>
     <script type="text/javascript" src="static/js/ternlight/ternlight.js"></script>
     <script type="text/javascript" src="static/js/ternlight/utils.js"></script>
@@ -15,6 +15,7 @@
     <script type="text/javascript" src="static/js/ternlight/action.js"></script>
     <script type="text/javascript" src="static/js/ternlight/command.js"></script>
     <script type="text/javascript" src="static/js/ternlight/text.js"></script>
+    <script type="text/javascript" src="static/js/workflow.js"></script>
     <script language="javascript">
      $(function(){
        var diagram = new tern.Diagram('mycanvas');
@@ -47,7 +48,7 @@
    <label class="checkbox">数据模型</label>
    <@tern.field name="serTableName"/>
 </@>
-<div>
+<div style="">
    <canvas id="mycanvas" width="700" height="500">
    	   使用该功能，请使用IE9以上版本，或使用google chrome、firefox等支持HTML5的浏览器！
    </canvas>

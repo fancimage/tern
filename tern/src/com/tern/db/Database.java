@@ -287,7 +287,7 @@ public class Database
 				throw new SQLException(e);
 			}
 			
-			for(String[] atts:loader.getAttribues())
+			for(String[] atts:loader.getAttribues(cls.getName()))
 			{
 				String pname = atts[0];
 				String key = atts.length>1?atts[1]:pname;
@@ -305,6 +305,24 @@ public class Database
 			}
 			
 			this.ds = ds;
+
+			//fix bug of JTDS to work with DBCP2
+			if(cls.getName().indexOf(".dbcp2.") > 0)
+			{
+				if(props.get("validationQuery")==null)
+				{
+					String driver = Convert.toString(props.get("driver"));
+					if(driver.indexOf(".jtds.")>0)
+					{
+						try {
+							setBeanProperty(ds,"validationQuery","select 1");
+						} catch(Exception e)
+						{
+							throw new SQLException(e);
+						}
+					}
+				}
+			}
 		}			
 				
 		Connection con = null;
@@ -345,8 +363,17 @@ public class Database
 			throws SecurityException,NoSuchMethodException, IllegalArgumentException, IllegalAccessException, InvocationTargetException
 	{
 		String methodName="set"+propertyName.substring(0,1).toUpperCase() + propertyName.substring(1);
-		java.lang.reflect.Method method = ins.getClass()
-				                             .getDeclaredMethod(methodName, new Class[]{value.getClass()});
+		Class ptype = value.getClass();
+		java.lang.reflect.Method method = null;
+
+		try {
+			method = ins.getClass().getDeclaredMethod(methodName, new Class[]{ptype});
+		} catch(NoSuchMethodException e){
+			if(ptype == Integer.class){
+				method = ins.getClass().getDeclaredMethod(methodName, new Class[]{Integer.TYPE});
+			}
+		}
+
 		method.invoke(ins, value);
 	}
 	

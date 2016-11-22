@@ -50,6 +50,11 @@ public class RecordSet implements Iterable<Record>,ITable
     		r._rs = this;
     	}
     }
+
+	RecordSet(Model m)
+	{
+		this.model = m;
+	}
     
     RecordSet(Model m,String where,Map<String,Object> vars)
     {

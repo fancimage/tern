@@ -18,7 +18,7 @@ import com.tern.web.Route;
 @Route("/data/$appName/$modelName/*")
 public class DataResourceController extends DataController
 {	
-	private String appName;
+	protected String appName;
 	
 	@Override
 	protected Model getModel()

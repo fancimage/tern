@@ -174,7 +174,7 @@ class SqlServerDB extends Database
 				case 59:  //real
 				case 122: //smallmoney					
 				   {
-					   m.put("numeric", "string");
+					   m.put("type", "numeric");
 					   m.put("length", rs.getInt("prec"));
 					   m.put("scale", rs.getInt("scale"));
 					   break;

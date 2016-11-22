@@ -291,9 +291,16 @@ public abstract class ModelReader
     			{
     				if(_col.belongsTo != null)
     				{
-    					throw new ModelException(model,"field("+_col.name+") already belongs to other relation("+_col.belongsTo.name+").");
+    					//throw new ModelException(model,"field("+_col.name+") already belongs to other relation("+_col.belongsTo.name+").");
+						if(1 == maps.size())
+						{
+							_col.belongsTo = relation;
+						}
     				}
-    				_col.belongsTo = relation;
+    				else
+					{
+						_col.belongsTo = relation;
+					}
     			}
     			
     			_maps.add(new String[]{_src,_dst});

@@ -1,3 +1,15 @@
+<@tern.override name="title">
+<h1>模型定义</h1>
+<p>定义应用系统的数据模型及其字段、关系等。</p>
+</@>
+<@tern.override name="list-toolbar">
+<div class="btn-group" style="margin:4px">
+    <button type="button" class="btn btn-default" id="btnNew">新增</button>
+    <button type="button" class="btn btn-default" id="btnImport">导入</button>
+    <button type="button" class="btn btn-default" id="btnDel">删除</button>
+</div>
+</@>
+
 <@tern.override name="grid-detail">
   <tr>
       <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
@@ -12,9 +24,9 @@
        </#if>
       </#foreach>           	 
       <td>
-        <a href="#modify"><i class="fa fa-edit"></i></a>
-	    <a href="#del"><i class="fa fa-remove"></i></a>
-	    <a href="#detail"><i class="fa fa-th-list"></i></a>	    
+        <a href="#modify"><i class="fa fa-edit"></i>编辑</a>
+	    <a href="#del"><i class="fa fa-remove"></i>删除</a>
+	    <a href="#detail"><i class="fa fa-th-list"></i>字段定义</a>
      </td>
   </tr>
 </@>
@@ -27,7 +39,7 @@
   </@>      
 </@>
 
-<#include "/model/index.html">
+<#include "/model/index.html"/>
 
 <script language="javascript">
     $(function(){
@@ -35,6 +47,11 @@
 	       if(name == '#detail'){
 	           window.location.href = '${HOME}columns/${appName}/'+id;
 	       }
-	   }
+	   };
+
+	   $('#btnImport').click(function(){
+	       var options = {minWidth:768,minHeight:100,title:"导入模型"};
+	       modal.openURL('${HOME}entity/${appName}/import',options);
+	   });
     });	
 </script>

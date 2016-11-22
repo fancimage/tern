@@ -55,7 +55,7 @@ public class Record implements Map<String,Object>,IRow
 			String key = null;
     		if(vars!=null)
     		{
-    			if(vars.containsKey(col.name))
+    			if(vars.containsKey(col.name) || vars.containsKey(col.name.toLowerCase()))
     			{
     				key = col.name;
     			}
@@ -281,7 +281,7 @@ public class Record implements Map<String,Object>,IRow
 		}
 		else
 		{
-			if(this.state == RecordState.New)
+			if(this.state == RecordState.New || this.state == RecordState.Error)
 			{
 				if(col.type == DataType.Bool) return false;
 				else return null;
@@ -1124,7 +1124,11 @@ public class Record implements Map<String,Object>,IRow
 	
 	public void clear(String colname)
 	{
-		row.remove(colname);
+		Column col = this.model.column(colname);
+		if(col != null)
+		{
+			row.remove(col.name);
+		}
 	}
 	
 	/*to implements Map interface*/
