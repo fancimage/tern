@@ -140,8 +140,8 @@ public class Operator
 			if(!hasPri) continue;
 			
 			if(buf.length() > 1) buf.append(",");
-			buf.append(String.format("{\"id\":\"%d\",\"code\":\"%s\",\"caption\":\"%s\",\"url\":\"%s\",\"target\":\"%s\",\"icon\":\"%s\"",
-			   m.getId(),m.getCode(),m.getCaption(),m.getUrl(),m.getTarget(),m.getIcon()));
+			buf.append(String.format("{\"id\":\"%d\",\"code\":\"%s\",\"caption\":\"%s\",\"url\":\"%s\",\"target\":\"%s\",\"icon\":\"%s\",\"pid\":\"%d\"",
+			   m.getId(),m.getCode(),m.getCaption(),m.getUrl(),m.getTarget(),m.getIcon(), m.getPid()));
 			if(m.getChildItem() != null)
 			{
 				buf.append(",\"children\":").append( parseMenu(m.getChildItem(),myMenus) );

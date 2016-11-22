@@ -35,12 +35,12 @@ body {
   padding-top: 10px;
   padding-bottom: 10px;
   padding-right: 0;
-  width: 225px;
+  width: 550px;
   margin-left: -20px;
   font-size:20px;
   font-family:'Microsoft YaHei',Verdana,sans-serif,SimSun;
   text-decoration:none;
-  color: white;
+  color: #080D11;
 }
 
 .header .brand img {
@@ -218,6 +218,7 @@ ul.page-sidebar-menu > li > a {
   text-decoration: none;
   font-size: 14px;
   font-weight: 300;
+    color: #000000;
 }
 
 .page-sidebar-fixed ul.page-sidebar-menu > li > a {
@@ -621,7 +622,7 @@ Page breadcrumb
   padding-left: 8px;
   margin-bottom: 25px;
   border:0px !important;  
-  background-color: #eee;
+  background-color: #c8e7fd;
 }
 
 .page-content .breadcrumb a, 
@@ -637,7 +638,7 @@ Page breadcrumb
 }
 
 .gray-bg {
-    background-color: #f3f3f4;
+    background-color: #ffffff;
 }
 
 .ibox {
@@ -745,4 +746,8 @@ Page breadcrumb
 
 .input-icon.left input {
   padding-left: 33px !important;
+}
+
+.panel-title {
+    color: #2572A7;
 }

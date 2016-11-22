@@ -8,10 +8,11 @@ public class Menu
     protected String url;
     protected String target;
     protected String icon;
-    
+    protected int pid;
+
     protected Menu[] child;
     
-    public Menu(int id,String code,String caption,String url,String target,String icon)
+    public Menu(int id,String code,String caption,String url,String target,String icon, int pid)
     {
     	this.id = id;
     	this.code = code;
@@ -19,6 +20,7 @@ public class Menu
     	this.url = url;
     	this.target = target;
     	this.icon = icon;
+        this.pid = pid;
     }
     
     public int getId(){return id;}
@@ -27,6 +29,7 @@ public class Menu
     public String getUrl(){return url;}
     public String getTarget(){return target;}
     public String getIcon(){return icon;}
+    public int getPid() {return pid;}
     public Menu[] getChildItem(){return child;}
     
     /*@Override

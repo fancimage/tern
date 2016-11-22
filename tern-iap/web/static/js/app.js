@@ -265,13 +265,38 @@ var App = function () {
     	if(!window.menulist || menulist.length <= 0 ) return;
     	
     	var $parent = $('.page-container .page-sidebar-menu');
-    	for(var i=0;i<menulist.length;i++ ){
-    		var $menu = $('<li></li>').prop('id',menulist[i].code).appendTo($parent);
-    		$('<a></a>').prop('href',menulist[i].url).appendTo($menu)
-    		     .append( $('<i></i>').addClass('fa').addClass('fa-'+menulist[i].icon) )
-    		     .append( $('<span></span>').addClass('title').text(menulist[i].caption) )
-    		     .append( $('<span></span>').addClass('arrow') );
-    	}
+        for (var i = 0; i < menulist.length; i++) {
+            if (menulist[i].pid == 0) {
+                var $menu = $('<li></li>').prop('id',menulist[i].code).attr('mid', menulist[i].id).appendTo($parent);
+                $('<a></a>').prop('href',menulist[i].url).appendTo($menu)
+                    .append( $('<i></i>').addClass('fa').addClass('fa-'+menulist[i].icon) )
+                    .append( $('<span></span>').addClass('title').text(menulist[i].caption) )
+                    .append( $('<span></span>').addClass('arrow') );
+            }
+        }
+        for (var i = 0; i < menulist.length; i++) {
+            if (menulist[i].pid != 0) {
+                var id = menulist[i].pid;
+                var $parentMenus = $('.page-container .page-sidebar-menu').children();
+                for (var j = 2, len = $parentMenus.length; j < len; j++) {
+                    var $current = $($parentMenus[j]);
+                    var pid = $current.attr("mid");
+                    if (pid == id) {
+                        var $subMenu;
+                        if ($current.children().length >= 2) {
+                            $subMenu = $current.find('ul');
+                        } else {
+                            $subMenu = $('<ul></ul>').prop('class', 'sub-menu').appendTo($current);
+                        }
+                        var $subMenuItem = $('<li></li>').prop('id',menulist[i].code).attr('mid', menulist[i].id).appendTo($subMenu);
+                        $('<a></a>').prop('href',menulist[i].url).appendTo($subMenuItem)
+                            .append( $('<i></i>').addClass('fa').addClass('fa-'+menulist[i].icon) )
+                            .append( $('<span></span>').addClass('title').text(menulist[i].caption) )
+                            .append( $('<span></span>').addClass('arrow') );
+                    }
+                }
+            }
+        }
     }
     
     return {
@@ -309,6 +334,9 @@ var App = function () {
         	  .find('span.selected').removeClass('selected').addClass('arrow');
         	$('#'+mid).addClass('active')
         	  .find('span.arrow').removeClass('arrow').addClass('selected');
+            $('#'+mid).parent().parent().addClass('active')
+                .find('span.arrow').removeClass('arrow').addClass('selected');
+            $('#'+mid).parent().attr('style', 'display: block;');
         },
     };
     

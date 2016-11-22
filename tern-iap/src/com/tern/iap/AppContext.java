@@ -140,7 +140,7 @@ public class AppContext extends TernContext
 				@Override
 				public Menu map(ResultSet rs, int rowNum) throws SQLException {
 					Menu m = new Menu(rs.getInt("mid"),rs.getString("mcode"),rs.getString("mcaption"),rs.getString("murl"),
-							rs.getString("mtarget"),rs.getString("micon"));
+							rs.getString("mtarget"),rs.getString("micon"), rs.getInt("pid"));
 					
 					/*是其他菜单的子菜单？*/
 					

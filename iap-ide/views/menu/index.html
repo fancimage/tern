@@ -3,4 +3,34 @@
   </@>      
 </@>
 
+<@tern.override name="grid-title">
+<tr class="info">
+  <th><input name="cb_all" id="cb_all" type="checkbox"/></th>
+  <#foreach col in columns>
+      <th>${col.caption}</th><#assign colcount=colcount+1>
+  </#foreach>
+  <th>操作</th>
+</tr>
+</@>
+<@tern.override name="grid-detail">
+<tr>
+  <td><input value='${item.id}' name="cb_record" type="checkbox"/></td>
+  <#foreach col in model.columnList>
+    <#if col.id>
+      <td>${(item[col.name])!}</td>
+      <#elseif col.belongsTo??>
+        <td>${(item[col.belongsTo.name])!}</td>
+        <#elseif col.type=='Bool'>
+          <td>${(item[col.name]?string('是','否'))!}</td>
+          <#else>
+            <td>${(item[col.name])!}</td>
+    </#if>
+  </#foreach>
+  <td>
+    <a href="#modify"><i class="fa fa-edit"></i></a>
+    <a href="#del"><i class="fa fa-remove"></i></a>
+  </td>
+</tr>
+</@>
+
 <#include "/model/index.html">

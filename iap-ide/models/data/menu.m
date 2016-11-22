@@ -10,5 +10,11 @@ columns:
     - {name : micon, type : string , caption : 图标, max : 16, min : 0}
     - {name : mtarget, type : string , caption : 目标窗口, max : 16, min : 0}
     - {name : mismenu, type : bool, caption : 是否为菜单}
+    - {name : pid, type: numeric, caption : 父功能}
 
+relations:
+    - name: menu
+      mode: belong
+      map:
+        - [pid,mid]
      
