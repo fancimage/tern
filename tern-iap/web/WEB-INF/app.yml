@@ -42,7 +42,10 @@ database: #the first is default db-connection
       #  pw  : es123
       
 apps:
-  - name : app1
+  - name : cpms
+    path : E:\mywork\java\git\cpms-for-owner-side\source
+
+  - name : test
     path : E:\mywork\java\git\tern\testiap
     
   - name : ide

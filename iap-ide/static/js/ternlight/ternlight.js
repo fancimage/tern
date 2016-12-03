@@ -118,7 +118,23 @@ tern.classdef('Diagram',tern.UIContainer,{
     canvas.onkeyup = tern.delegate(this._onKeyUp, this);
     canvas.onkeydown = tern.delegate(this._onKeyDown, this);
     if(0 > canvas.tabIndex) canvas.tabIndex = 0; //get focus!
+
+    this._offsetX = null;
+    this._offsetY = null;
   },
+
+  resize: function(w,h){
+      if(w < 100) w=100;
+      if(h<100) h=100;
+
+      this.width = w;
+      this.height=h;
+
+      var canvas = this.context.canvas;
+      canvas.width = w;
+      canvas.height = h;
+  },
+
   
   setMaxFrameRate:function(count){
       if(count <= 0) count = 20;
@@ -204,9 +220,31 @@ tern.classdef('Diagram',tern.UIContainer,{
     if(e.type == 'mouseup'){
         canvas.focus();
     }
+
+    var p = canvas;
+    var sx =0,sy = 0;
+    while(p){
+        sx += p.scrollLeft;
+        sy += p.scrollTop;
+
+        p = p.parentElement;
+        if(p == document.body) break;
+    }
+
+    this._offsetX=null;
+    if(null == this._offsetX){
+        p = canvas;
+        this._offsetX = this._offsetY = 0;
+        while(p){
+            this._offsetX += p.offsetLeft;
+            this._offsetY += p.offsetTop;
+
+            p = p.offsetParent;
+        }
+    }
         
-    e.mouseX = e.pageX - canvas.offsetLeft;
-	e.mouseY = e.pageY - canvas.offsetTop;
+    e.mouseX = e.pageX - this._offsetX + sx;//canvas.offsetLeft;
+	e.mouseY = e.pageY - this._offsetY + sy;//canvas.offsetTop;
     
     var func = function(a){
         f = a[e.type];
@@ -360,37 +398,93 @@ tern.classdef('Diagram',tern.UIContainer,{
   },
   
   toolbox: function(obj,target,itemClass){
-      if(!obj || !target || !itemClass) return;
+      if(!obj || !itemClass) return;
       
       var diagram = this;
       var canvas = this.context.canvas;
       if (typeof obj == "string") {
           obj = document.getElementById(obj);
       }
-      
-      if (typeof target == "string") {
+
+      if(target==null){
+          target = obj.cloneNode(true);
+          target.style.width = obj.clientWidth+'px';
+          target.style.height = obj.clientHeight+'px';
+      } else if (typeof target == "string") {
           target = document.getElementById(target);
           target.style.position = 'absolute';
           target.style.display = 'none';
-          target.style.zIndex = 1000;
           //target.orig_index = obj.style.zIndex;
       }
-      
+
+      if(!obj || !target) return;
+
+      var thisx = obj.offsetLeft;
+      var thisy = obj.offsetTop;
+      var p = obj.offsetParent;
+      while(p){
+          thisx += p.offsetLeft;
+          thisy += p.offsetTop;
+          p = p.offsetParent;
+      }
+
+      var _style=target.style;
+      _style.zIndex = 1000;
+      _style.mozUserSelect='none';
+      _style.userSelect='none';
+      _style.KhtmlUserSelect='none';
+
       obj.onmousedown = function (a) {
           if (!a) a = window.event;
-          
-          var x = a.clientX - document.body.scrollLeft - obj.offsetLeft; 
-          var y = a.clientY - document.body.scrollTop - obj.offsetTop;
-          target.style.left = (a.clientX + document.body.scrollLeft - x)+'px';
-          target.style.top = (a.clientY + document.body.scrollTop - y)+'px';
+
+          if(null == diagram._offsetX){
+              p = canvas;
+              while(p){
+                  diagram._offsetX += p.offsetLeft;
+                  diagram._offsetY += p.offsetTop;
+
+                  p = p.offsetParent;
+              }
+          }
+
+          var ghost = document.getElementById('dragHelper');
+          if(null == ghost){
+             ghost = document.createElement('div');
+             ghost.id = 'dragHelper';
+             _style = ghost.style;
+             if (window.ActiveXObject) {
+                ghost.unselectable='on';
+             } else {
+                 _style.mozUserSelect='none';//-webkit-user-select: none;
+                 _style.userSelect='none';
+                 _style.KhtmlUserSelect='none';
+             }
+             _style.position='absolute';
+             _style.display='none';
+             _style.cursor='move';
+             _style.listStyle='none';
+             _style.overflow='hidden';
+             _style.textAlign='center';
+             _style.zIndex=2000;
+
+             document.body.appendChild(ghost);
+          }
+          ghost.innerHTML='';
+          ghost.appendChild(target);
+
+          var x = a.clientX - thisx;// - document.body.scrollLeft - obj.offsetLeft;
+          var y = a.clientY - thisy;// - document.body.scrollTop - obj.offsetTop;
+          _style = ghost.style;
+          _style.left = (thisx)+'px';//(a.clientX)+'px';
+          _style.top =  (thisy)+'px';//(a.clientY)+'px';
                     
-          diagram._ToolDrager.active(target,itemClass,x,y);
+          diagram._ToolDrager.active(ghost,itemClass,x,y);
           
           document.onmousemove = function (a) {              
               if (!a) a = window.event;                            
               
-              var left = a.clientX + document.body.scrollLeft - x;
-              var top = a.clientY + document.body.scrollTop - y;              
+              var left = a.clientX -x;//a.clientX + document.body.scrollLeft - x;
+              var top = a.clientY -y;//a.clientY + document.body.scrollTop - y;
               diagram._ToolDrager.move(left,top,false);
           };
           
@@ -465,8 +559,8 @@ tern.classdef('_ToolDrager',{
             this.target.style.top = y + 'px';
             
             var canvas = this.diagram.context.canvas;
-            if(x > canvas.offsetLeft && y>canvas.offsetTop 
-                  && x < canvas.offsetLeft+canvas.width && y<canvas.offsetTop+canvas.height){
+            if(x > this.diagram._offsetX && y>this.diagram._offsetY
+                  && x < this.diagram._offsetX+canvas.width && y<this.diagram._offsetY+canvas.height){
                 this.target.style.display = 'none';
             } else if(this._inDiagram){
                 if(this.item!=null) this.item.visible = false;
@@ -741,6 +835,7 @@ tern.classdef('Connector',tern.UIElement,{
   },
   stress: function(flag){},
   beginDrag: function(){return null;},
+  getPoint(){return new tern.Point(this.parent.x+this.x,this.parent.y+this.y);},
 });
  
 tern.LineType = {

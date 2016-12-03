@@ -329,8 +329,14 @@ class FieldRender
 	static final String defaultNullName="请选择...";
 	protected void render_relation(Column col,String attrs) throws IOException,TemplateException
 	{
+		String filter = Directives.getStringParam(this.env,this.params,"filter");
+		if(filter!=null)
+		{
+			filter = filter.trim();
+			if(filter.length()<=0) filter = null;
+		}
 		com.tern.dao.Relation relation = col.getBelongsTo();
-		com.tern.dao.RecordSet rs = relation.queryAvailableParents(col.getName() , r);
+		com.tern.dao.RecordSet rs = relation.queryAvailableParents(col.getName() , r,filter);
 		
 		out.append("<select name=\"").append(col.getName()).append("\"");
 		if(attrs != null) out.append(' ').append(attrs);
