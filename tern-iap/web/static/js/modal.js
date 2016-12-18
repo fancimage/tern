@@ -76,7 +76,7 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 	options = $.extend({autoSize:true},options);
 	
 	var jq = this.top.$;
-	var iframe = jq('<iframe></iframe>').prop('frameborder','0').prop('src',url);
+	var iframe = jq('<iframe></iframe>').width(300).height(150).prop('frameborder','0').prop('src',url);
 	if(options.width || options.height){
 	    if(options.width) iframe.css('width',width+'px');
 	    if(options.height) iframe.css('height',height+'px');	    
@@ -86,10 +86,9 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 			if(iframe.prop('src')=='') return;
 			iframe.unbind('load');
 		    var win = iframe[0].contentWindow;
+		    if(win.$){
 
-		    win.$(win).load(function(){
-            	alert($(this).height());
-            });
+		    }
 
 			var w = win.document.body.scrollWidth;
 			var h = win.document.body.scrollHeight;
@@ -99,7 +98,7 @@ Modal.prototype.openURL = function(url,options,win){ //打开一个新的窗口
 			if(h > win.screen.height-50) h = win.screen.height-50;
 			
 			if(options.minWidth && w<options.minWidth) w = options.minWidth;
-			//if(options.minHeight && h<options.minHeight) h = options.minHeight;
+			if(options.minHeight && h<options.minHeight) h = options.minHeight;
 			iframe.width(w).height(h);
 			
 			iframe[0].contentWindow.callback=options.callback;

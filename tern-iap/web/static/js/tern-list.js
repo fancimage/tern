@@ -159,7 +159,7 @@ Tern.prototype.onModify = function(id){
 	var ran = (new Date()).getTime();
 	url += '?ran='+ran;
 	
-	var options = {minWidth:768,minHeight:100};
+	var options = {minWidth:768,minHeight:400};
 	options.title = (id?this.string_update:this.string_new)+' <small>'+this.caption+'</small>';
 	
 	modal.openURL(this_url+url,options);

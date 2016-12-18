@@ -32,7 +32,12 @@ public class db
 			super(c);
 		}
 	}*/
-	
+
+	public static SQL sql()
+	{
+		return Database.db.sql(null);
+	}
+
 	public static SQL sql(String sqlstr)
 	{	
 		return Database.db.sql(sqlstr);

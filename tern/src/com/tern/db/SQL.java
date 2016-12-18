@@ -46,6 +46,12 @@ public class SQL extends AbstractQuery
 			}
 		}		
 	}
+
+	public SQL sql(String sqlStr)
+	{
+		this.sql = sqlStr;
+		return this;
+	}
 	
 	public SQL param(String key,Object v)
 	{
