@@ -148,15 +148,21 @@ select {
 }
 .editor-wrapper a.operate{
     width: 24px;
-    height: 24px;
+    height: 26px;
 }
-.editor-tool{height: 32px;padding: 4px 0;z-index: 1008;}
-.editor-tool .right{float: right;margin-top: 2px;background-color: #dedede;height: 24px;padding: 4px;}
+
+.editor-wrapper .drop-down a.operate{
+    width: 46px;
+    height: 26px;
+}
+
+.editor-tool{height: 36px;padding: 4px 0;z-index: 1008;}
+.editor-tool .right{float: right;margin-top: 1px;background-color: #dedede;height: 28px;padding: 4px;}
 .tool-group li{
     margin-right: 3px;
     background-color: #dedede;
     padding: 4px;
-    height: 24px;
+    height: 30px;
 }
 .editor-wrapper a.operate{
     text-decoration: none;
@@ -196,7 +202,7 @@ select {
 .colorBucket .arrow{
     margin-right: 3px;
     border-left: solid 1px transparent;
-    width: 15px;
+    width: 16px;
     margin-left: 2px;
 }
 .colorBucket:hover .arrow{border-left: solid 1px #ffbe00;}
@@ -278,14 +284,14 @@ select {
 .align-right{
     background: url("images/appEdit/align-right.png") no-repeat center;
 }
-.preview{
-    background: url("images/appEdit/preview.png") no-repeat center;
+.save{
+    background: url("images/save.png") no-repeat center;
     width: 20px;
     height: 20px;
     vertical-align: middle;
 }
-.resize-full{
-    background: url("images/appEdit/fullscreen.png") no-repeat center;
+.refresh{
+    background: url("images/refresh.png") no-repeat center;
     width: 20px;
     height: 20px;
     vertical-align: middle;
@@ -365,6 +371,16 @@ i.icon-editor-split{background: url("images/split.png") no-repeat 0 0;}
     margin-bottom: 5px;
     position: relative;
 }
+
+.editor-body-tool h1 A.addSeries{
+   float:right;
+}
+
+.editor-body-tool h1.emphsis{
+    background-color:#CDBFE3;
+    color:blue;
+}
+
 .editor-body-tool .toggle{position: relative;}
 .editor-body-tool .toggle-arrow{
     background:transparent url("images/appEdit/toggle_down.png") no-repeat center;

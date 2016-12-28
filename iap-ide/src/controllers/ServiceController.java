@@ -11,14 +11,14 @@ package controllers;
 
 import com.tern.dao.Record;
 import com.tern.iap.AppContext;
+import com.tern.iap.util.ActionResult;
 import com.tern.util.Trace;
 import com.tern.web.ControllerException;
 import com.tern.web.HttpStream;
 import com.tern.web.Route;
+import com.tern.web.routes.HttpMethod;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 
 @Route("/service/$appName/*")
 public class ServiceController extends DataResourceController
@@ -87,6 +87,64 @@ public class ServiceController extends DataResourceController
 		else
 		{
 			flushFile(xmlFile);
+		}
+	}
+
+	private boolean writeBodyToFile(String filename)
+	{
+		String xmlFile = filename+".xml";
+		String jsonFile = filename+".shape.json";
+		try
+		{
+			BufferedReader br = request.getReader();
+			Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(xmlFile),"utf-8"));
+
+			String inputLine;
+			while ((inputLine = br.readLine()) != null)
+			{
+				if(inputLine.equals("===boundary==="))
+				{
+					/*其后是shapes的定义*/
+					writer.close();
+
+					writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(jsonFile),"utf-8"));
+					continue;
+				}
+				writer.write(inputLine);
+				writer.write("\n");
+			}
+			writer.close();
+			br.close();
+
+			return true;
+		}
+		catch (IOException e)
+		{
+			Trace.write(Trace.Error,e,"write osworkflow.");
+		}
+
+		return false;
+	}
+
+	@Route(value="/%1/define/update",method= HttpMethod.POST)
+	public void defineSave(int id)
+	{
+		model = getModel();
+		Record record = model.find(id); //retrive
+		if(record == null)
+		{
+			throw new ControllerException(this,"工作流不存在");
+		}
+
+		ActionResult r = new ActionResult();
+		this.setViewObject(r);
+
+		AppContext ctx = AppContext.getAppContext(appName);
+		String path = ctx.getResourcePath() + "/models/process/"+record.getString("tname");
+
+		if(!writeBodyToFile(path))
+		{
+			r.setResult(2,"save failed");
 		}
 	}
 

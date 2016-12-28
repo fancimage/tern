@@ -106,6 +106,7 @@ Actions.classdef('MoveAction',tern.MouseAction,{
         for(var i=0;i<sels.length;i++){
             sels[i].move(offsetX,offsetY);
         }
+        this.diagram._events.trigger('onMove',sels);
     }else{
         if(selct instanceof tern.ShapeConnector){
             //create new connection
@@ -319,7 +320,18 @@ Actions.classdef('HitAction',tern.MouseAction, {
             }else{
                 this.diagram._setSelectedConnector( null );
                 if( item instanceof tern.Text ){
-                    tern.Text.onclick(item);                    
+                    var pi = item.parent;
+                    if(pi instanceof tern.DiagramItem){
+                        var sels = this.diagram.getSelectedItems();
+                        if(sels!=null && sels.indexOf(pi)>=0 ) return;
+
+                        this.diagram._setSelectedConnector( null );
+                        this.diagram.setSelectedItems( pi );
+                    }
+                    if(true === tern.Text.onclick(item)){
+                        this.deActivate();
+                        return true;
+                    }
                 }
             }
         }
@@ -343,9 +355,12 @@ Actions.classdef('HoverAction',tern.MouseAction,{
     }
     
     var item = this.diagram.findAt(e.mouseX,e.mouseY);
+    while(item !=null && !(item instanceof tern.DiagramItem)){
+        item = item.parent;
+    }
     if(item!=this.current){                
         if(this.current!=null) this.current.onHovered(false);
-        
+
         if(item==null || !('onHovered' in item)){
             this.current = null;
             return;

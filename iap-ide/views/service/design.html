@@ -7,7 +7,9 @@
     <title>${model.caption}</title>
     <base href="${HOME}" />
     <link rel="stylesheet" type="text/css" href="static/skins/wfeditor/main.css">
+    <link rel="stylesheet" href="static/bootstrap/css/bootstrap.css" media="screen">
     <script type="text/javascript" src="static/js/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="static/bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript" src="static/js/ternlight/base.js"></script>
     <script type="text/javascript" src="static/js/ternlight/ternlight.js"></script>
     <script type="text/javascript" src="static/js/ternlight/utils.js"></script>
@@ -29,8 +31,9 @@
      }
      </style>
     <script language="javascript">
+     var uictrl = null;
      $(function(){
-         var uictrl = new wf.WorkflowController('${URL}');
+         uictrl = new wf.WorkflowController('${URL}');
      });
     </script>
 </head>
@@ -45,8 +48,8 @@
                 <div class="editor-tool">
                     <div class="right">
                         <div class="classify">
-                            <a href="#" title="保存" class="preview operate"></a>
-                            <a href="#" title="重载" class="resize-full operate"></a>
+                            <a href="#" title="保存" class="operate save"></a>
+                            <a href="#" title="重载" class="operate refresh"></a>
                         </div>
                     </div>
                     <ul class="tool-group float">
@@ -91,10 +94,6 @@
 	 								<input type="text" class="inputText" data-property="X"/>
 	 								<lable class="ml5">y:</lable>
 	 								<input type="text" class="inputText" data-property="Y"/>
-	 								<lable class="ml5">w:</lable>
-	 								<input type="text" class="inputText" data-property="Width"/>
-	 								<lable class="ml5">h:</lable>
-	 								<input type="text" class="inputText" data-property="Height"/>
 	 							</span>
                         </li>
                         <li>
@@ -112,181 +111,87 @@
             <div class="editor-body">
                 <!-- 右侧工具栏 -->
                 <div class="editor-body-tool">
-                    <!-- 文字元素 -->
-                    <div class="body-tool-Text">
-                        <h1>Word Set</h1>
-                        <!-- 字体和字号设置 -->
-                        <div class="divide line">
-                            <div class="form-entry">
-                                <select class="fontFamily" data-property="Font.Name">
-                                    <option>Arial</option>
+                    <div class="body-tool-Step" style="display:none">
+                        <h1 class="emphsis">步骤[<span data-property="id"></span>]</h1>
+                        <div>
+                            <div>
+                                <select data-property="OpType">
+                                    <option value="">--选择审核人类型--</option>
+                                    <option value="role">角色</option>
+                                    <option value="operator">操作员</option>
                                 </select>
                             </div>
                             <div class="form-entry">
-                                <select class="fontSize" data-property="Font.Size">
-                                    <option value="12">12</option>
-                                    <option value="16">16</option>
-                                    <option value="18">18</option>
-                                    <option value="24">24</option>
-                                    <option value="36">36</option>
-                                    <option value="48">48</option>
-                                    <option value="72">72</option>
-                                </select>
+                                <label>审核人</label><input class="inputText" type="text" data-property="OpName"/>
                             </div>
                         </div>
-                        <!-- 文字颜色设置 -->
-                        <div class="divide line plr10">
-                            <label>Color:</label>
-                            <div class="drop-down colorsPanel">
-                                <a href="#" class="colorSet drop-link colorShow"></a>
-                                <div class="drop-details">
-                                    <ul class="float colors" data-property="Font.Color" data-type="color">
-                                        <li><a href="#" class="color-1" data-color="000000"></a></li>
-                                        <li><a href="#" class="color-2" data-color="666666"></a></li>
-                                        <li><a href="#" class="color-3" data-color="ffffff"></a></li>
-                                        <li><a href="#" class="color-4" data-color="ff0000"></a></li>
-                                        <li><a href="#" class="color-5" data-color="ffff00"></a></li>
-                                        <li><a href="#" class="color-6" data-color="00ff00"></a></li>
-                                        <li><a href="#" class="color-7" data-color="002aff"></a></li>
-                                        <li><a href="#" class="color-8" data-color="5151ff"></a></li>
-                                        <li><a href="#" class="color-9" data-color="0084ff"></a></li>
-                                        <li><a href="#" class="color-10" data-color="00c0ff"></a></li>
-                                        <li><a href="#" class="color-11" data-color="00fff0"></a></li>
-                                        <li><a href="#" class="color-12" data-color="00ff84"></a></li>
-                                        <li><a href="#" class="color-13" data-color="009341"></a></li>
-                                        <li><a href="#" class="color-14" data-color="00c758"></a></li>
-                                        <li><a href="#" class="color-15" data-color="a2ff00"></a></li>
-                                        <li><a href="#" class="color-16" data-color="ff9c00"></a></li>
-                                        <li><a href="#" class="color-17" data-color="ff6600"></a></li>
-                                        <li><a href="#" class="color-18" data-color="ff0072"></a></li>
-                                        <li><a href="#" class="color-19" data-color="ff00ba"></a></li>
-                                        <li><a href="#" class="color-20" data-color="b400ff"></a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 文字样式设置 -->
-                        <div class="divide line plr10">
-                            <a href="#" class="fontBold operate persist" data-property="Font.IsBold"></a>
-                            <a href="#" class="fontItalic operate persist" data-property="Font.IsItalic"></a>
-                            <a href="#" class="fontUnderline operate persist" data-property="Font.IsUnderline"></a>
-                        </div>
-                        <!-- 段落样式设置 -->
-                        <div class="divide plr10">
-                            <a href="#" class="align-left operate persist" data-property="Font.Align" data-value="left"></a>
-                            <a href="#" class="align-center operate persist" data-property="Font.Align" data-value="center"></a>
-                            <a href="#" class="align-right operate persist" data-property="Font.Align" data-value="right"></a>
-                        </div>
-                        <h1>Word Content</h1>
-                        <div class="switchover plr10" index="text">
-                            <div class="form-entry">
-                                <label><input type="radio" name="wordDataType" show="word-Text" data-property="DataType" value="static"/>固定文字</label>
-                            </div>
-                            <div class="form-entry">
-                                <label><input type="radio" name="wordDataType" show="word-Data" data-property="DataType" value="stream"/>数据流值</label>
-                            </div>
-                        </div>
-                        <div id="switchover_text">
-                            <div id="word-Text"><textarea data-property="Text"></textarea></div>
-                            <div id="word-Data">
-                                <select>
-                                    <option>--选择设备--</option>
-                                    <option>设备1</option>
-                                    <option>设备2</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- 曲线图表元素 -->
-                    <div class="body-tool-Line" style="display:none;">
-                        <h1>系列</h1>
-                        <div class="seriesList switchover" index="series" data-property="Series" data-type="list">
-                            <div class="form-entry" data-index="0" style="display:block">
-                                <input type="radio" name="seriesType" show="series1" checked/>
-									<span class="text-edit">
-										<span class="text">温度测试1</span>
-										<input type="text" class="inputText" />
-										<i class="icon-edit" data-action="edit"></i>
-										<i class="icon-dell" data-action="delete"></i>
-									</span>
-                            </div>
-                        </div>
-                        <a href="#" class="addSeries plr10" data-property="Series" data-action="new">+新增系列</a>
-                        <div id="switchover_series">
-                            <div data-list-item="Series">
-                                <h1><span data-property="Series.Current.Name">系列名</span>-数据流</h1>
-                                <div class="form-entry">
-                                    <select data-property="Series.Current.Device">
-                                        <option>--选择设备--</option>
-                                        <option>设备1</option>
-                                        <option>设备2</option>
-                                    </select>
-                                </div>
-                                <div class="form-entry">
-                                    <select data-property="Series.Current.DataSource">
-                                        <option>--选择数据流--</option>
-                                    </select>
-                                </div>
-                                <h1><span data-property="Series.Current.Name">系列名</span>-折线设置</h1>
-                                <div class="divide plr10">
-                                    <label>Color:</label>
-                                    <div class="drop-down colorsPanel">
-                                        <a href="#" class="colorSet drop-link colorShow"></a>
-                                        <div class="drop-details">
-                                            <ul class="float colors" data-property="Series.Current.Color" data-type="color">
-                                                <li><a href="#" class="color-1" color="000000"></a></li>
-                                                <li><a href="#" class="color-2" color="666666"></a></li>
-                                                <li><a href="#" class="color-3" color="ffffff"></a></li>
-                                                <li><a href="#" class="color-4" color="ff0000"></a></li>
-                                                <li><a href="#" class="color-5" color="ffff00"></a></li>
-                                                <li><a href="#" class="color-6" color="00ff00"></a></li>
-                                                <li><a href="#" class="color-7" color="002aff"></a></li>
-                                                <li><a href="#" class="color-8" color="5151ff"></a></li>
-                                                <li><a href="#" class="color-9" color="0084ff"></a></li>
-                                                <li><a href="#" class="color-10" color="00c0ff"></a></li>
-                                                <li><a href="#" class="color-11" color="00fff0"></a></li>
-                                                <li><a href="#" class="color-12" color="00ff84"></a></li>
-                                                <li><a href="#" class="color-13" color="009341"></a></li>
-                                                <li><a href="#" class="color-14" color="00c758"></a></li>
-                                                <li><a href="#" class="color-15" color="a2ff00"></a></li>
-                                                <li><a href="#" class="color-16" color="ff9c00"></a></li>
-                                                <li><a href="#" class="color-17" color="ff6600"></a></li>
-                                                <li><a href="#" class="color-18" color="ff0072"></a></li>
-                                                <li><a href="#" class="color-19" color="ff00ba"></a></li>
-                                                <li><a href="#" class="color-20" color="b400ff"></a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="divide plr10">
-                                    <div class="form-entry"><label><input type="checkbox" data-property="Series.Current.IsSmooth"/>平滑效果</label></div>
-                                    <div class="form-entry"><label><input type="checkbox" data-property="Series.Current.IsGradient"/>渐变填充</label></div>
-                                    <div class="form-entry"><label><input type="checkbox" data-property="Series.Current.IsShowValue"/>显示数值</label></div>
-                                </div>
 
-                                <h1><span>系列名</span>-时间点设置<i class="toggle"></i></h1>
-                                <div class="toggleContent">
-                                    <p class="plr10">数据点时间格式</p>
-                                    <div class="form-entry"><input class="inputText" type="text" /></div>
-                                    <div class="plr10">
-                                        <p>时间支持以下通配符</p>
-                                        <p>{Y}:四位年份</p>
-                                        <p>{y}:两位年份</p>
-                                        <p>{m}:两位月份</p>
-                                        <p>{d}:两位日期</p>
-                                    </div>
-                                </div>
-                            </div>
+                        <h1>前置脚本 <a href="#" class="addSeries plr10" data-property="PreFunctions" data-action="new">+新增脚本</a></h1>
+                        <div class="seriesList switchover" data-property="PreFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+
+                        <h1>后置脚本 <a href="#" class="addSeries plr10" data-property="PostFunctions" data-action="new">+新增脚本</a></h1>
+                        <div class="seriesList switchover" data-property="PostFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+
+                        <h1 class="emphsis" style="margin-top:8px">动作 <a href="#" class="addSeries plr10" data-property="Actions" data-action="new">+新增动作</a></h1>
+                        <div class="seriesList switchover" data-property="Actions" data-type="list"></div>
+
+                        <div data-list-item="Actions">
+                            <h1>动作[<span data-property="Actions.Current.Name"></span>]:前置脚本</h1>
+                            <div class="seriesList switchover" data-property="Actions.Current.PreFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                            <a href="#" class="addSeries plr10" data-property="Actions.Current.PreFunctions" data-action="new">+新增脚本</a>
+
+                            <h1>动作[<span data-property="Actions.Current.Name"></span>]:后置脚本</h1>
+                            <div class="seriesList switchover" data-property="Actions.Current.PostFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                            <a href="#" class="addSeries plr10" data-property="Actions.Current.PostFunctions" data-action="new">+新增脚本</a>
                         </div>
-                        <h1>其他设置</h1>
-                        <div class="plr10">
-                            <div class="form-entry">
-                                <label>刷新频率</label><input class="inputText small" type="number" />
-                            </div>
-                            <div class="form-entry">
-                                <label>数据点个数</label><input class="inputText small" type="number" />
-                            </div>
+
+                    </div>
+
+                    <div class="body-tool-Start" style="display:none">
+                        <h1 class="emphsis">开始节点</h1>
+                        <h1>前置脚本 <a href="#" class="addSeries plr10" data-property="PreFunctions" data-action="new">+新增脚本</a></h1>
+                        <div class="seriesList switchover" data-property="PreFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+
+                        <h1>后置脚本 <a href="#" class="addSeries plr10" data-property="PostFunctions" data-action="new">+新增脚本</a></h1>
+                        <div class="seriesList switchover" data-property="PostFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                    </div>
+
+                    <div class="body-tool-End" style="display:none">
+                        <h1 class="emphsis">结束节点</h1>
+
+                        <h1>脚本 <a href="#" class="addSeries plr10" data-property="PreFunctions" data-action="new">+新增脚本</a></h1>
+                        <div class="seriesList switchover" data-property="PreFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                    </div>
+
+                    <div class="body-tool-Split" style="display:none">
+                        <h1 class="emphsis">拆分[<span data-property="id"></span>]</h1>
+                    </div>
+
+                    <div class="body-tool-Join" style="display:none">
+                        <h1 class="emphsis">合并[<span data-property="id"></span>]</h1>
+                    </div>
+
+                    <div class="body-tool-Line" style="display:none">
+                        <h1 class="emphsis">连线属性</h1>
+                        <div class="form-entry">
+                            <label>下一节点:</label><span data-property="Next"></span>
                         </div>
+                        <h1>触发动作</h1>
+                        <div>
+                            <select data-property="Action" data-source="SourceActions">
+                                <option selected value="">--请选择--</option>
+                            </select>
+                        </div>
+
+                        <h1>触发条件 <a href="#" class="addSeries plr10" data-property="Conditions" data-action="new">+新增条件</a></h1>
+                        <div>
+                            <select data-property="Type" data-change="bind,Conditions">
+                                <option value="0">无条件</option>
+                                <option value="1">并且(and)</option>
+                                <option value="2">或者(or)</option>
+                            </select>
+                        </div>
+                        <div class="seriesList switchover" style="margin-top:4px" data-property="Conditions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
                     </div>
                 </div>
                 <!-- 左侧菜单栏 -->
@@ -318,6 +223,46 @@
         <!-- 可视化编辑组件 end -->
     </div>
 </div>
+
+<div id="functionEditor" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3>提示</h3>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>名称：</label>
+                        <input class="form-control" data-property="Name"/>
+                    </div>
+                    <div class="form-group">
+                        <label>类型：</label>
+                        <select data-property="Type" class="form-control" data-change="bind,Arguments,Script">
+                            <option value="beanshell">shell代码</option>
+                            <option value="class">java类</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>内容：</label>
+                        <textarea class="form-control" data-property="Script" rows="8"></textarea>
+                    </div>
+
+                    <h4>参数<a href="#" class="addSeries plr10" data-property="Arguments" data-action="new">+新增参数</a></h4>
+                    <div class="form-group seriesList switchover" data-property="Arguments" data-type="list"></div>
+                    <div data-list-item="Arguments" class="form-group">
+                        <label>参数[<span data-property="Arguments.Current.Name"></span>]值：</label>
+                        <input class="form-control" data-property="Arguments.Current.Value"/>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
 </body>
 </html>

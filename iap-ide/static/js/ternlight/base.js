@@ -224,8 +224,7 @@ tern.classdef('UIContainer', tern.UIElement, {
     },
     
     findElementsIn: function(x,y,width,height,handler){
-        if(handler) var ret = false;
-        else var ret = [];
+        var ret = [];
         
         x -= this.x;
         y -= this.y;
@@ -233,22 +232,24 @@ tern.classdef('UIContainer', tern.UIElement, {
         for(var i = this.children.length-1; i >= 0; i--){
             var child = this.children[i];
             if(child == null || !child.visible) continue;
-            
+
             if((child instanceof tern.UIContainer) && child.children.length > 0){
                 var objs = child.findElementsIn(x,y,width,height,handler);
-                if(objs){
+                if(objs && objs.length>0){
                     if(handler){
+                        if(!handler(objs)) return false;
                         ret = true;
                     }else{
                         ret = ret.concat(objs);
                     }
-                    continue;
-                }                
+                } else if(objs === false){
+                    return false;
+                }
             }
-            
+
             if(child.testInRect(x,y,width,height,true)){
                 if(handler){                    
-                    if(!handler(child)) return true;
+                    if(!handler(child)) return false;
                     ret = true;
                 }else{
                     ret.push(child);
@@ -287,6 +288,52 @@ tern.classdef('UIContainer', tern.UIElement, {
         }
         this.children.splice(0);
     }
+});
+
+tern.Events = classdef('Events',{
+    Events: function(){
+        this._events = {};
+    },
+    bind: function(name,fn,ins){
+        if(name==null || fn==null) return false;
+        var obj = this._events[name];
+        if(!obj) {
+           this._events[name] = obj = [];
+        }
+
+        if(ins) fn = tern.delegate(fn,ins);
+
+        obj.push(fn);
+        return true;
+    },
+
+    unbind: function(name,fn){
+        if(name==null) return;
+        var obj = this._events[name];
+        if(obj){
+            if(null == fn){
+                delete this._events[name];
+                return;
+            }
+
+            for(var i=obj.length-1;i>=0;i--){
+                if(fn == obj[i]){
+                    obj.splice(i,1);
+                }
+            }
+        }
+    },
+
+    trigger: function(name){
+        if(name==null) return;
+        var obj = this._events[name];
+        if(obj){
+            var leftArgs = Array.prototype.slice.call(arguments, 1);
+            for(var i=0;i<obj.length;i++){
+                obj[i].apply(window,leftArgs);
+            }
+        }
+    },
 });
 
 })(window);
