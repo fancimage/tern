@@ -12,7 +12,7 @@
 var wf = tern.namespace('workflow');
 window.wf = wf;
 
-var imgpath='static/skins/wfeditor/images/';
+//var imgpath='static/skins/wfeditor/images/';
 
 var _shapeWidth = 120;
 var _shapeHeight = 46;
@@ -21,6 +21,15 @@ var _shadwColor = "#d0d0d0";
 
 var MAX_SHAPE_ID = 0;
 var MAX_ACTION_ID = 1;
+
+var _createElement = function(name,parent,added){
+    var ret = $(parent.get(0).ownerDocument.createElement(name));
+
+    if(added==null || added===true){
+        parent.append(ret);
+    }
+    return ret;
+};
 
 var drawRect = function(ctx,x,y,w,h,fill,stroke,shadow){
     fill = typeof(fill) == "undefined" ? true : fill;
@@ -149,6 +158,18 @@ wf.classdef('Action',{
     getPostFunctions: function(){
         return _getFunctions('post-functions',this);
     },
+    appendConnection: function(line){
+        var results = this.xml.find('results');
+        if(results.length <= 0){
+            results = _createElement('results',this.xml);
+        }
+
+        if(line.xml && line.xml.length > 0){
+            results.append(line.xml);
+            return line.xml;
+        }
+        return _createElement('unconditional-result',results);
+    },
 });
 
 wf.classdef('Argument',{
@@ -219,7 +240,7 @@ wf.classdef('Function',{
 
         var cn = this.xml.find('arg[name="'+argName+'"]');
         if(cn.length <= 0){
-            cn = $('<arg></arg>').attr('name',argName).appendTo(this.xml);
+            cn =  _createElement('arg',this.xml).attr('name',argName);
         }
         cn.text(value);
     },
@@ -234,7 +255,7 @@ wf.classdef('Function',{
 
         var parent = this.xml;
         var list = new wf.List(function(){
-           node = $('<arg></arg>').appendTo(parent);
+           node =  _createElement('arg',parent).attr('name','参数'+(list.length+1) );
            return new wf.Argument(node);
         });
 
@@ -278,10 +299,10 @@ var _getActions = function(node,parent){
 
     var list = new wf.List(function(){
         if(node.length <= 0){
-            node = $('<actions></actions>');
+            node =  _createElement('actions',parent.xml,false);
             _insertBefore(node,parent.xml,['post-functions']);
         }
-        var n=$('<action></action>').appendTo(node);
+        var n =  _createElement('action',node).attr('name','动作'+(list.length+1));
         return new wf.Action(n);
     });
 
@@ -302,17 +323,17 @@ var _getFunctions = function(pname,parent){
         return parent._attrs[pname];
     }
 
-    var node = parent.xml.find(pname);
+    var node = parent.xml.children(pname);
     var list = new wf.List(function(){
         if(node.length ==0){
-            node = $('<'+pname+'></'+pname+'>');
+            node = _createElement(pname,parent.xml,false);
             if(pname=='post-functions'){
                 node.appendTo(parent.xml);
             } else {
                 _insertBefore(node,parent.xml,['actions','results','post-functions']);
             }
         }
-        var n=$('<function></function>').appendTo(node);
+        var n= _createElement('function',node).attr('name','脚本'+(list.length+1));
         return new wf.Function(n);
     });
 
@@ -327,11 +348,40 @@ var _getFunctions = function(pname,parent){
     return list;
 };
 
+var _getConditions = function(parent){
+    if(parent._attrs && parent._attrs['conditions']){
+        return parent._attrs['conditions'];
+    }
+
+    var node = parent.xml.find('conditions');
+    var list = new wf.List(function(){
+        if(node.length ==0){
+            node = _createElement('conditions',parent.xml);
+        }
+        var n= _createElement('condition',node).attr('name','条件'+(list.length+1));
+        return new wf.Function(n);
+    });
+
+    node.find('condition').each(function(){
+        list.push(new wf.Function($(this)));
+    });
+
+    if(parent._attrs == null){
+        parent._attrs={};
+    }
+    parent._attrs['conditions'] = list;
+    return list;
+};
+
 wf.classdef('WorkflowShape',tern.Shape,{
   WorkflowShape: function(xml,json){
     tern.Shape.call(this);
     this.width = _shapeWidth;
     this.height = _shapeHeight;
+    if(json){
+        this.x = json.x;
+        this.y = json.y;
+    }
 
     //this.icon = icon_step;
     this.label = new tern.Text('step',true);
@@ -351,19 +401,11 @@ wf.classdef('WorkflowShape',tern.Shape,{
     this.addConnector(new tern.ShapeConnector(0,_shapeHeight/2));
     this.addConnector(new tern.ShapeConnector(_shapeWidth,_shapeHeight/2));
 
-    if(xml==null){
-        this.id = MAX_SHAPE_ID;
-        this.xml=$('<step></step>').attr('id' , this.id);
-        this.json={};
-        MAX_SHAPE_ID++;
-    } else {
-        this.xml=$(xml);
-        this.json=(json==null?{}:json);
+    this.xml=$(xml);
 
-        this.id = this.xml.attr('id')*1;
-        if(this.id >= MAX_SHAPE_ID){
-            MAX_SHAPE_ID = this.id+1;
-        }
+    this.id = this.xml.attr('id')*1;
+    if(this.id >= MAX_SHAPE_ID){
+        MAX_SHAPE_ID = this.id+1;
     }
 
     var text = this.xml.attr('name');
@@ -388,6 +430,60 @@ wf.classdef('WorkflowShape',tern.Shape,{
       /*从流程定义中读取数据更新本组件*/
   },
 
+  getPre: function(){
+      var list = new wf.List();
+      for(var i=0;i<this.connectors.length;i++){
+          var ct = this.connectors[i];
+          if(ct.attachedConnectors && ct.attachedConnectors.length>0){
+              for(var j=0;j<ct.attachedConnectors.length;j++){
+                  var ct1 = ct.attachedConnectors[j];
+                  var cts = ct1.parent.connectors;
+                  if(ct1 === cts[cts.length-1]){
+                      var endCT = cts[0].attachTo;
+                      if(endCT && endCT.parent){
+                          list.push(endCT.parent);
+                      }
+                  }
+              }
+          }
+      }
+      return list;
+  },
+
+  getNext: function(){
+      var list = new wf.List();
+      for(var i=0;i<this.connectors.length;i++){
+        var ct = this.connectors[i];
+        if(ct.attachedConnectors && ct.attachedConnectors.length>0){
+            for(var j=0;j<ct.attachedConnectors.length;j++){
+                var ct1 = ct.attachedConnectors[j];
+                var cts = ct1.parent.connectors;
+                if(ct1 === cts[0]){
+                    var endCT = cts[cts.length-1].attachTo;
+                    if(endCT && endCT.parent){
+                        list.push(endCT.parent);
+                    }
+                }
+            }
+        }
+      }
+      return list;
+  },
+
+  setX: function(v){
+      if(v != this.x){
+          var cmd = new tern.Commands.MoveCommand([this], v - this.x, 0);
+          cmd.redo();
+          this.getDiagram().undoManager.addCommand(cmd);
+      }
+  },
+  setY: function(v){
+      if(v != this.y){
+          var cmd = new tern.Commands.MoveCommand([this], 0,v-this.y);
+          cmd.redo();
+          this.getDiagram().undoManager.addCommand(cmd);
+      }
+  },
   /*paint: function(context){
     context.fillStyle ="#FFFF37";
     context.fillRect(0, 0,this.width,this.height);
@@ -416,7 +512,8 @@ wf.classdef('StepShape',wf.WorkflowShape,{
   setOpType:function(value){
       var n = this.xml.find('meta[name="op.type"]');
       if(n.length<=0){
-          n = $('<meta></meta >').attr('name','op.type').appendTo(this.xml);
+          n = _createElement('meta',this.xml,false).attr('name','op.type');
+          _insertBefore(n,this.xml,['pre-functions','actions','post-functions']);
       }
       n.text(value);
   },
@@ -427,7 +524,8 @@ wf.classdef('StepShape',wf.WorkflowShape,{
   setOpName:function(value){
       var n = this.xml.find('meta[name="op.name"]');
       if(n.length<=0){
-          n = $('<meta></meta >').attr('name','op.name').appendTo(this.xml);
+          n = _createElement('meta',this.xml,false).attr('name','op.name');
+          _insertBefore(n,this.xml,['pre-functions','actions','post-functions']);
       }
       n.text(value);
   },
@@ -444,8 +542,21 @@ wf.classdef('StepShape',wf.WorkflowShape,{
       return _getFunctions('post-functions',this);
   },
 
-  fromData: function(){
-
+  appendConnection: function(line){
+      var list = this.getActions();
+      var action = null;
+      if(list.length > 0){
+          action = list[0];
+      } else {
+          action = list.newItem();
+      }
+      return action.appendConnection(line);
+  },
+  removeConnection: function(con){
+      var line = _getConnectionModel(con);
+      if(line.xml.parent().parent().parent().parent().get(0) == this.xml.get(0)){
+          line.xml.remove();
+      }
   },
 
 });
@@ -462,6 +573,23 @@ wf.classdef('JoinShape',wf.WorkflowShape,{
   },
 
   getType: function(){return 'Join';},
+  appendConnection: function(line){
+      if(line.xml && line.xml.length > 0){
+          this.xml.append(line.xml);
+          return line.xml;
+      }
+      return _createElement('unconditional-result',this.xml);
+  },
+  removeConnection: function(con){
+      var line = _getConnectionModel(con);
+      if(line.xml.parent().get(0) == this.xml.get(0)){
+          line.xml.remove();
+      }
+  },
+
+  getConditions: function(){
+      return _getConditions(this);
+  },
 });
 
 wf.classdef('SplitShape',wf.WorkflowShape,{
@@ -476,17 +604,35 @@ wf.classdef('SplitShape',wf.WorkflowShape,{
   },
 
   getType: function(){return 'Split';},
+  appendConnection: function(line){
+      if(line.xml && line.xml.length > 0){
+          this.xml.append(line.xml);
+          return line.xml;
+      }
+      return _createElement('unconditional-result',this.xml);
+  },
+  removeConnection: function(con){
+      var line = _getConnectionModel(con);
+      if(line.xml.parent().get(0) == this.xml.get(0)){
+          line.xml.remove();
+      }
+  },
 });
 
 wf.classdef('StartShape',wf.WorkflowShape,{
   StartShape: function(xml,json){
     wf.WorkflowShape.call(this,xml,json);
+
+    for(var i=0;i<this.connectors.length;i++){
+        this.connectors[i].attachable = tern.AttachType.Out;  //只支持引出
+    }
+
     this.label.text='开始';
     this.id=0;
 
     this.action = this.xml.find('action');
     if(this.action.length <= 0){
-        this.action=$('<action></action>').attr('id',0).appendTo(this.xml);
+        this.action=_createElement('action',this.xml).attr('id',0);
     } else if(this.action.length > 1){
         this.action = $(this.action[0]);
     }
@@ -505,11 +651,21 @@ wf.classdef('StartShape',wf.WorkflowShape,{
   getType: function(){return 'Start';},
 
   getPreFunctions: function(){
-      return _getFunctions('pre-functions',this);
+      return _getFunctions('pre-functions',this._actionData);
   },
 
   getPostFunctions: function(){
-      return  _getFunctions('post-functions',this);
+      return  _getFunctions('post-functions',this._actionData);
+  },
+
+  appendConnection: function(line){
+      return this._actionData.appendConnection(line);
+  },
+  removeConnection: function(con){
+      var line = _getConnectionModel(con);
+      if(line.xml.parent().parent().parent().get(0) == this.xml.get(0)){
+          line.xml.remove();
+      }
   },
 
   fromData: function(){
@@ -520,6 +676,9 @@ wf.classdef('StartShape',wf.WorkflowShape,{
 wf.classdef('EndShape',wf.WorkflowShape,{
   EndShape: function(xml,json){
     wf.WorkflowShape.call(this,xml,json);
+    for(var i=0;i<this.connectors.length;i++){
+        this.connectors[i].attachable = tern.AttachType.In;  //只支持引入
+    }
     this.label.text='结束';
   },
   paint: function(context){
@@ -547,8 +706,23 @@ var _getConnectionModel = function(con){  /*得到连线对应的数据模型*/
 wf.classdef('WFConnection',{  /*连线的数据*/
     WFConnection: function(con){
         this.connection = con;
-        con._data = this;
-        this.xml = $(con._dataXml);
+        if(con._dataXml){
+            this.xml = $(con._dataXml);
+            con._data = this;
+        } else {
+            var s = con.getStartShape();
+            if(s && s.appendConnection){
+                this.xml = s.appendConnection(this);
+                con._dataXml = this.xml.get(0);
+                con._data = this;
+            }
+        }
+    },
+
+    getMode: function(){
+        var s = this.connection.getStartShape();
+        if(s instanceof wf.StepShape) return 'Line';
+        else return 'Line2';
     },
 
     getNext: function(){
@@ -573,12 +747,14 @@ wf.classdef('WFConnection',{  /*连线的数据*/
         value = value*1;
         var node = this.xml.get(0);
         var newXml = null;
+        var p = this.xml.parent();
+
         if(0 == value){
             if(node.nodeName == 'unconditional-result') return;
-            newXml = $('<unconditional-result></unconditional-result>');
+            newXml = _createElement('unconditional-result',p,false);
         } else {
             if(node.nodeName == 'result') return;
-            newXml = $('<result></result>');
+            newXml = _createElement('result',p,false);
         }
 
         var id = this.xml.attr('step');
@@ -593,7 +769,6 @@ wf.classdef('WFConnection',{  /*连线的数据*/
             }
         }
 
-        var p = this.xml.parent();
         this.xml.remove();
         p.append(newXml);
         this.xml = newXml;
@@ -605,7 +780,7 @@ wf.classdef('WFConnection',{  /*连线的数据*/
             var node = this.xml.get(0).parentNode;
             if(node==null) return null;
             node = node.parentNode;
-            if(node.nodeName=='action'){
+            if(node && node.nodeName=='action'){
                 var src = shape.getActions();
                 for(var i=0;i<src.length;i++){
                     if(node == src[i].xml.get(0)){
@@ -645,7 +820,8 @@ wf.classdef('WFConnection',{  /*连线的数据*/
 
             var $results = pa.xml.find('results');
             if($results.length<=0){
-                $results=$('<results></results>').appendTo(pa.xml);
+                $results= _createElement('results',pa.xml,false);// $('<results></results>').appendTo(pa.xml);
+                _insertBefore($results,pa.xml,['post-functions'])
             }
             $results.append(this.xml);
         }
@@ -655,29 +831,7 @@ wf.classdef('WFConnection',{  /*连线的数据*/
         if(this.xml.get(0).nodeName == 'unconditional-result'){
             return null;
         }
-        if(this._attrs && this._attrs['conditions']){
-            return this._attrs['conditions'];
-        }
-
-        var node = this.xml.find('conditions');
-        var list = new wf.List(function(){
-            if(node.length ==0){
-                node = $('<conditions></conditions>');
-                node.appendTo(this.xml);
-            }
-            var n=$('<condition></condition>').appendTo(node);
-            return new wf.Function(n);
-        });
-
-        node.find('condition').each(function(){
-            list.push(new wf.Function($(this)));
-        });
-
-        if(this._attrs == null){
-            this._attrs={};
-        }
-        this._attrs['conditions'] = list;
-        return list;
+        return _getConditions(this);
     },
 
     getSourceActions: function(){
@@ -686,6 +840,29 @@ wf.classdef('WFConnection',{  /*连线的数据*/
             return shape.getActions();
         }
         return null;
+    },
+
+    setX: function(v){
+        if(!this.connection.draggable()) return;
+
+        var ct = this.connection.connectors[0];
+        var point = ct.getPoint();
+        if(v != point.x){
+            var cmd = new tern.Commands.MoveCommand([this.connection], v - point.x, 0);
+            cmd.redo();
+            this.connection.getDiagram().undoManager.addCommand(cmd);
+        }
+    },
+    setY: function(v){
+        if(!this.connection.draggable()) return;
+
+        var ct = this.connection.connectors[0];
+        var point = ct.getPoint();
+        if(v != point.y){
+            var cmd = new tern.Commands.MoveCommand([this.connection], 0,v - point.y);
+            cmd.redo();
+            this.connection.getDiagram().undoManager.addCommand(cmd);
+        }
     },
 });
 
@@ -729,27 +906,21 @@ wf.classdef('WorkflowDocument',{
 
         this._xmlObj = xml;
         this._root = $root;
-        this._shapes = json;
         this.diagram = diagram;
 
-        var hasShape = false;
-        if(this._shapes!= null && this._shapes.items
-           && this._shapes.items.length > 0){
-           hasShape = true;
+        if(!this._createDefaultShapes(json)){
+            alert('流程定义存在错误！');  //todo...弹窗显示详细的错误信息，并能定位到具体错误的步骤
+            return;
         }
 
-        if(hasShape){
-            this._createShapes();
-        } else {
-            this._createDefaultShapes();
+        if(json && json.backgroundColor){
+            diagram.backgroundColor = json.backgroundColor;
         }
     },
 
-    _createShapes: function(){
-        /*按已定义的排版生成流程图*/
-    },
+    setBackground: function(color){},
 
-    _createDefaultShapes: function(){
+    _createDefaultShapes: function(json){
         /*读取工作流原始定义，按默认排版生成流程图*/
         var $init_action = this._root.find('initial-actions action');
         if($init_action.length <=0){
@@ -758,6 +929,8 @@ wf.classdef('WorkflowDocument',{
         }
 
         var $steps = this._root.find('steps');
+        var $joins = this._root.find('joins');
+        var $splits = this._root.find('splits');
         var step1 = $steps.find('step[id="1"]');
         var endNode = null;
         if(step1.length ==1){
@@ -766,18 +939,25 @@ wf.classdef('WorkflowDocument',{
             }
         }
 
-        var shape = new wf.StartShape(this._root.find('initial-actions'));
-        shape.x = 100;
-        shape.y = 20;
+        var _shapes = (json==null?{}:json.shapes);
+        if(!_shapes){
+            _shapes = {};
+        }
+
+        var jsonShape = $.extend({x:100,y:20},_shapes[0]);
+        var shape = new wf.StartShape(this._root.find('initial-actions'),jsonShape);
         this.diagram.addChild(shape);
         this.shapes[0] = shape;
 
         var stacks = [];
-        var current = {"shape":shape,lines:[],index:0};
+        var current = {"shape":shape,lines:[],index:0,json:jsonShape};
 
-        shape = new wf.EndShape(endNode);
-        shape.x = 320;
-        shape.y = 20;
+        if(endNode){
+            jsonShape = $.extend({x:320,y:20},_shapes[endNode.attr('id')]);
+        } else {
+            jsonShape={x:320,y:20};
+        }
+        shape = new wf.EndShape(endNode,jsonShape);
         this.diagram.addChild(shape);
         this.shapes[shape.id] = shape;
 
@@ -789,6 +969,31 @@ wf.classdef('WorkflowDocument',{
 
         stacks.push(current);
 
+        var findLine = function(next,line,cjson){
+            if(!cjson || !cjson.connections) return null;
+
+            var aid = null;
+            if(line.parentNode){
+                var p = line.parentNode.parentNode;
+                if(p && p.nodeName=='action'){
+                    aid = $(p).attr('id');
+                }
+            }
+
+            var to = next.getType()+':'+next.id;
+            var list = cjson.connections;
+            for(var i=0;i<list.length;i++){
+                if(list[i].action==aid && list[i].to==to){
+                    if(!list[i]._used){
+                        list[i]._used = true;
+                        return list[i];
+                    }
+                }
+            }
+            return null;
+        };
+
+        var ret = true;
         while(current != null){
             var i=current.index;
             var item = null;
@@ -796,51 +1001,94 @@ wf.classdef('WorkflowDocument',{
                 current.index = i;
 
                 var sid = $(current.lines[i]).attr('step');
+                var _shapeType = wf.StepShape;
+                if(sid==null || sid==''){
+                    sid = $(current.lines[i]).attr('split');
+                    _shapeType = wf.SplitShape;
+                    if(sid==null || sid==''){
+                        sid = $(current.lines[i]).attr('join');
+                        _shapeType = wf.JoinShape;
+                    }
+                }
+
                 var next = null;
                 var line = null;
 
-                if(sid != null){  //next is step?
+                if(sid != null && sid != ''){  //next is step?
                     /*该目标节点是否已经生成*/
                     next = this.shapes[sid];
                     if(next){
                         /*直接生成两者之间的连线：直线*/
-                        var cn = 1;
-                        if(current.shape.y < next.y) cn = 0;
-                        line = current.shape.connectors[3].connectTo(next.connectors[cn]);
+                        var jsonLine = findLine(next,current.lines[i],current.json);
+
+                        var cn = 1,ct_from = 3;
+                        if(jsonLine){
+                            ct_from = jsonLine.ct_from;
+                            if(ct_from==null || ct_from<0 || ct_from>=current.shape.connectors.length) ct_from = 3;
+                            cn = jsonLine.ct_to;
+                            if(cn==null || cn<0 || cn>=next.connectors.length) cn = 1;
+                        }
+                        else if(current.shape.y < next.y) cn = 0;
+
+                        line = current.shape.connectors[ct_from].connectTo(next.connectors[cn],jsonLine?jsonLine.points:null);
                     } else {
-                       var node = $steps.find('step[id="'+sid+'"]');
+                       var node = null;
+
+                       if(_shapeType === wf.SplitShape){
+                           node = $splits.find('split[id="'+sid+'"]');
+                       } else if(_shapeType === wf.JoinShape){
+                           node = $joins.find('join[id="'+sid+'"]');
+                       } else {
+                           node = $steps.find('step[id="'+sid+'"]');
+                       }
+
                        if(node.length > 0){
-                           next = new wf.StepShape(node);
+                           var left = current.shape.x + 220*i;
+                           var top = current.shape.y + 100;
+                           jsonShape = $.extend({x:left,y:top},_shapes[sid]);
+                           next = new _shapeType(node,jsonShape);
                            this.shapes[sid] = next;
 
-                           item = {"shape":next,lines:[],index:0};
-                           node.find('action').each(function(){
-                               $(this).find('results').children().each(function(){
+                           item = {"shape":next,lines:[],index:0,json:jsonShape};
+
+                           if(_shapeType === wf.StepShape){
+                               node.find('action').each(function(){
+                                  $(this).find('results').children().each(function(){
+                                      item.lines.push(this);
+                                  });
+                               });
+                           } else {
+                               node.find('unconditional-result').each(function(){
                                    item.lines.push(this);
                                });
-                           });
-                       }
+                           }
+                       } //node.length > 0
                     }
                 }
 
-                if(null == next){ //next is split?
-                }
-
                 if(null == next){
-                    return false;
+                    ret = false;
+                    continue;
                 }
 
                 if(null == line){
-                    var left = current.shape.x + 220*i;
-                    var top = current.shape.y + 100;
-                    next.x = left;
-                    next.y = top;
                     this.diagram.addChild(next);
 
-                    if(i==0){
-                        line = current.shape.connectors[1].connectTo(next.connectors[0]);
+                    var jsonLine = findLine(next,current.lines[i],current.json);
+                    var from=1,to=0;
+                    if(jsonLine){
+                        from = jsonLine.ct_from;
+                        to = jsonLine.ct_to;
+                        if(from==null || from<0 || from>=current.shape.connectors.length) from = 1;
+                        if(to==null || to<0 || to>=next.connectors.length) to = 0;
+
+                        line = current.shape.connectors[from].connectTo(next.connectors[to],jsonLine.points);
                     } else {
-                        line = current.shape.connectors[1].connectTo(next.connectors[0] , 'v40,h');
+                        if(i==0){
+                            line = current.shape.connectors[from].connectTo(next.connectors[to]);
+                        } else {
+                            line = current.shape.connectors[from].connectTo(next.connectors[to] , 'v25,h');
+                        }
                     }
                 }
                 line._dataXml = current.lines[i];
@@ -862,7 +1110,9 @@ wf.classdef('WorkflowDocument',{
             }
         }
 
-        return true;
+        /*找出可能存在的孤立步骤*/
+
+        return ret;
     },
 
     xmlString: function() {
@@ -876,13 +1126,18 @@ wf.classdef('WorkflowDocument',{
     },
 
     diagramData: function(){  /*得到画布以及图元的信息*/
-        var obj = {shapes:[],connections:[]};
+        var obj = {shapes:{}};
+
+        if(this.diagram.backgroundColor){
+            obj.backgroundColor = this.diagram.backgroundColor;
+        }
+
         var items = this.diagram.children;
         for(var i=0;i<items.length;i++){
             var item = items[i];
             if(item instanceof wf.WorkflowShape){
-                var s = {type:item.getType(),id:item.id,x:item.x,y:item.y};
-                obj.shapes.push(s);
+                var s = {type:item.getType(),id:item.id,x:item.x,y:item.y,connections:[]};
+                obj.shapes[item.id]=s;
                 /*得到其出线*/
                 if(!item.connectors || item.connectors.length <= 0) continue;
                 for(var j = 0;j<item.connectors.length;j++){
@@ -893,11 +1148,22 @@ wf.classdef('WorkflowDocument',{
                             if(item != line.getStartShape()) continue;
                             var endShape = line.getEndShape();
                             if(endShape){
+                                var ct1 = line.connectors[line.connectors.length-1].attachTo;
+                                var n = 0;
+                                for(n=0;n<endShape.connectors.length;n++){
+                                    if(endShape.connectors[n] == ct1) break;
+                                }
+
                                 var wfLine = _getConnectionModel(line);
-                                var lData = {from:item.getType()+':'+item.id,action:wfLine.getAction().id,to:endShape.getType()+':'+endShape.id };
+                                var lData = {to:endShape.getType()+':'+endShape.id,ct_from:j,ct_to:n };
+
+                                if(item instanceof wf.StepShape){
+                                    lData.action = wfLine.getAction().id;
+                                }
+
                                 var pts = line.getPointsString();
                                 if(pts!=null && pts.length>0) lData.points = pts;
-                                obj.connections.push(lData);
+                                s.connections.push(lData);
                             }
                         }
                     }
@@ -905,6 +1171,11 @@ wf.classdef('WorkflowDocument',{
             }
         }
         return obj;
+    },
+
+    clear : function(){
+        this.diagram.removeAllChildren();
+        this.shapes = {};
     },
 });
 
@@ -919,13 +1190,26 @@ wf.classdef('ViewController',{
 
     setModel: function(data,selector){
         var THIS = this;
+        var old_data = this.item;
         this.item = data;
 
-        var ctrls;
+        var UI = null;//this.ui;
         if(selector){
-            ctrls = this.ui.find(selector);//.find('[data-property]');
+            if(typeof(selector)==='string'){
+                ctrls = this.ui.find(selector);
+            } else if(selector instanceof jQuery){
+                UI = selector;
+            } else {
+                UI = $(selector);
+            }
         } else {
-            ctrls = this.ui.find('[data-property]');
+            UI = this.ui;
+        }
+
+        if(UI){
+            /*先删除迭代生成的DOM*/
+            UI.find('[data-generated="temp"]').remove();
+            ctrls = UI.find('[data-property]');
         }
 
         ctrls.each(function(){
@@ -1033,14 +1317,45 @@ wf.classdef('ViewController',{
                 } else {
                     THIS.ui.find(selctor).hide();
                 }
+            } else if($(this).data('action')=='foreach'){ /*循环迭代*/
+                if(v instanceof wf.List){
+                    var oldNode = $(this);
+                    oldNode.hide();
+
+                    for(var i=0;i<v.length;i++){
+                        v.index = i;
+                        if(i == 0){
+                            var node = oldNode.clone().attr('data-generated','temp').removeAttr('data-property').removeAttr('data-action');
+                        } else {
+                            var node = oldNode.clone();
+                        }
+
+                        oldNode.after(node);
+                        node.show();
+                        oldNode = node;
+
+                        var itemData = {index:i,item:v[i]};
+                        THIS.setModel(itemData,node.get(0));
+                    }
+                }
             } else {
                 $(this).val(v);
             }
         });
+
+        if(selector){
+            this.item = old_data;
+        }
     },
 
     _updateListItem: function(listName){
-        this.setModel(this.item,'[data-list-item="'+listName+'"] [data-property]');
+        var target = this.ui.find('[data-list-item="'+listName+'"]');
+        if(target.length > 0){
+            var that = this;
+            target.each(function(){
+                that.setModel(that.item,this);
+            });
+        }
     },
 
     _getListByItem: function(i){
@@ -1060,6 +1375,7 @@ wf.classdef('ViewController',{
 
     _bindViews: function(){
         var THIS = this;
+
         this.ui.on('change',function(e){
             if(!THIS.item) return true;
 
@@ -1090,6 +1406,7 @@ wf.classdef('ViewController',{
                                 selector+=','+'[data-property="'+args[_i]+'"]';
                             }
                         }
+
                         THIS.setModel(THIS.item,selector);
                     }
                 }
@@ -1217,6 +1534,7 @@ wf.classdef('WorkflowController',{
     WorkflowController: function(url){
        this.url = url;
        this.document = null;
+       this._hasload = false;
 
        editor();  //main ui init--from editorui.js
        this._init();
@@ -1251,7 +1569,43 @@ wf.classdef('WorkflowController',{
            });
        });
        $tools.find('A.refresh').click(function(){
+           //removeAllChildren
+           if(that.document){
+               that.document.clear();
+           }
            this._load();
+       });
+
+       this._$straight = $tools.find('A.straight');
+       this._$poly = $tools.find('A.polyline');
+
+       var _convert = function(ele,type){
+           if(!(that.item instanceof wf.WFConnection)) return;
+           if($(ele).hasClass('active')) return;
+           var con = that.item.connection;
+           if(con.type === type) return;
+
+           con.convert();
+
+           if(con.type == tern.LineType.RightAngle){
+               if(that._$straight.hasClass('active')) that._$straight.removeClass('active');
+               if(!that._$poly.hasClass('active')) that._$poly.addClass('active');
+           } else {
+               if(that._$poly.hasClass('active')) that._$poly.removeClass('active');
+               if(!that._$straight.hasClass('active')) that._$straight.addClass('active');
+           }
+       };
+       this._$straight.click(function(){
+           _convert(this,tern.LineType.Straight);
+       });
+       this._$poly.click(function(){
+           _convert(this,tern.LineType.RightAngle);
+       });
+
+       $('#bgColor').change(function(){
+           if(that.diagram){
+               that.diagram.backgroundColor = '#'+$(this).val();
+           }
        });
     },
 
@@ -1260,11 +1614,13 @@ wf.classdef('WorkflowController',{
        var that = this;
        var xml = null;
        var json = null;
+       that._hasload = false;
        $.post(this.url+'/define',{},function(result){
            xml = result;
            if(json != null){
                that.document = new wf.WorkflowDocument();
                that.document.load(xml,json,that.diagram);
+               that._hasload = true;
            }
        },'xml').error(function(){
            //this.diagram.setReadonly(true);
@@ -1277,6 +1633,7 @@ wf.classdef('WorkflowController',{
           if(xml != null){
               that.document = new wf.WorkflowDocument();
               that.document.load(xml,json,that.diagram);
+              that._hasload = true;
           }
        },'json').error(function(){
           //this.diagram.setReadonly(true);
@@ -1296,6 +1653,7 @@ wf.classdef('WorkflowController',{
        diagram.resize($container.find('.grid-top').width(),$container.find('.grid-left').height());
 
        //init toolboxes
+       var that = this;
        $('.editor-body-menu A').each(function(){
            var type=$(this).data('type');
            if(type ==null) return;
@@ -1308,7 +1666,39 @@ wf.classdef('WorkflowController',{
                if(!shapeType) break;
            }
            if(shapeType){
-               diagram.toolbox(this,null,shapeType);
+               diagram.toolbox(this,null,function(){
+                   var xml = null;
+                   var context = that.document._root.context;
+                   if(shapeType==wf.StepShape){
+                       var pn = that.document._root.find('steps');
+                       if(pn.length <= 0){
+                           pn = $(context.createElement('steps')).appendTo(that.document._root);
+                       }
+                       xml = $(context.createElement('step')).appendTo(pn);
+                   } else if(shapeType==wf.SplitShape){
+                       var pn = that.document._root.find('splits');
+                       if(pn.length <= 0){
+                          pn = $(context.createElement('splits')).appendTo(that.document._root);
+                       }
+                       xml = $(context.createElement('split')).appendTo(pn);
+                   } else if(shapeType==wf.JoinShape){
+                        var pn = that.document._root.find('joins');
+                        if(pn.length <= 0){
+                           pn = $(context.createElement('joins')).appendTo(that.document._root);
+                        }
+                        xml = $(context.createElement('join')).appendTo(pn);
+                   } else if(shapeType==tern.Connection){
+                       var con = new tern.Connection([new tern.Point(0,0),new tern.Point(100,100)],tern.LineType.Straight);
+                       con._createConnectors();
+                       con._dataXml = context.createElement('unconditional-result');
+                       return con;
+                   }
+
+                   xml.attr('id' , MAX_SHAPE_ID);
+                   MAX_SHAPE_ID++;
+
+                   return new shapeType(xml);
+               });
            }
        });
     },
@@ -1334,6 +1724,8 @@ wf.classdef('WorkflowController',{
                 this.ctrls[type] = new wf.ViewController($(arr[i]));
             }
         }
+
+        this._current = this.ctrls['Workflow'];
 
         /*处理编辑器中的INPUT、SELECT、TextArea等元素*/
         var THIS = this;
@@ -1366,30 +1758,116 @@ wf.classdef('WorkflowController',{
         this.diagram.selectedChange(function(items){
             THIS.attach(items);
         }).bind('onMove',function(items){
-            if(THIS.item!=null){
+            if(THIS.item instanceof tern.Shape){
                 THIS.x.value = THIS.item.x;
                 THIS.y.value = THIS.item.y;
+            } else if(THIS.item instanceof wf.WFConnection){
+                var p = THIS.item.connection.connectors[0].getPoint();
+                THIS.x.value = p.x;
+                THIS.y.value = p.y;
+            }
+        }).bind('onAdded',function(item){
+            if(!THIS._hasload) return;
+            if(item instanceof tern.Connection){
+                if(item._dataXml == null){
+                    var context = THIS.document._root.context;
+                    item._dataXml = context.createElement('unconditional-result')
+                }
+
+                item = _getConnectionModel(item);
+            }
+            if(item._xmlParent && item.xml){
+                item._xmlParent.append(item.xml);
+                item._xmlParent=null;
+            }
+        }).bind('onRemoved',function(item){
+            if(!THIS._hasload) return;
+            if(item instanceof tern.Connection){
+                item = _getConnectionModel(item);
+            }
+            if(item.xml){
+                item._xmlParent = item.xml.parent();
+                item.xml.remove();
             }
         }).bind('onTextChange',function(ctrl,text){
             if(ctrl.parent instanceof wf.WorkflowShape){
                 ctrl.parent.xml.attr('name',text);
             }
+        }).bind('onAttached',function(ctChild,ctParent){
+            var con = ctChild.parent;
+            var shape = ctParent.parent;
+            if(!(con instanceof tern.Connection) || !(shape instanceof wf.WorkflowShape)){
+                return;
+            }
+
+            var line = _getConnectionModel(con);
+            if(shape == con.getStartShape()){
+                if(line.xml.parent().length > 0) return;
+                shape.appendConnection(line);
+            } else if(shape == con.getEndShape()){
+                var type = shape.getType().toLowerCase();
+                line.xml.attr(type,shape.id);
+            }
+        }).bind('onDettached',function(ctChild,ctParent){
+            var con = ctChild.parent;
+            var shape = ctParent.parent;
+            if(!(con instanceof tern.Connection) || !(shape instanceof wf.WorkflowShape)){
+                return;
+            }
+            if(null == con.getStartShape()){
+                shape.removeConnection(con);
+            } else if(null == con.getEndShape()){
+                var type = shape.getType().toLowerCase();
+                var line = _getConnectionModel(con);
+                if(line.xml.attr(type)==shape.id){
+                    line.xml.removeAttr(type);
+                }
+            }
+        }).bind('onBeforeRemoved',function(items){
+             if(!items || !items.length) return;
+             for(var i=0;i<items.length;i++){
+                 if( (items[i] instanceof wf.StartShape) || (items[i] instanceof wf.EndShape) ){
+                     return false;
+                 }
+             }
+             return true;
         });
     },
 
     attach: function(items){
+        var type = null;
         if(items && items.length == 1){
             this.item = items[0];
 
-            var type = null;
+            if(this._$straight.hasClass('active')) this._$straight.removeClass('active');
+            if(this._$poly.hasClass('active')) this._$poly.removeClass('active');
             if(this.item.getType) {
                 type = this.item.getType();
                 this.x.value = this.item.x;
                 this.y.value = this.item.y;
             } else if(this.item instanceof tern.Connection){
-                type = 'Line';
                 this.item = _getConnectionModel(items[0]);
+                type = this.item.getMode();
+                if(tern.LineType.RightAngle===items[0].type){
+                    this._$poly.addClass('active');
+                } else {
+                    this._$straight.addClass('active');
+                }
+
+                if(items[0].connectors.length > 0){
+                     var point = items[0].connectors[0].getPoint();
+                     this.x.value = point.x;
+                     this.y.value = point.y;
+                }
+            } else {
+                type='Workflow';
             }
+        } else {
+            type='Workflow';
+            this.item = null;
+        }
+
+        if(type){
             var ctrl = this.ctrls[type];
             if(this._current && this._current != ctrl){
                 this._current.ui.css('display','none');
@@ -1397,14 +1875,13 @@ wf.classdef('WorkflowController',{
             }
             if(ctrl){
                 /*更新界面上UI的属性信息*/
-                ctrl.setModel(this.item);
+                if(this.item) ctrl.setModel(this.item);
 
                 this._current = ctrl;
                 ctrl.ui.css('display','block');
             }
-        } else {
-            this.item = null;
         }
+
     },
 
     editScript:function(item){
@@ -1504,8 +1981,7 @@ var _getProperty = function(obj,property){
         return obj[ps]();
     } else {
         ps = arr[arr.length-1];
-        if(obj[ps]) return obj[ps];
-        else return undefined;
+        return obj[ps];
     }
 };
 

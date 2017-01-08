@@ -208,7 +208,7 @@ select {
 .colorBucket:hover .arrow{border-left: solid 1px #ffbe00;}
 .tool-group .color-value{width: 60px;height: 20px;line-height: 18px;}
 .editor-tool .inputText{
-    width: 50px;
+    width: 70px;
     height: 24px;
     line-height: 22px;
     vertical-align: middle;
@@ -254,6 +254,15 @@ select {
     background: url("images/appEdit/grid.png") no-repeat center;
     width: 26px!important;
 }
+
+.polyline{
+    background: url("images/poly.png") no-repeat center;
+}
+
+.straight{
+    background: url("images/line.png") no-repeat center;
+}
+
 .zIndex-top{
     background: url("images/appEdit/zIndex-top.png") no-repeat center;
 }
@@ -316,6 +325,11 @@ select {
 .menu-sharp i{
     width: 40px;
     height: 40px;
+}
+
+.list {
+    background-color: white;
+    padding-left:20px;
 }
 
 i.icon-editor-step{background: url("images/step.png") no-repeat 0 0;}

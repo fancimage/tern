@@ -67,6 +67,7 @@ function colorSet(){
 			"backgroundColor":background,
 			"borderColor":border
 		});
+		colorsPanel.find('.color-value').val(this_.attr("color")).trigger('change');
 		colorsPanel.find(".drop-details").hide();
 
 	});

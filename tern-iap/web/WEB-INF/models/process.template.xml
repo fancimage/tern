@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE workflow PUBLIC "-//OpenSymphony Group//DTD OSWorkflow 2.6//EN" "http://www.opensymphony.com/osworkflow/workflow_2_8.dtd"[]>
+<workflow>
+  <initial-actions>
+    <action id="0" name="开始">
+      <results>
+        <unconditional-result old-status="Finished" status="doing" step="1" />
+      </results>
+    </action>
+  </initial-actions>
+  <steps>
+    <step id="1" name="结束">      
+    </step>    
+  </steps>
+</workflow>

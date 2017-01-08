@@ -93,6 +93,9 @@ Actions.classdef('MoveAction',tern.MouseAction,{
     
     var offsetX = e.mouseX - this.lastX;
     var offsetY = e.mouseY - this.lastY;
+
+    if(offsetX==0 && offsetY==0) return;
+
     if(this.diagram._ToolDrager.isActive()){
         this.diagram._ToolDrager.move(offsetX,offsetY,true);
         this.lastX = e.mouseX;
@@ -108,7 +111,7 @@ Actions.classdef('MoveAction',tern.MouseAction,{
         }
         this.diagram._events.trigger('onMove',sels);
     }else{
-        if(selct instanceof tern.ShapeConnector){
+        if(selct instanceof tern.ShapeConnector && (selct.attachable==tern.AttachType.Both || selct.attachable==tern.AttachType.Out)){
             //create new connection
             var line = new tern.Connection( [new tern.Point(this.initialX,this.initialY), new tern.Point(e.mouseX,e.mouseY)],
                                tern.LineType.Straight);
@@ -137,7 +140,7 @@ Actions.classdef('MoveAction',tern.MouseAction,{
         
         if(selct.type == tern.ConnectorType.Endpoint){
             var ct = this.diagram.findConnectorAt(e.mouseX,e.mouseY,this.fromX,this.fromY);
-            if(ct != null && ct.attachable){
+            if(ct != null && ct.canAttached(selct)){
                 this.findedCT = ct;
                 if (ct == oldFinded){
                     oldFinded = null;
@@ -189,13 +192,13 @@ Actions.classdef('MoveAction',tern.MouseAction,{
         cmd = new tern.Commands.MoveCommand(this.diagram.getSelectedItems(), this.lastX - this.initialX, this.lastY - this.initialY);
     }else{
         if(selct instanceof tern.ShapeConnector) return;
-        
+
         if (this.findedCT == null && selct.type == tern.ConnectorType.Endpoint){
             this.findedCT = this.diagram.findConnectorAt(this.lastX,this.lastY,this.fromX,this.fromY);
         }
         
         var bindCmd = null;
-        if (this.findedCT != null && this.findedCT.attachable){
+        if (this.findedCT != null && this.findedCT.canAttached(selct)){
             var findedPoint = this.findedCT.parent.pointToGlobal(this.findedCT.x,this.findedCT.y); //findedCT comes from shape.  MUST?
             var offsetX = findedPoint.x - this.lastX;
             var offsetY = findedPoint.y - this.lastY;

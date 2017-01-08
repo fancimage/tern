@@ -93,14 +93,14 @@ tern.classdef('ShapeConnector',tern.Connector,{
 
               if(s == 'v'){
                   var p = new tern.Point(current.x,last.y);
-                  if(current.x != p.x && current.y != p.y){
+                  if(current.x != p.x || current.y != p.y){
                       points.push(p);
                   }
                   break;
               }
               else if(s == 'h'){
                   var p = new tern.Point(last.x,current.y);
-                  if(current.x != p.x && current.y != p.y){
+                  if(current.x != p.x || current.y != p.y){
                       points.push(p);
                   }
                   break;
@@ -152,11 +152,18 @@ tern.classdef('LineConnector',tern.Connector,{
     tern.Connector.call(this,x,y);
     if(!type) this.type = tern.ConnectorType.Endpoint;
     else this.type = type;
-    this.attachable = false;
+    this.attachable = tern.AttachType.None;
     
     if(type == tern.ConnectorType.Endpoint){
         this.width = this.height = tern.Connector.width;
     }
+  },
+
+  isStartPoint: function(){
+      if(this.parent && this.parent.connectors){
+          if(this == this.parent.connectors[0]) return true;
+      }
+      return false;
   },
 
   paint: function(context) {

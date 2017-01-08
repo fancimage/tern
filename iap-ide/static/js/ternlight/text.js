@@ -19,11 +19,7 @@ tern.classdef('Text',tern.UIElement,{
     },
     
     edit: function(){  /*begin to edit...*/
-        var diagram = this.parent;
-        while(diagram && !(diagram instanceof tern.Diagram)){
-            diagram = diagram.parent;
-        }
-        
+        var diagram = this.getDiagram();
         if(!diagram) return;
         
         this.editing = true;

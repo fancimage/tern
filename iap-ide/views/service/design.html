@@ -4,7 +4,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${model.caption}</title>
+    <title>${record.tcaption}</title>
     <base href="${HOME}" />
     <link rel="stylesheet" type="text/css" href="static/skins/wfeditor/main.css">
     <link rel="stylesheet" href="static/bootstrap/css/bootstrap.css" media="screen">
@@ -60,7 +60,7 @@
 	 								<div class="drop-down colorsPanel">
 	 									<a href="#" class="colorBucket drop-link operate"><div class="colorShow"></div><i class="arrow"></i></a>
 	 									<div class="drop-details">
-	 										<div>#&nbsp;&nbsp;<input type="text" class="color-value inputText" /></div>
+	 										<div>#&nbsp;&nbsp;<input id="bgColor" type="text" class="color-value inputText" /></div>
 	 										<ul class="float colors">
 	 											<li><a href="#" class="color-1" color="000000"></a></li>
 	 											<li><a href="#" class="color-2" color="666666"></a></li>
@@ -95,6 +95,12 @@
 	 								<lable class="ml5">y:</lable>
 	 								<input type="text" class="inputText" data-property="Y"/>
 	 							</span>
+                        </li>
+                        <li>
+                            <span class="classify">
+                                <a class="operate straight" href="#" title="直线"></a>
+                                <a class="operate polyline" href="#" title="折线"></a>
+                            </span>
                         </li>
                         <li>
                             <!-- 工具二级小类-元素z-index层级 -->
@@ -145,6 +151,14 @@
                             <a href="#" class="addSeries plr10" data-property="Actions.Current.PostFunctions" data-action="new">+新增脚本</a>
                         </div>
 
+                        <h1 class="emphsis">上一节点</h1>
+                        <ul class="list">
+                            <li data-property="Pre" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
+                        <h1 class="emphsis">下一节点</h1>
+                        <ul class="list">
+                            <li data-property="Next" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
                     </div>
 
                     <div class="body-tool-Start" style="display:none">
@@ -154,6 +168,11 @@
 
                         <h1>后置脚本 <a href="#" class="addSeries plr10" data-property="PostFunctions" data-action="new">+新增脚本</a></h1>
                         <div class="seriesList switchover" data-property="PostFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+
+                        <h1 class="emphsis">下一节点</h1>
+                        <ul class="list">
+                            <li data-property="Next" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
                     </div>
 
                     <div class="body-tool-End" style="display:none">
@@ -161,14 +180,36 @@
 
                         <h1>脚本 <a href="#" class="addSeries plr10" data-property="PreFunctions" data-action="new">+新增脚本</a></h1>
                         <div class="seriesList switchover" data-property="PreFunctions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                        <h1 class="emphsis">上一节点</h1>
+                        <ul class="list">
+                            <li data-property="Pre" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
                     </div>
 
                     <div class="body-tool-Split" style="display:none">
                         <h1 class="emphsis">拆分[<span data-property="id"></span>]</h1>
+                        <h1>上一节点</h1>
+                        <ul class="list">
+                            <li data-property="Pre" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
+                        <h1>下一节点</h1>
+                        <ul class="list">
+                            <li data-property="Next" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
                     </div>
 
                     <div class="body-tool-Join" style="display:none">
                         <h1 class="emphsis">合并[<span data-property="id"></span>]</h1>
+                        <h1>合并条件<a href="#" class="addSeries plr10" data-property="Conditions" data-action="new">+新增条件</a></h1>
+                        <div class="seriesList switchover" style="margin-top:4px" data-property="Conditions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
+                        <h1 class="emphsis">上一节点</h1>
+                        <ul class="list">
+                            <li data-property="Pre" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
+                        <h1>下一节点</h1>
+                        <ul class="list">
+                            <li data-property="Next" data-action="foreach"><span data-property="item.Text"/></li>
+                        </ul>
                     </div>
 
                     <div class="body-tool-Line" style="display:none">
@@ -193,12 +234,35 @@
                         </div>
                         <div class="seriesList switchover" style="margin-top:4px" data-property="Conditions" data-type="list" data-onedit="uictrl.editScript(this)"></div>
                     </div>
+
+                    <div class="body-tool-Line2" style="display:none">
+                        <h1 class="emphsis">连线属性</h1>
+                        <div class="form-entry">
+                            <label>下一节点:</label><span data-property="Next"></span>
+                        </div>
+                    </div>
+
+                    <div class="body-tool-Workflow">
+                        <h1 class="emphsis">流程名称</h1>
+                        <div class="form-entry">
+                            <label>${record.tcaption}</label>
+                        </div>
+                        <h1>流程标识</h1>
+                        <div class="form-entry">
+                            <label>${record.tcode}</label>
+                        </div>
+                        <h1>数据模型</h1>
+                        <div class="form-entry">
+                            <label>${record.serTableName}</label>
+                        </div>
+                    </div>
                 </div>
                 <!-- 左侧菜单栏 -->
                 <div class="editor-body-menu">
                     <a href="#" class="menu-sharp" data-type="wf.StepShape"><i class="icon-editor-step"></i><p>步骤</p></a>
                     <a href="#" class="menu-sharp" data-type="wf.JoinShape"><i class="icon-editor-join"></i><p>合并</p></a>
                     <a href="#" class="menu-sharp" data-type="wf.SplitShape"><i class="icon-editor-split"></i><p>拆分</p></a>
+                    <a href="#" class="menu-sharp" data-type="tern.Connection"><i class="straight"></i><p>连线</p></a>
                 </div>
                 <!-- 编辑区域 -->
                 <div class="editor-body-main">
@@ -212,7 +276,7 @@
                         </ul>
                         <div class="editor-canvas-main">
                             <canvas id="mycanvas" height="500" width="700">
-                                使用该功能，请使用IE9以上版本，或使用google chrome、firefox等支持HTML5的浏览器！
+                                使用该功能，请使用IE11及以上版本，或使用google chrome、firefox等支持HTML5的浏览器！
                             </canvas>
                         </div>
                     </div>

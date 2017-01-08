@@ -270,12 +270,16 @@ tern.classdef('Diagram',tern.UIContainer,{
   },
 
   drawBackGround: function(context) {
-    //context.fillStyle ="#ffff00";
-    var gradient = context.createLinearGradient(this.width/2, 0,this.width/2,this.height);
-    gradient.addColorStop(0,"#E2EBEF");
-    gradient.addColorStop(1,"#5DA3D4");
-    context.fillStyle = gradient;
-    context.fillRect(0, 0,this.width,this.height);
+    if(this.backgroundColor){
+        context.fillStyle = this.backgroundColor;
+        context.fillRect(0, 0,this.width,this.height);
+    } else {
+        var gradient = context.createLinearGradient(this.width/2, 0,this.width/2,this.height);
+        gradient.addColorStop(0,"#E2EBEF");
+        gradient.addColorStop(1,"#5DA3D4");
+        context.fillStyle = gradient;
+        context.fillRect(0, 0,this.width,this.height);
+    }
   },
 
   paint: function(context) {
@@ -380,12 +384,21 @@ tern.classdef('Diagram',tern.UIContainer,{
   findAt: function(x,y){
     //in order to select item easily,expand point to rect
     var item = null;//this.findItemsIn(x,y,0,0,true);
-    this.findElementsIn(x,y,1,1,
-        function(child){
-            item = child;
-            return false;
+    if(this.__selItems && this.__selItems.length==1
+        && (this.__selItems[0] instanceof tern.Connection)){
+        if(this.__selItems[0].testInRect(x,y,1,1,true)){
+            item = this.__selItems[0];
         }
-    );
+    }
+
+    if(item == null){
+        this.findElementsIn(x,y,1,1,
+            function(child){
+                item = child;
+                return false;
+            }
+        );
+    }
     
     if(null != item && (item instanceof tern.DiagramItem)){
         var ct = item.findConnector(x,y,0,0);
@@ -413,7 +426,10 @@ tern.classdef('Diagram',tern.UIContainer,{
   
   __deleteSelected: function(isCut){
       if(this.__selItems.length<=0) return;
-      
+
+      if(false === this._events.trigger('onBeforeRemoved',this.__selItems) ){
+          return;
+      }
       if(isCut) this.copy();
       
       cmd = new tern.Commands.AddRemoveCommand(this, this.__selItems, false);
@@ -423,6 +439,7 @@ tern.classdef('Diagram',tern.UIContainer,{
   
   toolbox: function(obj,target,itemClass){
       if(!obj || !itemClass) return;
+      if(typeof(itemClass) != 'function') return;
       
       var diagram = this;
       var canvas = this.context.canvas;
@@ -566,7 +583,16 @@ tern.classdef('_ToolDrager',{
         if(inDiagram){
             if(!this._inDiagram){
                  if(null == this.item){
-                     this.item = new this.itemClass();
+                     if(tern.isAssignableFrom(this.itemClass,tern.UIElement)){
+                         this.item = new this.itemClass();
+                     } else {
+                         this.item = this.itemClass();
+                         if(!(this.item instanceof tern.UIElement)){
+                             alert('工具箱类型错误!');
+                             return;
+                         }
+                     }
+
                      this.diagram.addChild(this.item);
                      this.target.style.display = 'none';
                      
@@ -578,6 +604,7 @@ tern.classdef('_ToolDrager',{
                  this.diagram.setSelectedItems(this.item);
             }
             this.item.move(x,y);
+            this.diagram._events.trigger('onMove',[this.item]);
         } else {
             this.target.style.left = x + 'px';
             this.target.style.top = y + 'px';
@@ -823,8 +850,14 @@ tern.ConnectorType = {
     Endpoint:  2,   // line's from or to point
     RightAngle: 3,  //in the poly line
     Middle:     4   //in the line
-}
+};
 
+tern.AttachType = {
+    None: 0,
+    Out:  1,
+    In:   2,
+    Both: 3,
+};
 /*
  * Connector class
  */
@@ -843,7 +876,7 @@ tern.classdef('Connector',tern.UIElement,{
     this.type = tern.ConnectorType.Attachable;
     this.visible = false;
     this.draggable = true;
-    this.attachable = true;
+    this.attachable = tern.AttachType.Both;
     this.attachTo = null;
     this._state = tern.ItemState.Normal;
   },
@@ -852,6 +885,23 @@ tern.classdef('Connector',tern.UIElement,{
 
   onHovered: function(flag){
       this._state = (flag && this.visible ? tern.ItemState.Hover:tern.ItemState.Normal);      
+  },
+
+  canAttached: function(ct){
+      if(this.attachable==tern.AttachType.None || ct==null
+       || ct.type != tern.ConnectorType.Endpoint){
+           return false;
+       }
+
+       if(this.attachable == tern.AttachType.Both) return true;
+
+       var isOut = ct.isStartPoint();
+       if( (isOut && this.attachable == tern.AttachType.Out)
+           || (!isOut && this.attachable == tern.AttachType.In) ){
+           return true;
+       }
+
+       return false;
   },
 
   onSelectedStateChanged: function(flag){
@@ -865,7 +915,7 @@ tern.classdef('Connector',tern.UIElement,{
 tern.LineType = {
     Straight: 1,
     RightAngle: 2
-}
+};
  
  /*
  * Connection class
@@ -889,12 +939,28 @@ tern.classdef('Connection',tern.DiagramItem,{
   },
 
   getPointsString: function(){
-      if(this.points.length <=2 ) return '';
-      var p1 = this.points[0],p2 = this.points[1],p3 = null;
+      var points = this.points;
+      if(this.connectors.length <= 0  && points.length <=2 ) return '';
+
+      if(this.connectors.length > 0){
+          var points = [];
+          for(var i=0;i<this.connectors.length;i++){
+              var ct = this.connectors[i];
+              if(ct.type==tern.ConnectorType.Endpoint
+              || ct.type==tern.ConnectorType.RightAngle){
+                  points.push(new tern.Point(ct.x,ct.y));
+              }
+          }
+          this.points = points;
+      }
+
+      if(points.length <=2) return '';
+
+      var p1 = points[0],p2 = points[1],p3 = null;
       var s = '';
-      var len = 0;
-      for(var i=2;i<this.points.length;i++){
-          p3 = this.points[i]
+      var len = null;
+      for(var i=2;i<points.length;i++){
+          p3 = points[i]
           if(p1.x == p2.x){
               if(p1.y == p2.y){
                   p1 = p2;
@@ -902,12 +968,18 @@ tern.classdef('Connection',tern.DiagramItem,{
                   continue;
               }
 
-              if(len > 0) s+=len+',';
-              s += 'v';
+              if(len !== null){
+                  s=s+(len+',');
+                  len = null;
+              }
+              s =s+ 'v';
               len = p2.y - p1.y;
           } else {
-              if(len > 0) s+=len+',';
-              s += 'h';
+              if(len !== null){
+                  s=s+(len+',');
+                  len = null;
+              }
+              s =s+ 'h';
               len = p2.x - p1.x;
           }
 
@@ -928,13 +1000,13 @@ tern.classdef('Connection',tern.DiagramItem,{
         if(isAngle){
             if( i == this.points.length - 2 ){
                 var mTo = this.points[this.points.length - 1];
-                if( mTo.x != current.x || mTo.y != current.y ){
-                    if(pre.x != current.x || mTo.y != current.y){
+                if( mTo.x != current.x && mTo.y != current.y ){
+                    if(pre.x != current.x && mTo.y != current.y){
                         if( Math.abs(pre.x-mTo.x) < Math.abs(pre.y-mTo.y) ){
                             current = new tern.Point(mTo.x, pre.y);
                         }
                         else{
-                            current = new Point(pre.x, mTo.y);
+                            current = new tern.Point(pre.x, mTo.y);
                         }
                     }
                 }
@@ -960,7 +1032,7 @@ tern.classdef('Connection',tern.DiagramItem,{
                 var second = this.points[i - 1];
                 if (((first.x == second.x) && (second.x == current.x))  //in one horizontal line
                       || ((first.y == second.y) && (second.y == current.y))){
-                    this.points.splice(i - 1);  //it is no use!
+                    this.points.splice(i - 1,1);  //it is no use!
                     continue;
                 }
             }
@@ -1086,6 +1158,17 @@ tern.classdef('Connection',tern.DiagramItem,{
       return null;
   },
 
+  convert: function(type){
+      if(type === this.type || this.connectors.length <= 0) return;
+
+      var diagram = this.getDiagram();
+      if(diagram){
+          var cmd = new tern.Commands.ConvertConnectionCommand(this);
+          diagram.undoManager.addCommand(cmd);
+          cmd.redo();
+      }
+  },
+
   adjust: function(){
     if(this.connectors.length < 2) return;
     var isAngle = (tern.LineType.RightAngle == this.type);
@@ -1104,8 +1187,8 @@ tern.classdef('Connection',tern.DiagramItem,{
             
             if( i == this.connectors.length-2 ){
                 var mTo = this.connectors[this.connectors.length - 1];
-                if(mTo.x != current.x || pre.y != current.y){
-                    if(pre.x != current.x || mTo.y != current.y){
+                if(mTo.x != current.x && pre.y != current.y){
+                    if(pre.x != current.x && mTo.y != current.y){
                         if (Math.abs(pre.x - mTo.x) < Math.abs(pre.y - mTo.y)){
                             current.x = mTo.x;
                             current.y = pre.y;

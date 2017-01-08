@@ -54,7 +54,7 @@ var classdef = function(){
     }
     
     return myclass;
-}
+};
 
 var namespace = function(name){
     if(name) {
@@ -77,6 +77,16 @@ window.namespace = namespace;
 var tern = namespace('tern');
 
 window.tern = tern;
+tern.isAssignableFrom = function(type1,type2){
+    if(!type2) return false;
+
+    while(type1 && type1.superClass){
+        if(type1.superClass.constructor === type2) return true;
+        type1 = type1.superClass.constructor;
+    }
+
+    return false;
+};
 
 tern.delegate = function(func, instance){
 	var context = instance || window;
@@ -198,7 +208,15 @@ tern.classdef('UIElement',{
         context.canvas.width = 0;
         context.canvas.width = 1;
         return false;
-    }
+    },
+
+    getDiagram: function(){
+        var p = this;
+        while(p){
+            if(p instanceof tern.Diagram) return p;
+            p = p.parent;
+        }
+    },
 });
 
 //internal-hidden canvas for elements(not rectangle) hit testing
@@ -267,7 +285,10 @@ tern.classdef('UIContainer', tern.UIElement, {
         child.parent = this;
         if(index<0 || index >= this.children.length) this.children.push(child);
         else this.children.splice(index, 0, child);
-        
+
+        if(this._events){
+            this._events.trigger('onAdded',child);
+        }
         return child;
     },
     
@@ -279,6 +300,9 @@ tern.classdef('UIContainer', tern.UIElement, {
         
         this.children[index].parent = null;
         this.children.splice(index, 1);
+        if(this._events){
+            this._events.trigger('onRemoved',child);
+        }
         return true;
     },
     
@@ -330,9 +354,10 @@ tern.Events = classdef('Events',{
         if(obj){
             var leftArgs = Array.prototype.slice.call(arguments, 1);
             for(var i=0;i<obj.length;i++){
-                obj[i].apply(window,leftArgs);
+                if(false === obj[i].apply(window,leftArgs)) return false;
             }
         }
+        return true;
     },
 });
 
