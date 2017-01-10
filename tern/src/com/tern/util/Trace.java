@@ -168,6 +168,8 @@ public class Trace
     		{
     			logForder = logFile.substring(0,i);
     			shorterFileName = logFile.substring(i+1);
+
+				currentFileIndex = 0;
     			
     			java.io.File dir = new java.io.File(logForder);
     			if(dir.isDirectory())
@@ -192,6 +194,8 @@ public class Trace
     					}
     				}
     			}
+
+				currentFileIndex++;
     		}
     		else
     		{
@@ -204,6 +208,9 @@ public class Trace
     	{
     		currentFileIndex=1;
     	}
+
+    	System.out.println(String.format("log:MaxFileCount=%d,MaxFileSize=%dM,Current=%d,Force=%s" ,
+				maxLogFileCount , maxFileLen/(1024*1024) , currentFileIndex,_isForceWriter?"true":"false"));
     	
     	//reOpenLog();
     	synchronized(logBuffer)
