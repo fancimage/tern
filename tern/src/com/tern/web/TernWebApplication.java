@@ -27,7 +27,7 @@ import com.tern.web.routes.RouteSet;
 
 public class TernWebApplication 
 {
-	private static final String VERSION = "v1.03 2016-03-27";	
+	private static final String VERSION = "v1.04 2017-04-10";
 	private static TernWebApplication instance;
 	
 	/*default handlers*/

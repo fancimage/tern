@@ -69,6 +69,24 @@ public class Application extends TernWebApplication
 	
 	protected boolean onStarted(ServletContext context)
 	{
+		Model.setModelReaderFactory(new ModelReaderFactory(){
+
+			@Override
+			public ModelReader createReader()
+			{
+				Database metadb = AppContext.current().metadb;
+				if(metadb == null)
+				{
+					return new YamlModelReader();
+				}
+				else
+				{
+					return new IapModelReader( metadb );
+				}
+			}
+
+		});
+
 		//find user applications
 		int appCount = 0;
 		Object[] appConfigs = config.getArray("apps");
@@ -106,24 +124,6 @@ public class Application extends TernWebApplication
 		}
 		
 		//load user application from WEB-INF/apps/
-		
-		Model.setModelReaderFactory(new ModelReaderFactory(){
-
-			@Override
-			public ModelReader createReader() 
-			{
-				Database metadb = AppContext.current().metadb;
-				if(metadb == null)
-				{
-					return new YamlModelReader();
-				}
-				else
-				{
-				    return new IapModelReader( metadb );
-				}
-			}
-			
-		});				
 		
 		return true;
 	}
